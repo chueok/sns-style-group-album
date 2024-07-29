@@ -19,5 +19,9 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "@nestjs/typeorm": "^10.0.2",
+    "sqlite3": "^5.1.7"
+  }
 }
