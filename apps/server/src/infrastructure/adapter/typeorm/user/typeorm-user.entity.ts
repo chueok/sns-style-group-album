@@ -1,7 +1,7 @@
 import { OneToMany, PrimaryColumn, Column, ManyToMany, Entity } from 'typeorm';
 import { TypeormGroup } from '../group/typeorm-group.entity';
 
-@Entity()
+@Entity('User')
 export class TypeormUser {
   @PrimaryColumn()
   id!: string;
@@ -21,9 +21,9 @@ export class TypeormUser {
   @Column({ type: 'datetime' })
   createdDateTime!: Date;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', nullable: true })
   updatedDateTime!: Date;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', nullable: true })
   deletedDateTime!: Date;
 }

@@ -1,35 +1,36 @@
 import {
-  Entity,
-  PrimaryColumn,
   Column,
+  Entity,
+  JoinTable,
   ManyToMany,
   ManyToOne,
-  JoinColumn,
-  JoinTable,
+  PrimaryColumn,
 } from 'typeorm';
 import { TypeormUser } from '../user/typeorm-user.entity';
+import { TypeormContent } from '../content/typeorm-content.entity';
 
-@Entity('Group')
-export class TypeormGroup {
+@Entity('Comment')
+export class TypeormComment {
   @PrimaryColumn()
   id!: string;
 
   @Column()
-  name!: string;
+  content!: string;
 
-  @ManyToMany((type) => TypeormUser, (user) => user.groups)
-  @JoinTable({ name: 'GroupMembers' })
-  members!: TypeormUser[];
-
-  @ManyToOne((type) => TypeormUser, (user) => user.myGoups)
+  @ManyToOne((type) => TypeormUser)
   owner!: TypeormUser;
+
+  @ManyToMany((type) => TypeormUser)
+  @JoinTable({ name: 'CommentTags' })
+  tags!: TypeormUser[];
+
+  @ManyToOne((type) => TypeormContent)
+  target!: TypeormContent;
 
   @Column({ type: 'datetime' })
   createdDateTime!: Date;
-
   @Column({ type: 'datetime', nullable: true })
   updatedDateTime!: Date;
-
   @Column({ type: 'datetime', nullable: true })
   deletedDateTime!: Date;
 }
