@@ -5,11 +5,14 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryColumn,
   TableInheritance,
 } from 'typeorm';
 import { TypeormGroup } from '../group/typeorm-group.entity';
 import { TypeormUser } from '../user/typeorm-user.entity';
+import { TypeormComment } from '../comment/typeorm-comment.entity';
+import { TypeormLike } from '../like/typeorm-like.entity';
 
 @Entity('Content')
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
@@ -17,18 +20,30 @@ export abstract class TypeormContent {
   @PrimaryColumn()
   id!: string;
 
-  @ManyToOne((type) => TypeormGroup)
+  @ManyToOne((type) => TypeormGroup, { nullable: false })
   group!: TypeormGroup;
 
-  @ManyToOne((type) => TypeormUser)
+  @ManyToOne((type) => TypeormUser, { nullable: false })
   owner!: TypeormUser;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: false })
   type!: 'image' | 'video' | 'post' | 'bucket' | 'schedule';
 
-  @ManyToMany((type) => TypeormContent)
-  @JoinTable({ name: 'ContentReferences' })
+  @ManyToMany((type) => TypeormContent, { nullable: true })
+  @JoinTable({
+    name: 'ContentReferences',
+    joinColumn: { name: 'contentId' },
+    inverseJoinColumn: { name: 'referencedId' },
+  })
   refered!: TypeormContent[];
+
+  @OneToMany((type) => TypeormComment, (comment) => comment.target, {
+    nullable: true,
+  })
+  comments!: TypeormComment[];
+
+  @OneToMany((type) => TypeormLike, (like) => like.content, { nullable: true })
+  likes!: TypeormLike[];
 
   @Column({ type: 'datetime' })
   createdDateTime!: Date;
@@ -57,7 +72,7 @@ export class TypeormPost extends TypeormContent {
   @Column()
   title!: string;
   @Column()
-  content!: string;
+  text!: string;
 }
 
 @ChildEntity()

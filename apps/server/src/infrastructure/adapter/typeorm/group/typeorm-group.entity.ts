@@ -4,7 +4,6 @@ import {
   Column,
   ManyToMany,
   ManyToOne,
-  JoinColumn,
   JoinTable,
 } from 'typeorm';
 import { TypeormUser } from '../user/typeorm-user.entity';
@@ -14,14 +13,14 @@ export class TypeormGroup {
   @PrimaryColumn()
   id!: string;
 
-  @Column()
+  @Column({ nullable: false })
   name!: string;
 
-  @ManyToMany((type) => TypeormUser, (user) => user.groups)
+  @ManyToMany((type) => TypeormUser, (user) => user.groups, { nullable: false })
   @JoinTable({ name: 'GroupMembers' })
   members!: TypeormUser[];
 
-  @ManyToOne((type) => TypeormUser, (user) => user.myGoups)
+  @ManyToOne((type) => TypeormUser, { nullable: false })
   owner!: TypeormUser;
 
   @Column({ type: 'datetime' })

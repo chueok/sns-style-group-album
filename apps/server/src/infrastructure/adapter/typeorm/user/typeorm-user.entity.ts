@@ -1,4 +1,11 @@
-import { OneToMany, PrimaryColumn, Column, ManyToMany, Entity } from 'typeorm';
+import {
+  OneToMany,
+  PrimaryColumn,
+  Column,
+  ManyToMany,
+  Entity,
+  ManyToOne,
+} from 'typeorm';
 import { TypeormGroup } from '../group/typeorm-group.entity';
 
 @Entity('User')
@@ -6,17 +13,16 @@ export class TypeormUser {
   @PrimaryColumn()
   id!: string;
 
-  @Column()
+  @Column({ nullable: false })
   username!: string;
 
-  @Column()
+  @Column({ nullable: false })
   hashedPassword!: string;
 
-  @ManyToMany((type) => TypeormGroup, (group) => group.members)
+  @ManyToMany((type) => TypeormGroup, (group) => group.members, {
+    nullable: true,
+  })
   groups!: TypeormGroup[];
-
-  @OneToMany((type) => TypeormGroup, (group) => group.owner)
-  myGoups!: TypeormGroup[];
 
   @Column({ type: 'datetime' })
   createdDateTime!: Date;
