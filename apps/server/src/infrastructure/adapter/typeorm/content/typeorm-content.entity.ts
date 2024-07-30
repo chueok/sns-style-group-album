@@ -35,43 +35,42 @@ export abstract class TypeormContent {
     joinColumn: { name: 'contentId' },
     inverseJoinColumn: { name: 'referencedId' },
   })
-  refered!: TypeormContent[];
-
-  @OneToMany((type) => TypeormComment, (comment) => comment.target, {
-    nullable: true,
-  })
-  comments!: TypeormComment[];
-
-  @OneToMany((type) => TypeormLike, (like) => like.content, { nullable: true })
-  likes!: TypeormLike[];
+  refered?: Promise<TypeormContent[]>;
 
   @Column({ type: 'datetime' })
   createdDateTime!: Date;
   @Column({ type: 'datetime', nullable: true })
-  updatedDateTime!: Date;
+  updatedDateTime?: Date;
   @Column({ type: 'datetime', nullable: true })
-  deletedDateTime!: Date;
+  deletedDateTime?: Date;
 }
 
 @ChildEntity()
 export class TypeormMedia extends TypeormContent {
   override type!: 'image' | 'video';
-  @Column()
-  relativePath!: string;
-  @Column()
+  @Column({ nullable: false })
+  thumbnailRelativePath!: string;
+
+  @Column({ nullable: true })
+  largeRelativePath?: string;
+
+  @Column({ nullable: false })
+  originalRelativePath!: string;
+
+  @Column({ nullable: false })
   size!: number;
-  @Column()
+  @Column({ nullable: false })
   ext!: string;
-  @Column()
+  @Column({ nullable: false })
   mimetype!: string;
 }
 
 @ChildEntity()
 export class TypeormPost extends TypeormContent {
   override type: 'post' = 'post';
-  @Column()
+  @Column({ nullable: false })
   title!: string;
-  @Column()
+  @Column({ nullable: false })
   text!: string;
 }
 
@@ -87,7 +86,7 @@ export class TypeormBucket extends TypeormContent {
 @ChildEntity()
 export class TypeormSchedule extends TypeormContent {
   override type: 'schedule' = 'schedule';
-  @Column()
+  @Column({ nullable: false })
   title!: string;
 
   @Column({ type: 'datetime' })

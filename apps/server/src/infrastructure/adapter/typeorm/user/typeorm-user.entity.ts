@@ -21,15 +21,16 @@ export class TypeormUser {
 
   @ManyToMany((type) => TypeormGroup, (group) => group.members, {
     nullable: true,
+    eager: true,
   })
-  groups!: TypeormGroup[];
+  groups?: TypeormGroup[];
 
   @Column({ type: 'datetime' })
   createdDateTime!: Date;
 
   @Column({ type: 'datetime', nullable: true })
-  updatedDateTime!: Date;
+  updatedDateTime?: Date;
 
   @Column({ type: 'datetime', nullable: true })
-  deletedDateTime!: Date;
+  deletedDateTime?: Date;
 }

@@ -17,8 +17,8 @@ export class TypeormGroup {
   name!: string;
 
   @ManyToMany((type) => TypeormUser, (user) => user.groups, { nullable: false })
-  @JoinTable({ name: 'GroupMembers' })
-  members!: TypeormUser[];
+  @JoinTable({ name: 'GroupMembersRelation' })
+  members!: Promise<TypeormUser[]>;
 
   @ManyToOne((type) => TypeormUser, { nullable: false })
   owner!: TypeormUser;
@@ -27,8 +27,8 @@ export class TypeormGroup {
   createdDateTime!: Date;
 
   @Column({ type: 'datetime', nullable: true })
-  updatedDateTime!: Date;
+  updatedDateTime?: Date;
 
   @Column({ type: 'datetime', nullable: true })
-  deletedDateTime!: Date;
+  deletedDateTime?: Date;
 }
