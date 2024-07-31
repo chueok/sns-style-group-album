@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Button } from "@repo/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@repo/ui/accordion';
 import styles from "./page.module.css";
 
 export default function Home() {
@@ -46,9 +47,15 @@ export default function Home() {
             Read our docs
           </a>
         </div>
-        <Button appName="web" className={styles.secondary}>
-          Open alert
+        <Button>
+          shadcn/ui
         </Button>
+        <Accordion type="single" defaultValue={'title'} collapsible>
+          <AccordionItem value={'title'}>
+            <AccordionTrigger>test</AccordionTrigger>
+            <AccordionContent>content</AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </main>
       <footer className={styles.footer}>
         <a
