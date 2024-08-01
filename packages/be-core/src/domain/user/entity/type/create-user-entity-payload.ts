@@ -1,12 +1,12 @@
 type CreateNewUserPayload = {
   username: string;
-  password: string;
+  hashedPassword: string;
 };
 
 type CreateExistingUserPayload = {
   id: string;
   username: string;
-  password: string;
+  hashedPassword: string;
 
   createdDateTime: Date;
   updatedDateTime?: Date;
