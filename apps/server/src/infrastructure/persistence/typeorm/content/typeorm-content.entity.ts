@@ -5,18 +5,15 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
-  OneToMany,
   PrimaryColumn,
   TableInheritance,
 } from 'typeorm';
 import { TypeormGroup } from '../group/typeorm-group.entity';
 import { TypeormUser } from '../user/typeorm-user.entity';
-import { TypeormComment } from '../comment/typeorm-comment.entity';
-import { TypeormLike } from '../like/typeorm-like.entity';
 
 @Entity('Content')
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
-export abstract class TypeormContent {
+export class TypeormContent {
   @PrimaryColumn()
   id!: string;
 
@@ -27,7 +24,7 @@ export abstract class TypeormContent {
   owner!: TypeormUser;
 
   @Column({ type: 'varchar', nullable: false })
-  type!: 'image' | 'video' | 'post' | 'bucket' | 'schedule';
+  type!: 'image' | 'video' | 'post' | 'bucket' | 'schedule' | 'system';
 
   @ManyToMany((type) => TypeormContent, { nullable: true })
   @JoinTable({
@@ -46,8 +43,21 @@ export abstract class TypeormContent {
 }
 
 @ChildEntity()
+export class TypeormSystemContent extends TypeormContent {
+  override type: 'system' = 'system';
+
+  @Column({ nullable: false })
+  text!: string;
+
+  @Column({ nullable: true })
+  subText?: string;
+}
+
+@ChildEntity()
 export class TypeormMedia extends TypeormContent {
   override type!: 'image' | 'video';
+  override refered: undefined = undefined;
+
   @Column({ nullable: false })
   thumbnailRelativePath!: string;
 

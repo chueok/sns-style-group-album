@@ -18,17 +18,15 @@ export class TypeormComment {
   id!: string;
 
   @Column({ nullable: false })
+  type!: 'UserComment' | 'SystemComment';
+
+  @Column({ nullable: false })
   text!: string;
 
-  @ManyToMany((type) => TypeormContent, {
+  @ManyToOne((type) => TypeormContent, {
     nullable: true,
   })
-  @JoinTable({
-    name: 'CommentContentsRelation',
-    joinColumn: { name: 'commentId' },
-    inverseJoinColumn: { name: 'contentId' },
-  })
-  targets?: Promise<TypeormContent[]>;
+  target?: Promise<TypeormContent>;
 
   @Column({ type: 'datetime', nullable: false })
   createdDateTime!: Date;
@@ -40,6 +38,8 @@ export class TypeormComment {
 
 @ChildEntity()
 export class TypeormUserComment extends TypeormComment {
+  override type: 'UserComment' = 'UserComment';
+
   // child entity 이기 때문에 nullable false로 설정할 경우 문제 될 것으로 보임.
   @ManyToOne((type) => TypeormUser, { nullable: false, eager: true })
   owner!: TypeormUser;
@@ -51,6 +51,8 @@ export class TypeormUserComment extends TypeormComment {
 
 @ChildEntity()
 export class TypeormSystemComment extends TypeormComment {
+  override type: 'SystemComment' = 'SystemComment';
+
   @Column({ nullable: true })
   subText?: string;
 }
