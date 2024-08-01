@@ -3,7 +3,7 @@ import { Entity } from '../../../common/entity/entity';
 import { Nullable } from '../../../common/type/common-types';
 import { CreateUserEntityPayload } from './type/create-user-entity-payload';
 import { v4 } from 'uuid';
-import { IPasswordEncryptionService } from '../../../infrastructure/security/encryption/password-encryption-service';
+import { IPasswordEncryptionService } from '../../../infrastructure/security/encryption/password-encryption-service.interface';
 
 export class User extends Entity<string> {
   @IsString()
