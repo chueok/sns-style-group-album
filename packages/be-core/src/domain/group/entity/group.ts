@@ -1,4 +1,4 @@
-import { IsString, IsUUID } from 'class-validator';
+import { IsInstance, IsString, IsUUID } from 'class-validator';
 import { EntityWithCUDTime } from '../../../common/entity/entity-with-cudtime';
 import { CreateGroupEntityPayload } from './type/create-group-entity-payload';
 import { v4 } from 'uuid';
@@ -20,7 +20,7 @@ export class Group extends EntityWithCUDTime<string> {
     return this._name;
   }
 
-  @IsString({ each: true })
+  @IsInstance(GroupMember, { each: true })
   private _members: Set<GroupMember>; // User ID의 집합으로 저장
   get members(): Set<GroupMember> {
     return this._members;
