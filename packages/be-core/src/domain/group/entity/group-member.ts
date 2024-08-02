@@ -4,9 +4,16 @@ export class GroupMember {
 
   readonly username: string;
 
-  constructor(payload: { id: string; username: string }) {
+  readonly thumbnailRelativePath: string;
+
+  constructor(payload: {
+    id: string;
+    username: string;
+    thumbnailRelativePath: string;
+  }) {
     this.id = payload.id;
     this.username = payload.username;
+    this.thumbnailRelativePath = payload.thumbnailRelativePath;
   }
 
   // for using set

@@ -19,6 +19,12 @@ export class User extends EntityWithCUDTime<string> {
     return this._hashedPassword;
   }
 
+  @IsString()
+  private _thumbnailRelativePath: string;
+  get thumbnailRelativePath(): string {
+    return this._thumbnailRelativePath;
+  }
+
   async deleteUser() {
     this._deletedDateTime = new Date();
     this.validate();
@@ -40,6 +46,7 @@ export class User extends EntityWithCUDTime<string> {
     super();
     this._username = payload.username;
     this._hashedPassword = payload.hashedPassword;
+    this._thumbnailRelativePath = payload.thumbnailRelativePath;
     if ('id' in payload) {
       this._id = payload.id;
       this._createdDateTime = payload.createdDateTime;
