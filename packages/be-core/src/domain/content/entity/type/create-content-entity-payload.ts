@@ -7,10 +7,6 @@ type CreateNewBaseContentEntityPayload = {
   owner: ContentUser;
   refered: Content[];
   thumbnailRelativePath?: string;
-  numLikes: number;
-  recentlyLikedMembers: Set<ContentUser>;
-  numComments: number;
-  recentlyCommentedMembers: Set<ContentUser>;
 };
 
 type CreateExistingBaseContentEntityPayload =
@@ -19,11 +15,17 @@ type CreateExistingBaseContentEntityPayload =
     createdDateTime: Date;
     updatedDateTime?: Date;
     deletedDateTime?: Date;
+
+    numLikes: number;
+    recentlyLikedMembers: Set<ContentUser>;
+    numComments: number;
+    recentlyCommentedMembers: Set<ContentUser>;
   };
 
 type CreateBaseContentEntityPayload = {
-  all: CreateNewBaseContentEntityPayload &
-    CreateExistingBaseContentEntityPayload;
+  all:
+    | CreateNewBaseContentEntityPayload
+    | CreateExistingBaseContentEntityPayload;
   new: CreateNewBaseContentEntityPayload;
   existing: CreateExistingBaseContentEntityPayload;
 };

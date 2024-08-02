@@ -6,18 +6,18 @@ type CreateNewBaseCommentEntityPayload = {
   contentId: string;
 };
 
-type CreateExistingBaseCommentEntityPayload = {
-  id: string;
-  text: string;
-  contentId: string;
-  createdDateTime: Date;
-  updatedDateTime?: Date;
-  deletedDateTime?: Date;
-};
+type CreateExistingBaseCommentEntityPayload =
+  CreateNewBaseCommentEntityPayload & {
+    id: string;
+    createdDateTime: Date;
+    updatedDateTime?: Date;
+    deletedDateTime?: Date;
+  };
 
 type CreateBaseCommentEntityPayload = {
-  all: CreateNewBaseCommentEntityPayload &
-    CreateExistingBaseCommentEntityPayload;
+  all:
+    | CreateNewBaseCommentEntityPayload
+    | CreateExistingBaseCommentEntityPayload;
   new: CreateNewBaseCommentEntityPayload;
   existing: CreateExistingBaseCommentEntityPayload;
 };

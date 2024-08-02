@@ -80,21 +80,27 @@ export abstract class Content extends EntityWithCUDTime<string> {
     this._owner = payload.owner;
     this._refered = payload.refered;
     this._thumbnailRelativePath = payload.thumbnailRelativePath;
-    this._numLikes = payload.numLikes;
-    this._recentlyLikedMembers = payload.recentlyLikedMembers;
-    this._numComments = payload.numComments;
-    this._recentlyCommentedMembers = payload.recentlyCommentedMembers;
 
     if ('id' in payload) {
       this._id = payload.id;
       this._createdDateTime = payload.createdDateTime;
       this._updatedDateTime = payload.updatedDateTime || null;
       this._deletedDateTime = payload.deletedDateTime || null;
+
+      this._numLikes = payload.numLikes;
+      this._recentlyLikedMembers = payload.recentlyLikedMembers;
+      this._numComments = payload.numComments;
+      this._recentlyCommentedMembers = payload.recentlyCommentedMembers;
     } else {
       this._id = v4();
       this._createdDateTime = new Date();
       this._updatedDateTime = null;
       this._deletedDateTime = null;
+
+      this._numLikes = 0;
+      this._recentlyLikedMembers = new Set();
+      this._numComments = 0;
+      this._recentlyCommentedMembers = new Set();
     }
   }
 }

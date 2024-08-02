@@ -59,7 +59,7 @@ export class Group extends EntityWithCUDTime<string> {
     return this._members.has(user);
   }
 
-  constructor(payload: CreateGroupEntityPayload) {
+  constructor(payload: CreateGroupEntityPayload<'all'>) {
     super();
 
     this._ownerId = payload.ownerId;
@@ -81,7 +81,7 @@ export class Group extends EntityWithCUDTime<string> {
     }
   }
 
-  static async new(payload: CreateGroupEntityPayload) {
+  static async new(payload: CreateGroupEntityPayload<'all'>) {
     const entity = new Group(payload);
     entity.validate();
     return entity;

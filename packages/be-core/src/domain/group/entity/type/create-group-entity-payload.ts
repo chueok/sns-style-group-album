@@ -5,16 +5,20 @@ type CreateNewGroupEntityPayload = {
   name: string;
 };
 
-type CreateExistingGroupEntityPayload = {
+type CreateExistingGroupEntityPayload = CreateNewGroupEntityPayload & {
   id: string;
   createdDateTime: Date;
-  ownerId: string;
-  name: string;
   members: GroupMember[];
   updatedDateTime?: Date;
   deletedDateTime?: Date;
 };
 
-export type CreateGroupEntityPayload =
-  | CreateNewGroupEntityPayload
-  | CreateExistingGroupEntityPayload;
+type CreateGroupEntityPayloadMap = {
+  all: CreateNewGroupEntityPayload | CreateExistingGroupEntityPayload;
+  new: CreateNewGroupEntityPayload;
+  existing: CreateExistingGroupEntityPayload;
+};
+
+export type CreateGroupEntityPayload<
+  T extends keyof CreateGroupEntityPayloadMap,
+> = CreateGroupEntityPayloadMap[T];

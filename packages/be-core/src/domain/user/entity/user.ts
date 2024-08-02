@@ -42,7 +42,7 @@ export class User extends EntityWithCUDTime<string> {
     this.validate();
   }
 
-  constructor(payload: CreateUserEntityPayload) {
+  constructor(payload: CreateUserEntityPayload<'all'>) {
     super();
     this._username = payload.username;
     this._hashedPassword = payload.hashedPassword;
@@ -60,7 +60,7 @@ export class User extends EntityWithCUDTime<string> {
     }
   }
 
-  static async new(payload: CreateUserEntityPayload) {
+  static async new(payload: CreateUserEntityPayload<'all'>) {
     const entity = new User(payload);
     entity.validate();
     return entity;

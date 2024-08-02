@@ -4,17 +4,20 @@ type CreateNewUserPayload = {
   thumbnailRelativePath: string;
 };
 
-type CreateExistingUserPayload = {
+type CreateExistingUserPayload = CreateNewUserPayload & {
   id: string;
-  username: string;
-  hashedPassword: string;
-  thumbnailRelativePath: string;
 
   createdDateTime: Date;
   updatedDateTime?: Date;
   deletedDateTime?: Date;
 };
 
-export type CreateUserEntityPayload =
-  | CreateNewUserPayload
-  | CreateExistingUserPayload;
+type CreateUserEntityPayloadMap = {
+  all: CreateNewUserPayload | CreateExistingUserPayload;
+  new: CreateNewUserPayload;
+  existing: CreateExistingUserPayload;
+};
+
+export type CreateUserEntityPayload<
+  T extends keyof CreateUserEntityPayloadMap,
+> = CreateUserEntityPayloadMap[T];
