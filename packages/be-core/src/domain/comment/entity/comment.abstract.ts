@@ -21,15 +21,15 @@ export abstract class Comment extends EntityWithCUDTime<string> {
   }
 
   @IsUUID()
-  protected _targetId: string;
-  get targetId(): string {
-    return this._targetId;
+  protected _contentId: string;
+  get contentId(): string {
+    return this._contentId;
   }
 
   constructor(payload: CreateCommentEntityPayload<'base', 'all'>) {
     super();
     this._text = payload.text;
-    this._targetId = payload.targetId;
+    this._contentId = payload.contentId;
     if ('id' in payload) {
       this._id = payload.id;
       this._createdDateTime = payload.createdDateTime;

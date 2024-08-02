@@ -26,7 +26,7 @@ export class TypeormComment {
   @ManyToOne((type) => TypeormContent, {
     nullable: true,
   })
-  target?: Promise<TypeormContent>;
+  content?: Promise<TypeormContent>;
 
   @Column({ type: 'datetime', nullable: false })
   createdDateTime!: Date;

@@ -3,13 +3,13 @@ import { CommentOwner } from '../comment-owner';
 
 type CreateNewBaseCommentEntityPayload = {
   text: string;
-  targetId: string;
+  contentId: string;
 };
 
 type CreateExistingBaseCommentEntityPayload = {
   id: string;
   text: string;
-  targetId: string;
+  contentId: string;
   createdDateTime: Date;
   updatedDateTime?: Date;
   deletedDateTime?: Date;
