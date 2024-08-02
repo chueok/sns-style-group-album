@@ -1,4 +1,4 @@
-export class ContentOwner {
+export class ContentUser {
   readonly id: string;
 
   readonly username: string;

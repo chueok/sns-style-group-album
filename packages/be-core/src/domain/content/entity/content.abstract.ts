@@ -1,9 +1,18 @@
-import { IsArray, IsEnum, IsInstance, IsUUID } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsInstance,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { EntityWithCUDTime } from '../../../common/entity/entity-with-cudtime';
 import { ContentType } from '../enum/content-type';
-import { ContentOwner } from './content-owner';
+import { ContentUser } from './content-user';
 import { CreateContentEntityPayload } from './type/create-content-entity-payload';
 import { v4 } from 'uuid';
+import { Optional } from '../../../common/type/common-types';
 
 export abstract class Content extends EntityWithCUDTime<string> {
   @IsUUID()
@@ -21,9 +30,9 @@ export abstract class Content extends EntityWithCUDTime<string> {
     return this._type;
   }
 
-  @IsInstance(ContentOwner)
-  protected _owner: ContentOwner;
-  get owner(): ContentOwner {
+  @IsInstance(ContentUser)
+  protected _owner: ContentUser;
+  get owner(): ContentUser {
     return this._owner;
   }
 
@@ -33,12 +42,48 @@ export abstract class Content extends EntityWithCUDTime<string> {
     return this._refered;
   }
 
+  @IsOptional()
+  @IsString()
+  protected _thumbnailRelativePath?: string;
+  get thumbnailRelativePath(): Optional<string> {
+    return this._thumbnailRelativePath;
+  }
+
+  @IsNumber()
+  protected _numLikes: number;
+  get numLikes(): number {
+    return this._numLikes;
+  }
+
+  @IsInstance(ContentUser, { each: true })
+  protected _recentlyLikedMembers: Set<ContentUser>;
+  get recentlyLikedMembers(): Set<ContentUser> {
+    return this._recentlyLikedMembers;
+  }
+
+  @IsNumber()
+  protected _numComments: number;
+  get numComments(): number {
+    return this._numComments;
+  }
+
+  @IsInstance(ContentUser, { each: true })
+  protected _recentlyCommentedMembers: Set<ContentUser>;
+  get recentlyCommentedMembers(): Set<ContentUser> {
+    return this._recentlyCommentedMembers;
+  }
+
   constructor(payload: CreateContentEntityPayload<'base', 'all'>) {
     super();
 
     this._groupId = payload.groupId;
     this._owner = payload.owner;
     this._refered = payload.refered;
+    this._thumbnailRelativePath = payload.thumbnailRelativePath;
+    this._numLikes = payload.numLikes;
+    this._recentlyLikedMembers = payload.recentlyLikedMembers;
+    this._numComments = payload.numComments;
+    this._recentlyCommentedMembers = payload.recentlyCommentedMembers;
 
     if ('id' in payload) {
       this._id = payload.id;

@@ -1,21 +1,25 @@
 import { BucketStatus } from '../../enum/bucket-status';
 import { Content } from '../content.abstract';
-import { ContentOwner } from '../content-owner';
+import { ContentUser } from '../content-user';
 
 type CreateNewBaseContentEntityPayload = {
   groupId: string;
-  owner: ContentOwner;
+  owner: ContentUser;
+  refered: Content[];
+  thumbnailRelativePath?: string;
+  numLikes: number;
+  recentlyLikedMembers: Set<ContentUser>;
+  numComments: number;
+  recentlyCommentedMembers: Set<ContentUser>;
 };
 
-type CreateExistingBaseContentEntityPayload = {
-  id: string;
-  groupId: string;
-  owner: ContentOwner;
-  refered: Content[];
-  createdDateTime: Date;
-  updatedDateTime?: Date;
-  deletedDateTime?: Date;
-};
+type CreateExistingBaseContentEntityPayload =
+  CreateNewBaseContentEntityPayload & {
+    id: string;
+    createdDateTime: Date;
+    updatedDateTime?: Date;
+    deletedDateTime?: Date;
+  };
 
 type CreateBaseContentEntityPayload = {
   all: CreateNewBaseContentEntityPayload &

@@ -20,7 +20,7 @@ export class TypeormUser {
   hashedPassword!: string;
 
   @Column({ nullable: true })
-  thumbnailRelativePath!: string;
+  thumbnailRelativePath?: string;
 
   @ManyToMany((type) => TypeormGroup, (group) => group.members, {
     nullable: true,

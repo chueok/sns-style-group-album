@@ -34,6 +34,9 @@ export class TypeormContent {
   })
   refered?: Promise<TypeormContent[]>;
 
+  @Column({ nullable: true })
+  thumbnailRelativePath?: string;
+
   @Column({ type: 'datetime' })
   createdDateTime!: Date;
   @Column({ type: 'datetime', nullable: true })
@@ -57,9 +60,6 @@ export class TypeormSystemContent extends TypeormContent {
 export class TypeormMedia extends TypeormContent {
   override type!: 'image' | 'video';
   override refered: undefined = undefined;
-
-  @Column({ nullable: false })
-  thumbnailRelativePath!: string;
 
   @Column({ nullable: true })
   largeRelativePath?: string;
