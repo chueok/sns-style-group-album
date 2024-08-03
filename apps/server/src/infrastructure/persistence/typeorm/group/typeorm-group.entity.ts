@@ -23,7 +23,7 @@ export class TypeormGroup {
   @ManyToOne((type) => TypeormUser, { nullable: false })
   owner!: TypeormUser;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', nullable: false })
   createdDateTime!: Date;
 
   @Column({ type: 'datetime', nullable: true })

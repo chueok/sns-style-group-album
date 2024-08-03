@@ -32,9 +32,9 @@ export class TypeormContent {
     joinColumn: { name: 'contentId' },
     inverseJoinColumn: { name: 'referencedId' },
   })
-  refered?: Promise<TypeormContent[]>;
+  referred?: Promise<TypeormContent[]>;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', nullable: false })
   createdDateTime!: Date;
   @Column({ type: 'datetime', nullable: true })
   updatedDateTime?: Date;
@@ -56,7 +56,7 @@ export class TypeormSystemContent extends TypeormContent {
 @ChildEntity()
 export class TypeormMedia extends TypeormContent {
   override type!: 'image' | 'video';
-  override refered: undefined = undefined;
+  override referred: undefined = undefined;
 
   @Column({ nullable: false })
   thumbnailRelativePath!: string;
@@ -87,9 +87,9 @@ export class TypeormPost extends TypeormContent {
 @ChildEntity()
 export class TypeormBucket extends TypeormContent {
   override type: 'bucket' = 'bucket';
-  @Column()
+  @Column({ nullable: false })
   title!: string;
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: false })
   status!: 'not-started' | 'in-progress' | 'done';
 }
 
@@ -99,12 +99,12 @@ export class TypeormSchedule extends TypeormContent {
   @Column({ nullable: false })
   title!: string;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', nullable: false })
   startDateTime!: Date;
 
-  @Column({ type: 'datetime' })
-  endDateTime!: Date;
+  @Column({ type: 'datetime', nullable: true })
+  endDateTime?: Date;
 
-  @Column()
-  isAllDay!: boolean;
+  @Column({ nullable: true })
+  isAllDay?: boolean;
 }

@@ -25,7 +25,7 @@ export class TypeormUser {
   })
   groups?: TypeormGroup[];
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', nullable: false })
   createdDateTime!: Date;
 
   @Column({ type: 'datetime', nullable: true })
