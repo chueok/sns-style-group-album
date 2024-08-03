@@ -81,4 +81,9 @@ export class Code {
     code: 3001,
     message: 'Property not defined error.',
   };
+
+  public static CORE_BAD_PASSWORD_ERROR: CodeDescription = {
+    code: 4000,
+    message: 'Bad password.',
+  };
 }
