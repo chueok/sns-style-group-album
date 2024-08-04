@@ -1,8 +1,8 @@
-import { Entity, PrimaryColumn, OneToMany, ManyToOne, Column } from 'typeorm';
-import { TypeormContent } from '../content/typeorm-content.entity';
-import { TypeormUser } from '../user/typeorm-user.entity';
+import { Entity, PrimaryColumn, ManyToOne, Column } from "typeorm";
+import { TypeormContent } from "../content/typeorm-content.entity";
+import { TypeormUser } from "../user/typeorm-user.entity";
 
-@Entity('Like')
+@Entity("Like")
 export class TypeormLike {
   @PrimaryColumn()
   id!: string;
@@ -15,6 +15,6 @@ export class TypeormLike {
   @ManyToOne(() => TypeormUser, { nullable: false })
   user!: Promise<TypeormUser>;
 
-  @Column({ type: 'datetime', nullable: false })
+  @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;
 }

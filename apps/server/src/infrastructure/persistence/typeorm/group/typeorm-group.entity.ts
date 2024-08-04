@@ -5,10 +5,10 @@ import {
   ManyToMany,
   ManyToOne,
   JoinTable,
-} from 'typeorm';
-import { TypeormUser } from '../user/typeorm-user.entity';
+} from "typeorm";
+import { TypeormUser } from "../user/typeorm-user.entity";
 
-@Entity('Group')
+@Entity("Group")
 export class TypeormGroup {
   @PrimaryColumn()
   id!: string;
@@ -17,18 +17,18 @@ export class TypeormGroup {
   name!: string;
 
   @ManyToMany(() => TypeormUser, (user) => user.groups, { nullable: false })
-  @JoinTable({ name: 'GroupMembersRelation' })
+  @JoinTable({ name: "GroupMembersRelation" })
   members!: Promise<TypeormUser[]>;
 
   @ManyToOne(() => TypeormUser, { nullable: false })
   owner!: TypeormUser;
 
-  @Column({ type: 'datetime', nullable: false })
+  @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: "datetime", nullable: true })
   updatedDateTime?: Date;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: "datetime", nullable: true })
   deletedDateTime?: Date;
 }

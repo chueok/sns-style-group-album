@@ -1,14 +1,7 @@
-import {
-  OneToMany,
-  PrimaryColumn,
-  Column,
-  ManyToMany,
-  Entity,
-  ManyToOne,
-} from 'typeorm';
-import { TypeormGroup } from '../group/typeorm-group.entity';
+import { PrimaryColumn, Column, ManyToMany, Entity } from "typeorm";
+import { TypeormGroup } from "../group/typeorm-group.entity";
 
-@Entity('User')
+@Entity("User")
 export class TypeormUser {
   @PrimaryColumn()
   id!: string;
@@ -25,12 +18,12 @@ export class TypeormUser {
   })
   groups?: TypeormGroup[];
 
-  @Column({ type: 'datetime', nullable: false })
+  @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: "datetime", nullable: true })
   updatedDateTime?: Date;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: "datetime", nullable: true })
   deletedDateTime?: Date;
 }
