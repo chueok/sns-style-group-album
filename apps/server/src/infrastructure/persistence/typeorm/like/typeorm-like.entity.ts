@@ -7,12 +7,12 @@ export class TypeormLike {
   @PrimaryColumn()
   id!: string;
 
-  @ManyToOne((type) => TypeormContent, {
+  @ManyToOne(() => TypeormContent, {
     nullable: false,
   })
   content!: Promise<TypeormContent>;
 
-  @ManyToOne((type) => TypeormUser, { nullable: false })
+  @ManyToOne(() => TypeormUser, { nullable: false })
   user!: Promise<TypeormUser>;
 
   @Column({ type: 'datetime', nullable: false })

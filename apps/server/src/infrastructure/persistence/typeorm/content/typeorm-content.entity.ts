@@ -17,16 +17,16 @@ export class TypeormContent {
   @PrimaryColumn()
   id!: string;
 
-  @ManyToOne((type) => TypeormGroup, { nullable: false })
+  @ManyToOne(() => TypeormGroup, { nullable: false })
   group!: TypeormGroup;
 
-  @ManyToOne((type) => TypeormUser, { nullable: false })
+  @ManyToOne(() => TypeormUser, { nullable: false })
   owner!: TypeormUser;
 
   @Column({ type: 'varchar', nullable: false })
   type!: 'image' | 'video' | 'post' | 'bucket' | 'schedule' | 'system';
 
-  @ManyToMany((type) => TypeormContent, { nullable: true })
+  @ManyToMany(() => TypeormContent, { nullable: true })
   @JoinTable({
     name: 'ContentReferences',
     joinColumn: { name: 'contentId' },

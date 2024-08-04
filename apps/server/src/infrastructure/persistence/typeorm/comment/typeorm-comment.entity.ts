@@ -23,7 +23,7 @@ export class TypeormComment {
   @Column({ nullable: false })
   text!: string;
 
-  @ManyToOne((type) => TypeormContent, {
+  @ManyToOne(() => TypeormContent, {
     nullable: true,
   })
   target?: Promise<TypeormContent>;
@@ -41,10 +41,10 @@ export class TypeormUserComment extends TypeormComment {
   override type: 'UserComment' = 'UserComment';
 
   // child entity 이기 때문에 nullable false로 설정할 경우 문제 될 것으로 보임.
-  @ManyToOne((type) => TypeormUser, { nullable: false, eager: true })
+  @ManyToOne(() => TypeormUser, { nullable: false, eager: true })
   owner!: TypeormUser;
 
-  @ManyToMany((type) => TypeormUser, { nullable: true })
+  @ManyToMany(() => TypeormUser, { nullable: true })
   @JoinTable({ name: 'CommentTagsRelation' })
   tags?: Promise<TypeormUser[]>;
 }

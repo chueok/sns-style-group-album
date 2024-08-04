@@ -19,7 +19,7 @@ export class TypeormUser {
   @Column({ nullable: false })
   hashedPassword!: string;
 
-  @ManyToMany((type) => TypeormGroup, (group) => group.members, {
+  @ManyToMany(() => TypeormGroup, (group) => group.members, {
     nullable: true,
     eager: true,
   })

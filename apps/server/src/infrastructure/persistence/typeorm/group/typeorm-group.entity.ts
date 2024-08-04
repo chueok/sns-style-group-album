@@ -16,11 +16,11 @@ export class TypeormGroup {
   @Column({ nullable: false })
   name!: string;
 
-  @ManyToMany((type) => TypeormUser, (user) => user.groups, { nullable: false })
+  @ManyToMany(() => TypeormUser, (user) => user.groups, { nullable: false })
   @JoinTable({ name: 'GroupMembersRelation' })
   members!: Promise<TypeormUser[]>;
 
-  @ManyToOne((type) => TypeormUser, { nullable: false })
+  @ManyToOne(() => TypeormUser, { nullable: false })
   owner!: TypeormUser;
 
   @Column({ type: 'datetime', nullable: false })
