@@ -5,9 +5,9 @@ const project = resolve(process.cwd(), "tsconfig.json");
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
   extends: [
-    'plugin:prettier/recommended',
+    "plugin:prettier/recommended",
     "eslint:recommended",
-    'plugin:@typescript-eslint/recommended',
+    "plugin:@typescript-eslint/recommended",
     "turbo",
   ],
   plugins: ["only-warn"],
@@ -19,8 +19,8 @@ module.exports = {
     },
   },
   rules: {
-    '@typescript-eslint/explicit-function-return-type': 'off',
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-explicit-any": "off",
   },
 };

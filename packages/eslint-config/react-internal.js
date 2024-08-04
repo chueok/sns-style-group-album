@@ -10,7 +10,7 @@ const project = resolve(process.cwd(), "tsconfig.json");
 
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
-  extends: [require.resolve('./base'),],
+  extends: [require.resolve("./base"),],
   globals: {
     React: true,
     JSX: true,
