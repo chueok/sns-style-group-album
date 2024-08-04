@@ -1,7 +1,7 @@
-import { Nullable } from '../../common/type/common-types';
-import { Content } from '../../domain/content/entity/content.abstract';
+import { Nullable } from "../../common/type/common-types";
+import { Content } from "../../domain/content/entity/content.abstract";
 
-export interface ContentRepository {
+export interface IContentRepository {
   createContent(content: Content): Promise<Content>;
 
   updateContent(content: Content): Promise<Content>;
@@ -14,8 +14,8 @@ export interface ContentRepository {
     groupId: string;
     cursor: string; // content id
     pageSize: number;
-    direction: 'next' | 'prev';
-    sort: 'recent' | 'likes' | 'comments' | 'oldest';
+    direction: "next" | "prev";
+    sort: "recent" | "likes" | "comments" | "oldest";
   }): Promise<Content[]>;
 
   findContentsByOwnerAndGroupId(payload: {

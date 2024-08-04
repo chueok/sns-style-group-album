@@ -1,7 +1,7 @@
-import { Nullable } from '../../common/type/common-types';
-import { Group } from '../../domain/group/entity/group';
+import { Nullable } from "../../common/type/common-types";
+import { Group } from "../../domain/group/entity/group";
 
-export interface GroupRepository {
+export interface IGroupRepository {
   createGroup(group: Group): Promise<Group>;
 
   updateGroup(group: Group): Promise<Group>;

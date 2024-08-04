@@ -1,7 +1,7 @@
-import { validate, ValidationError } from 'class-validator';
-import { Optional } from '../type/common-types';
-import { Exception } from '../exception/exception';
-import { Code } from '../exception/code';
+import { validate, ValidationError } from "class-validator";
+import { Optional } from "../type/common-types";
+import { Exception } from "../exception/exception";
+import { Code } from "../exception/code";
 
 export type ClassValidationErrors = {
   property: string;
@@ -16,7 +16,7 @@ export type ClassValidationDetails = {
 export class ClassValidator {
   public static async validate<TTarget extends object>(
     target: TTarget,
-    context?: string
+    context?: string,
   ): Promise<Optional<ClassValidationDetails>> {
     let details: Optional<ClassValidationDetails>;
     const errors: ValidationError[] = await validate(target);
@@ -39,7 +39,7 @@ export class ClassValidator {
 
   public static async validateOrThrow<TTarget extends object>(
     target: TTarget,
-    context?: string
+    context?: string,
   ): Promise<void> {
     const details = await this.validate(target, context);
     if (details) {

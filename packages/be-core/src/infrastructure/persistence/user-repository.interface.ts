@@ -1,5 +1,5 @@
-import { Nullable } from '../../common/type/common-types';
-import { User } from '../../domain/user/entity/user';
+import { Nullable } from "../../common/type/common-types";
+import { User } from "../../domain/user/entity/user";
 
 export interface IUserRepository {
   createUser(user: User): Promise<User>;

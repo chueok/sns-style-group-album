@@ -1,8 +1,8 @@
-import { IsInstance, IsString, IsUUID } from 'class-validator';
-import { EntityWithCUDTime } from '../../../common/entity/entity-with-cudtime';
-import { CreateGroupEntityPayload } from './type/create-group-entity-payload';
-import { v4 } from 'uuid';
-import { GroupMember } from './group-member';
+import { IsInstance, IsString, IsUUID } from "class-validator";
+import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
+import { CreateGroupEntityPayload } from "./type/create-group-entity-payload";
+import { v4 } from "uuid";
+import { GroupMember } from "./group-member";
 
 export class Group extends EntityWithCUDTime<string> {
   @IsUUID()
@@ -59,12 +59,12 @@ export class Group extends EntityWithCUDTime<string> {
     return this._members.has(user);
   }
 
-  constructor(payload: CreateGroupEntityPayload<'all'>) {
+  constructor(payload: CreateGroupEntityPayload<"all">) {
     super();
 
     this._ownerId = payload.ownerId;
     this._name = payload.name;
-    if ('id' in payload) {
+    if ("id" in payload) {
       this._id = payload.id;
       this._members = new Set(payload.members);
 
@@ -81,7 +81,7 @@ export class Group extends EntityWithCUDTime<string> {
     }
   }
 
-  static async new(payload: CreateGroupEntityPayload<'all'>) {
+  static async new(payload: CreateGroupEntityPayload<"all">) {
     const entity = new Group(payload);
     entity.validate();
     return entity;

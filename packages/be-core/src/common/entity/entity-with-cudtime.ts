@@ -1,6 +1,6 @@
-import { IsDate } from 'class-validator';
-import { Nullable } from '../type/common-types';
-import { Entity } from './entity';
+import { IsDate } from "class-validator";
+import { Nullable } from "../type/common-types";
+import { Entity } from "./entity";
 
 export abstract class EntityWithCUDTime<
   TIdentifier extends string | number,

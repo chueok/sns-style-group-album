@@ -6,13 +6,13 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-} from 'class-validator';
-import { EntityWithCUDTime } from '../../../common/entity/entity-with-cudtime';
-import { ContentType } from '../enum/content-type';
-import { ContentUser } from './content-user';
-import { CreateContentEntityPayload } from './type/create-content-entity-payload';
-import { v4 } from 'uuid';
-import { Optional } from '../../../common/type/common-types';
+} from "class-validator";
+import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
+import { ContentType } from "../enum/content-type";
+import { ContentUser } from "./content-user";
+import { CreateContentEntityPayload } from "./type/create-content-entity-payload";
+import { v4 } from "uuid";
+import { Optional } from "../../../common/type/common-types";
 
 export abstract class Content extends EntityWithCUDTime<string> {
   @IsUUID()
@@ -73,7 +73,7 @@ export abstract class Content extends EntityWithCUDTime<string> {
     return this._recentlyCommentedMembers;
   }
 
-  constructor(payload: CreateContentEntityPayload<'base', 'all'>) {
+  constructor(payload: CreateContentEntityPayload<"base", "all">) {
     super();
 
     this._groupId = payload.groupId;
@@ -81,7 +81,7 @@ export abstract class Content extends EntityWithCUDTime<string> {
     this._refered = payload.refered;
     this._thumbnailRelativePath = payload.thumbnailRelativePath;
 
-    if ('id' in payload) {
+    if ("id" in payload) {
       this._id = payload.id;
       this._createdDateTime = payload.createdDateTime;
       this._updatedDateTime = payload.updatedDateTime || null;

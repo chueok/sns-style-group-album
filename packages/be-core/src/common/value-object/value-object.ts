@@ -1,10 +1,10 @@
 import {
   ClassValidationDetails,
   ClassValidator,
-} from '../class-validator/class-validator';
-import { Code } from '../exception/code';
-import { Exception } from '../exception/exception';
-import { Optional } from '../type/common-types';
+} from "../class-validator/class-validator";
+import { Code } from "../exception/code";
+import { Exception } from "../exception/exception";
+import { Optional } from "../type/common-types";
 
 export abstract class ValueObject {
   public async validate(): Promise<void> {

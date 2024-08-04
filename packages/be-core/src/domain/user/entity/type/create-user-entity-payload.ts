@@ -1,4 +1,4 @@
-import { IPasswordEncryptionService } from '../../../../infrastructure/security/encryption/password-encryption-service.interface';
+import { IPasswordEncryptionService } from "../../../../infrastructure/security/encryption/password-encryption-service.interface";
 
 type CommonCreateUserPayload = {
   username: string;

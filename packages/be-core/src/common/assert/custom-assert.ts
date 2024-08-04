@@ -1,4 +1,4 @@
-import { Nullable, Optional } from '../type/common-types';
+import { Nullable, Optional } from "../type/common-types";
 
 export class CustomAssert {
   public static isTrue(expression: boolean, exception: Error): void {

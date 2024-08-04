@@ -1,6 +1,6 @@
-import { Nullable } from '../../common/type/common-types';
+import { Nullable } from "../../common/type/common-types";
 
-export interface CommentRepository {
+export interface ICommentRepository {
   createComment(comment: Comment): Promise<Comment>;
 
   updateComment(comment: Comment): Promise<Comment>;
@@ -12,7 +12,7 @@ export interface CommentRepository {
   findCommentsBy(payload: {
     groupId: string;
     cursor: string; // comment id
-    direction: 'next' | 'prev';
+    direction: "next" | "prev";
     pageSize: number;
   }): Promise<Comment[]>;
 }

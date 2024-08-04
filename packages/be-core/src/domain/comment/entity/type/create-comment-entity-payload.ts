@@ -1,5 +1,5 @@
-import { Optional } from '../../../../common/type/common-types';
-import { CommentOwner } from '../comment-owner';
+import { Optional } from "../../../../common/type/common-types";
+import { CommentOwner } from "../comment-owner";
 
 type CreateNewBaseCommentEntityPayload = {
   text: string;
@@ -32,7 +32,7 @@ type SystemCommentAdditionalPayload = {
 };
 
 type CommentAdditionalPayload = {
-  base: {};
+  base: object;
   user: UserCommentAdditionalPayload;
   system: SystemCommentAdditionalPayload;
 };

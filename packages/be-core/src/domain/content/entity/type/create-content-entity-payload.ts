@@ -1,6 +1,6 @@
-import { BucketStatus } from '../../enum/bucket-status';
-import { Content } from '../content.abstract';
-import { ContentUser } from '../content-user';
+import { BucketStatus } from "../../enum/bucket-status";
+import { Content } from "../content.abstract";
+import { ContentUser } from "../content-user";
 
 type CreateNewBaseContentEntityPayload = {
   groupId: string;
@@ -70,7 +70,7 @@ type ScheduleContentAdditionalPayload = {
 };
 
 type ContentAdditionalPayload = {
-  base: {};
+  base: object;
   system: SystemContentAdditionalPayload;
   image: ImageContentAdditionalPayload;
   video: VideoContentAdditionalPayload;

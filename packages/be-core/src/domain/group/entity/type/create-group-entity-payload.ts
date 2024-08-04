@@ -1,4 +1,4 @@
-import { GroupMember } from '../group-member';
+import { GroupMember } from "../group-member";
 
 type CreateNewGroupEntityPayload = {
   ownerId: string;

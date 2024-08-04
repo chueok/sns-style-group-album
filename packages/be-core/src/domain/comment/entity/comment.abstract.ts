@@ -1,8 +1,8 @@
-import { IsEnum, IsString, IsUUID } from 'class-validator';
-import { EntityWithCUDTime } from '../../../common/entity/entity-with-cudtime';
-import { CommentType } from '../enum/comment-type';
-import { CreateCommentEntityPayload } from './type/create-comment-entity-payload';
-import { v4 } from 'uuid';
+import { IsEnum, IsString, IsUUID } from "class-validator";
+import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
+import { CommentType } from "../enum/comment-type";
+import { CreateCommentEntityPayload } from "./type/create-comment-entity-payload";
+import { v4 } from "uuid";
 
 export abstract class Comment extends EntityWithCUDTime<string> {
   @IsUUID()
@@ -26,11 +26,11 @@ export abstract class Comment extends EntityWithCUDTime<string> {
     return this._contentId;
   }
 
-  constructor(payload: CreateCommentEntityPayload<'base', 'all'>) {
+  constructor(payload: CreateCommentEntityPayload<"base", "all">) {
     super();
     this._text = payload.text;
     this._contentId = payload.contentId;
-    if ('id' in payload) {
+    if ("id" in payload) {
       this._id = payload.id;
       this._createdDateTime = payload.createdDateTime;
       this._updatedDateTime = payload.updatedDateTime || null;
