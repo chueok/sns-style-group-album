@@ -7,47 +7,46 @@ import {
   ManyToOne,
   PrimaryColumn,
   TableInheritance,
-} from 'typeorm';
-import { TypeormGroup } from '../group/typeorm-group.entity';
-import { TypeormUser } from '../user/typeorm-user.entity';
+} from "typeorm";
+import { TypeormGroup } from "../group/typeorm-group.entity";
+import { TypeormUser } from "../user/typeorm-user.entity";
 
-@Entity('Content')
-@TableInheritance({ column: { type: 'varchar', name: 'type' } })
+@Entity("Content")
+@TableInheritance({ column: { type: "varchar", name: "type" } })
 export class TypeormContent {
   @PrimaryColumn()
   id!: string;
 
-  @ManyToOne((type) => TypeormGroup, { nullable: false })
+  @ManyToOne(() => TypeormGroup, { nullable: false })
   group!: TypeormGroup;
 
-  @ManyToOne((type) => TypeormUser, { nullable: false })
+  @ManyToOne(() => TypeormUser, { nullable: false })
   owner!: TypeormUser;
 
-  @Column({ type: 'varchar', nullable: false })
-  type!: 'image' | 'video' | 'post' | 'bucket' | 'schedule' | 'system';
-
-  @ManyToMany((type) => TypeormContent, { nullable: true })
+  @Column({ type: "varchar", nullable: false })
+  type!: "image" | "video" | "post" | "bucket" | "schedule" | "system";
+  @ManyToMany(() => TypeormContent, { nullable: true })
   @JoinTable({
-    name: 'ContentReferences',
-    joinColumn: { name: 'contentId' },
-    inverseJoinColumn: { name: 'referencedId' },
+    name: "ContentReferences",
+    joinColumn: { name: "contentId" },
+    inverseJoinColumn: { name: "referencedId" },
   })
   refered?: Promise<TypeormContent[]>;
 
   @Column({ nullable: true })
   thumbnailRelativePath?: string;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: "datetime" })
   createdDateTime!: Date;
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: "datetime", nullable: true })
   updatedDateTime?: Date;
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: "datetime", nullable: true })
   deletedDateTime?: Date;
 }
 
 @ChildEntity()
 export class TypeormSystemContent extends TypeormContent {
-  override type: 'system' = 'system';
+  override type: "system" = "system";
 
   @Column({ nullable: false })
   text!: string;
@@ -58,7 +57,7 @@ export class TypeormSystemContent extends TypeormContent {
 
 @ChildEntity()
 export class TypeormMedia extends TypeormContent {
-  override type!: 'image' | 'video';
+  override type!: "image" | "video";
   override refered: undefined = undefined;
 
   @Column({ nullable: true })
@@ -77,7 +76,7 @@ export class TypeormMedia extends TypeormContent {
 
 @ChildEntity()
 export class TypeormPost extends TypeormContent {
-  override type: 'post' = 'post';
+  override type: "post" = "post";
   @Column({ nullable: false })
   title!: string;
   @Column({ nullable: false })
@@ -86,23 +85,23 @@ export class TypeormPost extends TypeormContent {
 
 @ChildEntity()
 export class TypeormBucket extends TypeormContent {
-  override type: 'bucket' = 'bucket';
+  override type: "bucket" = "bucket";
   @Column()
   title!: string;
-  @Column({ type: 'varchar' })
-  status!: 'not-started' | 'in-progress' | 'done';
+  @Column({ type: "varchar" })
+  status!: "not-started" | "in-progress" | "done";
 }
 
 @ChildEntity()
 export class TypeormSchedule extends TypeormContent {
-  override type: 'schedule' = 'schedule';
+  override type: "schedule" = "schedule";
   @Column({ nullable: false })
   title!: string;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: "datetime" })
   startDateTime!: Date;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: "datetime" })
   endDateTime!: Date;
 
   @Column()
