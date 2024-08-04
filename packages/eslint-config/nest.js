@@ -5,25 +5,13 @@ const project = resolve(process.cwd(), 'tsconfig.json');
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
   extends: [
-    'plugin:prettier/recommended',
-    'eslint:recommended', 
-    'plugin:@typescript-eslint/recommended',
-    'turbo',
+    require.resolve('./base')
   ],
   env: {
     node: true,
     jest: true,
   },
-  plugins: ['only-warn',],
-
-  settings: {
-    'import/resolver': {
-      typescript: {
-        project,
-      },
-    },
-  },
-
+  ignorePatterns: ['dist', 'node_modules', ".*.js",],
   rules: {
     "@typescript-eslint/naming-convention": [
       "error",
@@ -36,8 +24,5 @@ module.exports = {
         }
       }
     ],
-    '@typescript-eslint/explicit-function-return-type': 'off',
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
-  },
+  }
 };

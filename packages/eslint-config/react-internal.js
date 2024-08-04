@@ -10,21 +10,13 @@ const project = resolve(process.cwd(), "tsconfig.json");
 
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
-  extends: ["eslint:recommended", "prettier", "turbo"],
-  plugins: ["only-warn"],
+  extends: [require.resolve('./base'),],
   globals: {
     React: true,
     JSX: true,
   },
   env: {
     browser: true,
-  },
-  settings: {
-    "import/resolver": {
-      typescript: {
-        project,
-      },
-    },
   },
   ignorePatterns: [
     // Ignore dotfiles
