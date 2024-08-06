@@ -10,6 +10,7 @@ import {
 } from "typeorm";
 import { TypeormGroup } from "../group/typeorm-group.entity";
 import { TypeormUser } from "../user/typeorm-user.entity";
+import { ContentType } from "@repo/be-core";
 
 @Entity("Content")
 @TableInheritance({ column: { type: "varchar", name: "type" } })
@@ -24,7 +25,7 @@ export class TypeormContent {
   owner!: TypeormUser;
 
   @Column({ type: "varchar", nullable: false })
-  type!: "image" | "video" | "post" | "bucket" | "schedule" | "system";
+  type!: ContentType;
 
   @ManyToMany(() => TypeormContent, { nullable: true })
   @JoinTable({
@@ -47,7 +48,7 @@ export class TypeormContent {
 
 @ChildEntity()
 export class TypeormSystemContent extends TypeormContent {
-  override type: "system" = "system";
+  override type = ContentType.SYSTEM;
 
   @Column({ nullable: false })
   text!: string;
@@ -58,7 +59,7 @@ export class TypeormSystemContent extends TypeormContent {
 
 @ChildEntity()
 export class TypeormMedia extends TypeormContent {
-  override type!: "image" | "video";
+  override type!: ContentType.IMAGE | ContentType.VIDEO;
   override referred: undefined = undefined;
 
   @Column({ nullable: false })
@@ -80,7 +81,7 @@ export class TypeormMedia extends TypeormContent {
 
 @ChildEntity()
 export class TypeormPost extends TypeormContent {
-  override type: "post" = "post";
+  override type = ContentType.POST;
   @Column({ nullable: false })
   title!: string;
   @Column({ nullable: false })
@@ -89,7 +90,7 @@ export class TypeormPost extends TypeormContent {
 
 @ChildEntity()
 export class TypeormBucket extends TypeormContent {
-  override type: "bucket" = "bucket";
+  override type = ContentType.BUCKET;
   @Column({ nullable: false })
   title!: string;
   @Column({ type: "varchar", nullable: false })
@@ -98,7 +99,7 @@ export class TypeormBucket extends TypeormContent {
 
 @ChildEntity()
 export class TypeormSchedule extends TypeormContent {
-  override type: "schedule" = "schedule";
+  override type = ContentType.SCHEDULE;
   @Column({ nullable: false })
   title!: string;
 
