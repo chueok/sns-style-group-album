@@ -7,6 +7,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["src", "lib", ".storybook"],
+  "include": ["src", "lib"],
   "exclude": ["node_modules", "dist"]
 }
