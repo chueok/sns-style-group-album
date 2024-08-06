@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
-import { Button } from "@/src/button";
+import { Button } from "@/src/button/button";
 
 const meta = {
   title: "Button",
@@ -9,7 +9,14 @@ const meta = {
     variant: {
       description: "The variant of the button",
       control: { type: "select" },
-      options: ["default", "destructive", "outline", "secondary, ghost, link"],
+      options: [
+        "default",
+        "destructive",
+        "outline",
+        "secondary",
+        "ghost",
+        "link",
+      ],
       table: { defaultValue: { summary: "default" } },
     },
     size: {

@@ -3,14 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./accordion": "./src/accordion.tsx",
-    "./button": "./src/button.tsx",
-    "./card": "./src/card.tsx",
-    "./code": "./src/code.tsx",
+    "./accordion": "./src/accordion/index.ts",
+    "./button": "./src/button/index.ts",
     "./global.css": "./styles/global.css"
   },
   "scripts": {
-    "dev": "npm run storybook",
     "lint": "eslint . --max-warnings 0 --fix",
     "generate:component": "turbo gen react-component",
     "storybook": "storybook dev -p 6006",
