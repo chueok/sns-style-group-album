@@ -8,6 +8,7 @@
     "./global.css": "./styles/global.css"
   },
   "scripts": {
+    "dev": "npm run storybook",
     "lint": "eslint . --max-warnings 0 --fix",
     "generate:component": "turbo gen react-component",
     "storybook": "storybook dev -p 6006",
