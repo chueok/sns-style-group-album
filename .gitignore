@@ -39,3 +39,7 @@ yarn-error.log*
 
 # editor setting
 .vscode
+.idea
+
+# storybook
+*storybook.log
