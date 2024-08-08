@@ -6,7 +6,7 @@ import {
   IsNumber,
   IsString,
 } from "class-validator";
-import { ContentType } from "../enum/content-type";
+import { ContentTypeEnum } from "../enum/content-type-enum";
 import { BucketStatus } from "../enum/bucket-status";
 import { Content } from "./content.abstract";
 
@@ -14,7 +14,7 @@ import { Optional } from "../../../common/type/common-types";
 import { CreateContentEntityPayload } from "./type/create-content-entity-payload";
 
 export class SystemContent extends Content {
-  override _type: ContentType.SYSTEM = ContentType.SYSTEM;
+  override _type: ContentTypeEnum.SYSTEM = ContentTypeEnum.SYSTEM;
 
   @IsString()
   protected _text: string;
@@ -42,7 +42,7 @@ export class SystemContent extends Content {
 }
 
 export class ImageContent extends Content {
-  override _type: ContentType.IMAGE = ContentType.IMAGE;
+  override _type: ContentTypeEnum.IMAGE = ContentTypeEnum.IMAGE;
 
   protected _thumbnailRelativePath: string;
   get thumbnailRelativePath(): string {
@@ -95,7 +95,7 @@ export class ImageContent extends Content {
 }
 
 export class VideoContent extends Content {
-  override _type: ContentType.VIDEO = ContentType.VIDEO;
+  override _type: ContentTypeEnum.VIDEO = ContentTypeEnum.VIDEO;
 
   protected _thumbnailRelativePath: string;
   get thumbnailRelativePath(): string {
@@ -133,7 +133,7 @@ export class VideoContent extends Content {
 }
 
 export class PostContent extends Content {
-  override _type: ContentType.POST = ContentType.POST;
+  override _type: ContentTypeEnum.POST = ContentTypeEnum.POST;
 
   @IsString()
   protected _title: string;
@@ -161,7 +161,7 @@ export class PostContent extends Content {
 }
 
 export class BucketContent extends Content {
-  override _type: ContentType.BUCKET = ContentType.BUCKET;
+  override _type: ContentTypeEnum.BUCKET = ContentTypeEnum.BUCKET;
 
   @IsString()
   protected _title: string;
@@ -189,7 +189,7 @@ export class BucketContent extends Content {
 }
 
 export class ScheduleContent extends Content {
-  override _type: ContentType.SCHEDULE = ContentType.SCHEDULE;
+  override _type: ContentTypeEnum.SCHEDULE = ContentTypeEnum.SCHEDULE;
 
   @IsString()
   protected _title: string;

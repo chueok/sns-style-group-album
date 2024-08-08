@@ -8,7 +8,7 @@ import {
   IsUUID,
 } from "class-validator";
 import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
-import { ContentType } from "../enum/content-type";
+import { ContentTypeEnum } from "../enum/content-type-enum";
 import { ContentUser } from "./content-user";
 import { CreateContentEntityPayload } from "./type/create-content-entity-payload";
 import { v4 } from "uuid";
@@ -24,9 +24,9 @@ export abstract class Content extends EntityWithCUDTime<string> {
     return this._groupId;
   }
 
-  @IsEnum(ContentType)
-  protected _type!: ContentType;
-  get type(): ContentType {
+  @IsEnum(ContentTypeEnum)
+  protected _type!: ContentTypeEnum;
+  get type(): ContentTypeEnum {
     return this._type;
   }
 

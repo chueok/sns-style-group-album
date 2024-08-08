@@ -1,4 +1,4 @@
-export enum ContentType {
+export enum ContentTypeEnum {
   IMAGE = "image",
   VIDEO = "video",
   POST = "post",

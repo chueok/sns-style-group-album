@@ -10,7 +10,7 @@ import {
 } from "typeorm";
 import { TypeormUser } from "../user/typeorm-user.entity";
 import { TypeormContent } from "../content/typeorm-content.entity";
-import { CommentType } from "@repo/be-core";
+import { CommentTypeEnum } from "@repo/be-core";
 
 @Entity("Comment")
 @TableInheritance({ column: { type: "varchar", name: "type" } })
@@ -19,7 +19,7 @@ export class TypeormComment {
   id!: string;
 
   @Column({ nullable: false })
-  type!: CommentType;
+  type!: CommentTypeEnum;
 
   @Column({ nullable: false })
   text!: string;
@@ -39,7 +39,7 @@ export class TypeormComment {
 
 @ChildEntity()
 export class TypeormUserComment extends TypeormComment {
-  override type = CommentType.USER_COMMENT;
+  override type = CommentTypeEnum.USER_COMMENT;
 
   // child entity 이기 때문에 nullable false로 설정할 경우 문제 될 것으로 보임.
   @ManyToOne(() => TypeormUser, { nullable: false, eager: true })
@@ -52,7 +52,7 @@ export class TypeormUserComment extends TypeormComment {
 
 @ChildEntity()
 export class TypeormSystemComment extends TypeormComment {
-  override type = CommentType.SYSTEM_COMMENT;
+  override type = CommentTypeEnum.SYSTEM_COMMENT;
 
   @Column({ nullable: true })
   subText?: string;
