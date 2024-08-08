@@ -1,5 +1,5 @@
+import { Nullable } from "src/common/type/common-types";
 import { Comment } from "src/domain/comment/entity/comment.abstract";
-import { Nullable } from "../../common/type/common-types";
 
 export interface ICommentRepository {
   createComment(comment: Comment): Promise<Comment>;

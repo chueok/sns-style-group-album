@@ -2,7 +2,7 @@ import { IsString, IsUUID } from "class-validator";
 import { CreateUserEntityPayload } from "./type/create-user-entity-payload";
 import { v4 } from "uuid";
 import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
-import { IPasswordEncryptionService } from "../../../infrastructure/security/encryption/password-encryption-service.interface";
+import { IPasswordEncryptionService } from "../../encryption/password-encryption-service.interface";
 import { Exception } from "../../../common/exception/exception";
 import { Code } from "../../../common/exception/code";
 
