@@ -3,6 +3,13 @@
   "compilerOptions": {
     "outDir": "dist"
   },
-  "include": ["src", "lib", "turbo", "tailwind.config.ts"],
+  "include": [
+    "src",
+    "lib",
+    "turbo",
+    ".storybook",
+    "tailwind.config.ts",
+    "vite.config.ts",
+  ],
   "exclude": ["node_modules", "dist"]
 }
