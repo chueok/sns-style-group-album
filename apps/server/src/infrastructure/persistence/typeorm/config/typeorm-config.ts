@@ -1,10 +1,10 @@
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { join } from "path";
-import { DatabaseConfig } from "src/infrastructure/config/DatabaseConfig";
+import { DatabaseConfig } from "../../../config/DatabaseConfig";
 
 const entitiesPath = join(__dirname, "..", "**", "*.entity.{ts,js}");
 
-export const sqliteDevOptions: TypeOrmModuleOptions = {
+export const typeormSqliteOptions: TypeOrmModuleOptions = {
   type: "sqlite",
   database: `db/${DatabaseConfig.DB_FILE}`,
   autoLoadEntities: true,

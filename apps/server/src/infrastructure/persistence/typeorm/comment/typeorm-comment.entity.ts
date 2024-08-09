@@ -25,9 +25,11 @@ export class TypeormComment {
   text!: string;
 
   @ManyToOne(() => TypeormContent, {
-    nullable: true,
+    nullable: false,
   })
-  content?: Promise<TypeormContent>;
+  content!: Promise<TypeormContent>;
+  @Column({ nullable: false })
+  contentId!: string;
 
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;
@@ -42,12 +44,15 @@ export class TypeormUserComment extends TypeormComment {
   override type = CommentTypeEnum.USER_COMMENT;
 
   // child entity 이기 때문에 nullable false로 설정할 경우 문제 될 것으로 보임.
-  @ManyToOne(() => TypeormUser, { nullable: false, eager: true })
+  @ManyToOne(() => TypeormUser, { nullable: false, eager: false, lazy: true })
   owner!: TypeormUser;
 
-  @ManyToMany(() => TypeormUser, { nullable: true })
+  @Column({ nullable: false })
+  ownerId!: string;
+
+  @ManyToMany(() => TypeormUser, { nullable: false })
   @JoinTable({ name: "CommentTagsRelation" })
-  tags?: Promise<TypeormUser[]>;
+  tags!: Promise<TypeormUser[]>;
 }
 
 @ChildEntity()

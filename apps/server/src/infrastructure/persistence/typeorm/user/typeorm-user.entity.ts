@@ -16,10 +16,10 @@ export class TypeormUser {
   thumbnailRelativePath?: string;
 
   @ManyToMany(() => TypeormGroup, (group) => group.members, {
-    nullable: true,
     eager: true,
+    nullable: false,
   })
-  groups?: TypeormGroup[];
+  groups!: TypeormGroup[];
 
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;

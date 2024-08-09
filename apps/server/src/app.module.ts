@@ -2,10 +2,10 @@ import { Module } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { sqliteDevOptions } from "./infrastructure/persistence/typeorm/config/typeorm-dev-config";
+import { typeormSqliteOptions } from "./infrastructure/persistence/typeorm/config/typeorm-config";
 
 @Module({
-  imports: [TypeOrmModule.forRoot(sqliteDevOptions)],
+  imports: [TypeOrmModule.forRoot(typeormSqliteOptions)],
   controllers: [AppController],
   providers: [AppService],
 })

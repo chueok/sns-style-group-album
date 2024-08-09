@@ -12,6 +12,7 @@ const config = {
   coverageDirectory: "../coverage",
   testEnvironment: "node",
   setupFiles: ["dotenv/config"],
+  maxWorkers: 1,
 };
 
 module.exports = config;

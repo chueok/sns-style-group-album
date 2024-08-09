@@ -10,7 +10,7 @@ import {
 } from "typeorm";
 import { TypeormGroup } from "../group/typeorm-group.entity";
 import { TypeormUser } from "../user/typeorm-user.entity";
-import { BucketContent, ContentTypeEnum } from "@repo/be-core";
+import { BucketStatusEnum, ContentTypeEnum } from "@repo/be-core";
 
 @Entity("Content")
 @TableInheritance({ column: { type: "varchar", name: "type" } })
@@ -94,7 +94,7 @@ export class TypeormBucket extends TypeormContent {
   @Column({ nullable: false })
   title!: string;
   @Column({ type: "varchar", nullable: false })
-  status!: BucketContent;
+  status!: BucketStatusEnum;
 }
 
 @ChildEntity()
