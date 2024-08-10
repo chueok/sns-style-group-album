@@ -37,9 +37,9 @@ export abstract class Content extends EntityWithCUDTime<string> {
   }
 
   @IsArray()
-  protected _refered: Content[];
-  get refered(): Content[] {
-    return this._refered;
+  protected _referred: Content[];
+  get referred(): Content[] {
+    return this._referred;
   }
 
   @IsOptional()
@@ -78,7 +78,7 @@ export abstract class Content extends EntityWithCUDTime<string> {
 
     this._groupId = payload.groupId;
     this._owner = payload.owner;
-    this._refered = payload.refered;
+    this._referred = payload.refered;
     this._thumbnailRelativePath = payload.thumbnailRelativePath;
 
     if ("id" in payload) {

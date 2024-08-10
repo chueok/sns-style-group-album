@@ -1,4 +1,4 @@
-import { IsDate } from "class-validator";
+import { IsDate, IsOptional } from "class-validator";
 import { Nullable } from "../type/common-types";
 import { Entity } from "./entity";
 
@@ -11,12 +11,14 @@ export abstract class EntityWithCUDTime<
     return this._createdDateTime;
   }
 
+  @IsOptional()
   @IsDate()
   protected _updatedDateTime!: Nullable<Date>;
   get updatedDateTime(): Nullable<Date> {
     return this._updatedDateTime;
   }
 
+  @IsOptional()
   @IsDate()
   protected _deletedDateTime!: Nullable<Date>;
   get deletedDateTime(): Nullable<Date> {
