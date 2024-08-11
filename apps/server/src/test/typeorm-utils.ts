@@ -82,21 +82,15 @@ export class TestDatabaseHandler {
     typeormEntity.id = faker.string.uuid();
     typeormEntity.username = faker.internet.userName();
     typeormEntity.hashedPassword = faker.internet.password();
-    typeormEntity.groups = [];
+    typeormEntity.groups = Promise.resolve([]);
     typeormEntity.thumbnailRelativePath = getRandomElement([
-      undefined,
+      null,
       faker.system.filePath(),
     ]);
 
     typeormEntity.createdDateTime = faker.date.past();
-    typeormEntity.updatedDateTime = getRandomElement([
-      undefined,
-      faker.date.past(),
-    ]);
-    typeormEntity.deletedDateTime = getRandomElement([
-      undefined,
-      faker.date.past(),
-    ]);
+    typeormEntity.updatedDateTime = getRandomElement([null, faker.date.past()]);
+    typeormEntity.deletedDateTime = getRandomElement([null, faker.date.past()]);
 
     this.userList.push(typeormEntity);
     return typeormEntity;
@@ -110,17 +104,11 @@ export class TestDatabaseHandler {
     typeormEntity.id = faker.string.uuid();
     typeormEntity.name = faker.internet.userName();
     typeormEntity.members = Promise.resolve([]);
-    typeormEntity.owner = getRandomElement(this.userList);
+    typeormEntity.owner = Promise.resolve(getRandomElement(this.userList));
 
     typeormEntity.createdDateTime = faker.date.past();
-    typeormEntity.updatedDateTime = getRandomElement([
-      undefined,
-      faker.date.past(),
-    ]);
-    typeormEntity.deletedDateTime = getRandomElement([
-      undefined,
-      faker.date.past(),
-    ]);
+    typeormEntity.updatedDateTime = getRandomElement([null, faker.date.past()]);
+    typeormEntity.deletedDateTime = getRandomElement([null, faker.date.past()]);
 
     this.groupList.push(typeormEntity);
     return typeormEntity;
@@ -153,7 +141,7 @@ export class TestDatabaseHandler {
         break;
     }
     instance.id = faker.string.uuid();
-    instance.group = getRandomElement(this.groupList);
+    instance.group = Promise.resolve(getRandomElement(this.groupList));
     instance.owner = getRandomElement(this.userList);
     instance.type = contentType;
     instance.referred = Promise.resolve([]);
@@ -177,7 +165,7 @@ export class TestDatabaseHandler {
     let dates: Date[];
     switch (contentType) {
       case ContentTypeEnum.IMAGE:
-        (instance as TypeormMedia).referred = undefined;
+        (instance as TypeormMedia).referred = null;
         (instance as TypeormMedia).thumbnailRelativePath =
           faker.system.filePath();
         (instance as TypeormMedia).largeRelativePath = faker.system.filePath();
@@ -187,7 +175,7 @@ export class TestDatabaseHandler {
         (instance as TypeormMedia).ext = faker.system.commonFileExt();
         break;
       case ContentTypeEnum.VIDEO:
-        (instance as TypeormMedia).referred = undefined;
+        (instance as TypeormMedia).referred = null;
         (instance as TypeormMedia).thumbnailRelativePath =
           faker.system.filePath();
         (instance as TypeormMedia).largeRelativePath = undefined;
@@ -267,8 +255,8 @@ export class TestDatabaseHandler {
     let tags: Set<TypeormUser>;
     switch (commentType) {
       case CommentTypeEnum.USER_COMMENT:
-        (instance as TypeormUserComment).owner = getRandomElement(
-          this.userList,
+        (instance as TypeormUserComment).owner = Promise.resolve(
+          getRandomElement([null, ...this.userList]),
         );
         itterNum = Math.random() * this.userList.length;
         tags = new Set();

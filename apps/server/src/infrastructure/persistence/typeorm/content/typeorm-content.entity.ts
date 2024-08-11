@@ -10,7 +10,7 @@ import {
 } from "typeorm";
 import { TypeormGroup } from "../group/typeorm-group.entity";
 import { TypeormUser } from "../user/typeorm-user.entity";
-import { BucketStatusEnum, ContentTypeEnum } from "@repo/be-core";
+import { BucketStatusEnum, ContentTypeEnum, Nullable } from "@repo/be-core";
 
 @Entity("Content")
 @TableInheritance({ column: { type: "varchar", name: "type" } })
@@ -18,22 +18,29 @@ export class TypeormContent {
   @PrimaryColumn()
   id!: string;
 
-  @ManyToOne(() => TypeormGroup, { nullable: false })
-  group!: TypeormGroup;
+  @ManyToOne(() => TypeormGroup, {
+    nullable: false,
+    onDelete: "CASCADE",
+  })
+  group!: Promise<TypeormGroup>;
 
-  @ManyToOne(() => TypeormUser, { nullable: false })
-  owner!: TypeormUser;
+  @ManyToOne(() => TypeormUser, {
+    eager: true,
+    nullable: true,
+    onDelete: "SET NULL",
+  })
+  owner!: Nullable<TypeormUser>;
 
   @Column({ type: "varchar", nullable: false })
   type!: ContentTypeEnum;
 
-  @ManyToMany(() => TypeormContent, { nullable: true })
+  @ManyToMany(() => TypeormContent)
   @JoinTable({
     name: "ContentReferences",
     joinColumn: { name: "contentId" },
     inverseJoinColumn: { name: "referencedId" },
   })
-  referred?: Promise<TypeormContent[]>;
+  referred!: Promise<TypeormContent[]>;
 
   @Column({ nullable: true })
   thumbnailRelativePath?: string;
@@ -60,7 +67,7 @@ export class TypeormSystemContent extends TypeormContent {
 @ChildEntity()
 export class TypeormMedia extends TypeormContent {
   override type!: ContentTypeEnum.IMAGE | ContentTypeEnum.VIDEO;
-  override referred: undefined = undefined;
+  override referred; // should have empty array
 
   @Column({ nullable: false })
   override thumbnailRelativePath!: string;

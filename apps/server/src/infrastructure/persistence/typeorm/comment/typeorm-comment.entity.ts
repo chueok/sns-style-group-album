@@ -10,7 +10,7 @@ import {
 } from "typeorm";
 import { TypeormUser } from "../user/typeorm-user.entity";
 import { TypeormContent } from "../content/typeorm-content.entity";
-import { CommentTypeEnum } from "@repo/be-core";
+import { CommentTypeEnum, Nullable } from "@repo/be-core";
 
 @Entity("Comment")
 @TableInheritance({ column: { type: "varchar", name: "type" } })
@@ -43,9 +43,11 @@ export class TypeormComment {
 export class TypeormUserComment extends TypeormComment {
   override type = CommentTypeEnum.USER_COMMENT;
 
-  // child entity 이기 때문에 nullable false로 설정할 경우 문제 될 것으로 보임.
-  @ManyToOne(() => TypeormUser, { nullable: false, eager: false, lazy: true })
-  owner!: TypeormUser;
+  // user가 삭제 되었을 경우 Comment의 owner가 null 일 수 있음
+  // Promise Type이 lazy loading인 것을 알려주고,
+  // Promise가 아니면 eager임을 알기에 생략
+  @ManyToOne(() => TypeormUser, { nullable: true, onDelete: "SET NULL" })
+  owner!: Promise<Nullable<TypeormUser>>;
 
   @Column({ nullable: false })
   ownerId!: string;
