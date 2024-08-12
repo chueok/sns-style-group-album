@@ -36,7 +36,7 @@ export class SystemContent extends Content {
 
   static async new(payload: CreateContentEntityPayload<"system", "all">) {
     const entity = new SystemContent(payload);
-    entity.validate();
+    await entity.validate();
     return entity;
   }
 }
@@ -89,7 +89,7 @@ export class ImageContent extends Content {
 
   static async new(payload: CreateContentEntityPayload<"image", "all">) {
     const entity = new ImageContent(payload);
-    entity.validate();
+    await entity.validate();
     return entity;
   }
 }
@@ -127,7 +127,7 @@ export class VideoContent extends Content {
 
   static async new(payload: CreateContentEntityPayload<"video", "all">) {
     const entity = new VideoContent(payload);
-    entity.validate();
+    await entity.validate();
     return entity;
   }
 }
@@ -155,7 +155,7 @@ export class PostContent extends Content {
 
   static async new(payload: CreateContentEntityPayload<"post", "all">) {
     const entity = new PostContent(payload);
-    entity.validate();
+    await entity.validate();
     return entity;
   }
 }
@@ -183,7 +183,7 @@ export class BucketContent extends Content {
 
   static async new(payload: CreateContentEntityPayload<"bucket", "all">) {
     const entity = new BucketContent(payload);
-    entity.validate();
+    await entity.validate();
     return entity;
   }
 }
@@ -225,7 +225,7 @@ export class ScheduleContent extends Content {
 
   static async new(payload: CreateContentEntityPayload<"schedule", "all">) {
     const entity = new ScheduleContent(payload);
-    entity.validate();
+    await entity.validate();
     return entity;
   }
 }

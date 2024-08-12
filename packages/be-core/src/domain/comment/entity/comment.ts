@@ -28,7 +28,7 @@ export class UserComment extends Comment {
     payload: CreateCommentEntityPayload<"user", "all">,
   ): Promise<UserComment> {
     const entity = new UserComment(payload);
-    entity.validate();
+    await entity.validate();
     return entity;
   }
 }
@@ -48,7 +48,7 @@ export class SystemComment extends Comment {
     payload: CreateCommentEntityPayload<"system", "all">,
   ): Promise<SystemComment> {
     const entity = new SystemComment(payload);
-    entity.validate();
+    await entity.validate();
     return entity;
   }
 }
