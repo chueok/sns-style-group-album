@@ -22,7 +22,7 @@ import {
 } from "../infrastructure/persistence/typeorm/content/typeorm-content.entity";
 
 import { add } from "date-fns";
-
+// TODO : 폴더위치 변경 필요
 export class TestDatabaseHandler {
   userList: TypeormUser[] = [];
 
@@ -154,7 +154,7 @@ export class TestDatabaseHandler {
       instance.referred = Promise.resolve(Array.from(referred));
     }
     instance.thumbnailRelativePath = getRandomElement([
-      undefined,
+      null,
       faker.system.filePath(),
     ]);
 
@@ -165,7 +165,7 @@ export class TestDatabaseHandler {
     let dates: Date[];
     switch (contentType) {
       case ContentTypeEnum.IMAGE:
-        (instance as TypeormMedia).referred = null;
+        (instance as TypeormMedia).referred = Promise.resolve([]);
         (instance as TypeormMedia).thumbnailRelativePath =
           faker.system.filePath();
         (instance as TypeormMedia).largeRelativePath = faker.system.filePath();
@@ -175,7 +175,7 @@ export class TestDatabaseHandler {
         (instance as TypeormMedia).ext = faker.system.commonFileExt();
         break;
       case ContentTypeEnum.VIDEO:
-        (instance as TypeormMedia).referred = null;
+        (instance as TypeormMedia).referred = Promise.resolve([]);
         (instance as TypeormMedia).thumbnailRelativePath =
           faker.system.filePath();
         (instance as TypeormMedia).largeRelativePath = undefined;

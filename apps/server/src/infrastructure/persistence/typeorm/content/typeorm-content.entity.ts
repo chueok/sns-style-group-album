@@ -42,7 +42,7 @@ export class TypeormContent {
   })
   referred!: Promise<TypeormContent[]>;
 
-  @Column({ nullable: true })
+  @Column({ type: "text", nullable: true })
   thumbnailRelativePath!: Nullable<string>;
 
   @Column({ type: "datetime", nullable: false })
