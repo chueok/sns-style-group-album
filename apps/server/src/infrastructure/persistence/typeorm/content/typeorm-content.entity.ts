@@ -10,6 +10,7 @@ import {
 } from "typeorm";
 import { TypeormGroup } from "../group/typeorm-group.entity";
 import { TypeormUser } from "../user/typeorm-user.entity";
+import { BucketContent, ContentTypeEnum } from "@repo/be-core";
 
 @Entity("Content")
 @TableInheritance({ column: { type: "varchar", name: "type" } })
@@ -24,7 +25,7 @@ export class TypeormContent {
   owner!: TypeormUser;
 
   @Column({ type: "varchar", nullable: false })
-  type!: "image" | "video" | "post" | "bucket" | "schedule" | "system";
+  type!: ContentTypeEnum;
 
   @ManyToMany(() => TypeormContent, { nullable: true })
   @JoinTable({
@@ -33,6 +34,9 @@ export class TypeormContent {
     inverseJoinColumn: { name: "referencedId" },
   })
   referred?: Promise<TypeormContent[]>;
+
+  @Column({ nullable: true })
+  thumbnailRelativePath?: string;
 
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;
@@ -44,7 +48,7 @@ export class TypeormContent {
 
 @ChildEntity()
 export class TypeormSystemContent extends TypeormContent {
-  override type: "system" = "system";
+  override type: ContentTypeEnum.SYSTEM = ContentTypeEnum.SYSTEM;
 
   @Column({ nullable: false })
   text!: string;
@@ -55,11 +59,11 @@ export class TypeormSystemContent extends TypeormContent {
 
 @ChildEntity()
 export class TypeormMedia extends TypeormContent {
-  override type!: "image" | "video";
+  override type!: ContentTypeEnum.IMAGE | ContentTypeEnum.VIDEO;
   override referred: undefined = undefined;
 
   @Column({ nullable: false })
-  thumbnailRelativePath!: string;
+  override thumbnailRelativePath!: string;
 
   @Column({ nullable: true })
   largeRelativePath?: string;
@@ -77,7 +81,7 @@ export class TypeormMedia extends TypeormContent {
 
 @ChildEntity()
 export class TypeormPost extends TypeormContent {
-  override type: "post" = "post";
+  override type = ContentTypeEnum.POST;
   @Column({ nullable: false })
   title!: string;
   @Column({ nullable: false })
@@ -86,16 +90,16 @@ export class TypeormPost extends TypeormContent {
 
 @ChildEntity()
 export class TypeormBucket extends TypeormContent {
-  override type: "bucket" = "bucket";
+  override type = ContentTypeEnum.BUCKET;
   @Column({ nullable: false })
   title!: string;
   @Column({ type: "varchar", nullable: false })
-  status!: "not-started" | "in-progress" | "done";
+  status!: BucketContent;
 }
 
 @ChildEntity()
 export class TypeormSchedule extends TypeormContent {
-  override type: "schedule" = "schedule";
+  override type = ContentTypeEnum.SCHEDULE;
   @Column({ nullable: false })
   title!: string;
 
