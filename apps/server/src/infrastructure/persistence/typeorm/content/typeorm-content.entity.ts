@@ -43,7 +43,7 @@ export class TypeormContent {
   referred!: Promise<TypeormContent[]>;
 
   @Column({ nullable: true })
-  thumbnailRelativePath?: string;
+  thumbnailRelativePath!: Nullable<string>;
 
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;
@@ -67,10 +67,7 @@ export class TypeormSystemContent extends TypeormContent {
 @ChildEntity()
 export class TypeormMedia extends TypeormContent {
   override type!: ContentTypeEnum.IMAGE | ContentTypeEnum.VIDEO;
-  override referred; // should have empty array
-
-  @Column({ nullable: false })
-  override thumbnailRelativePath!: string;
+  override referred!: Promise<TypeormContent[]>; // TODO should have empty array
 
   @Column({ nullable: true })
   largeRelativePath?: string;

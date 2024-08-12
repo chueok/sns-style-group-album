@@ -83,7 +83,7 @@ export class Group extends EntityWithCUDTime<string> {
 
   static async new(payload: CreateGroupEntityPayload<"all">) {
     const entity = new Group(payload);
-    entity.validate();
+    await entity.validate();
     return entity;
   }
 }

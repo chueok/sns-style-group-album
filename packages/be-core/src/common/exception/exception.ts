@@ -24,7 +24,7 @@ export class Exception<TData> extends Error {
     this.data = data;
     this.message = overrideMessage || codeDescription.message;
 
-    Error.captureStackTrace(this, this.constructor);
+    Error.captureStackTrace(this, Exception.new);
   }
 
   public static new<TData>(

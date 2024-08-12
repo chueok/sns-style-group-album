@@ -28,15 +28,15 @@ export class User extends EntityWithCUDTime<string> {
     return this._thumbnailRelativePath;
   }
 
-  async deleteUser() {
+  async deleteUser(): Promise<void> {
     this._deletedDateTime = new Date();
-    this.validate();
+    await this.validate();
   }
 
-  async changeUsername(username: string) {
+  async changeUsername(username: string): Promise<void> {
     this._username = username;
     this._updatedDateTime = new Date();
-    this.validate();
+    await this.validate();
   }
 
   async changePassword(
@@ -54,7 +54,7 @@ export class User extends EntityWithCUDTime<string> {
 
     this._hashedPassword = await passwordEncryptionService.hash(newPassword);
     this._updatedDateTime = new Date();
-    this.validate();
+    await this.validate();
   }
 
   constructor(payload: CreateUserEntityPayload<"constructor">) {
@@ -89,7 +89,7 @@ export class User extends EntityWithCUDTime<string> {
         );
     }
     const entity = new User(constructorPayload);
-    entity.validate();
+    await entity.validate();
     return entity;
   }
 }
