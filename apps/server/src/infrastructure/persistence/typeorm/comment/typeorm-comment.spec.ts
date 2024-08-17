@@ -1,9 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import {
-  TypeormComment,
-  TypeormUserComment,
-  TypeormSystemComment,
-} from "./typeorm-comment.entity";
+import { TypeormComment } from "./typeorm-comment.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { typeormSqliteOptions } from "../config/typeorm-config";
 import { DataSource, Repository } from "typeorm";

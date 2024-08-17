@@ -2,19 +2,25 @@ import { DataSource } from "typeorm";
 import { TestDatabaseHandler } from "./typeorm-utils";
 import { Test, TestingModule } from "@nestjs/testing";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { typeormSqliteOptions } from "../infrastructure/persistence/typeorm/config/typeorm-config";
-import { TypeormUser } from "../infrastructure/persistence/typeorm/user/typeorm-user.entity";
-import { TypeormGroup } from "../infrastructure/persistence/typeorm/group/typeorm-group.entity";
-import { TypeormContent } from "../infrastructure/persistence/typeorm/content/typeorm-content.entity";
+import { typeormSqliteOptions } from "../../src/infrastructure/persistence/typeorm/config/typeorm-config";
+import { TypeormUser } from "../../src/infrastructure/persistence/typeorm/user/typeorm-user.entity";
+import { TypeormGroup } from "../../src/infrastructure/persistence/typeorm/group/typeorm-group.entity";
+import { TypeormContent } from "../../src/infrastructure/persistence/typeorm/content/typeorm-content.entity";
 import {
   TypeormComment,
   TypeormUserComment,
-} from "../infrastructure/persistence/typeorm/comment/typeorm-comment.entity";
+} from "../../src/infrastructure/persistence/typeorm/comment/typeorm-comment.entity";
+
+/**
+ * DB 상호작용 Test로, 순차적인 Test가 필요하여 아래와 같이 설정함
+ * 1. --runInBand 옵션 사용하여 jest 실행
+ * 2. 각각의 unit test를 describe로 감쌈
+ */
 
 describe("TestDatabaseHandler", () => {
   let module: TestingModule;
   let dataSource: DataSource;
-  let testDatabaseHnandler: TestDatabaseHandler;
+  let testDatabaseHandler: TestDatabaseHandler;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -23,9 +29,9 @@ describe("TestDatabaseHandler", () => {
 
     dataSource = module.get<DataSource>(DataSource);
 
-    testDatabaseHnandler = new TestDatabaseHandler(dataSource);
+    testDatabaseHandler = new TestDatabaseHandler(dataSource);
 
-    await testDatabaseHnandler.clearDatabase();
+    await testDatabaseHandler.clearDatabase();
   });
 
   afterAll(async () => {
@@ -35,10 +41,10 @@ describe("TestDatabaseHandler", () => {
 
   describe("should create a dummy user", () => {
     it("should create a dummy user", async () => {
-      const dummyUser = testDatabaseHnandler.makeDummyUser();
+      const dummyUser = testDatabaseHandler.makeDummyUser();
       expect(dummyUser instanceof TypeormUser).toBe(true);
 
-      await testDatabaseHnandler.commit();
+      await testDatabaseHandler.commit();
 
       const foundUser = await dataSource.getRepository(TypeormUser).find();
       expect(foundUser[0]).not.toBeNull();
@@ -48,10 +54,10 @@ describe("TestDatabaseHandler", () => {
 
   describe("should create a dummy group", () => {
     it("should create a dummy group", async () => {
-      const dummyGroup = testDatabaseHnandler.makeDummyGroup();
+      const dummyGroup = testDatabaseHandler.makeDummyGroup();
       expect(dummyGroup instanceof TypeormGroup).toBe(true);
 
-      await testDatabaseHnandler.commit();
+      await testDatabaseHandler.commit();
 
       const foundGroup = await dataSource
         .getRepository(TypeormGroup)
@@ -64,10 +70,10 @@ describe("TestDatabaseHandler", () => {
 
   describe("should create a dummy content", () => {
     it("should create a dummy content", async () => {
-      const dummyContent = testDatabaseHnandler.makeDummyContent();
+      const dummyContent = testDatabaseHandler.makeDummyContent();
       expect(dummyContent instanceof TypeormContent).toBe(true);
 
-      await testDatabaseHnandler.commit();
+      await testDatabaseHandler.commit();
 
       const foundContent = await dataSource
         .getRepository(TypeormContent)
@@ -80,10 +86,10 @@ describe("TestDatabaseHandler", () => {
 
   describe("should create a dummy comment", () => {
     it("should create a dummy comment", async () => {
-      const dummyComment = testDatabaseHnandler.makeDummyComment();
+      const dummyComment = testDatabaseHandler.makeDummyComment();
       expect(dummyComment instanceof TypeormComment).toBe(true);
 
-      await testDatabaseHnandler.commit();
+      await testDatabaseHandler.commit();
 
       const foundComment = await dataSource
         .getRepository(TypeormComment)
@@ -96,7 +102,7 @@ describe("TestDatabaseHandler", () => {
 
   describe("shoud create many dummies", () => {
     beforeEach(async () => {
-      await testDatabaseHnandler.clearDatabase();
+      await testDatabaseHandler.clearDatabase();
     });
     it("shoud create many dummies", async () => {
       const payload = {
@@ -106,9 +112,9 @@ describe("TestDatabaseHandler", () => {
         numComment: 10,
       };
 
-      await testDatabaseHnandler.buildDummyData(payload);
+      await testDatabaseHandler.buildDummyData(payload);
 
-      await testDatabaseHnandler.commit();
+      await testDatabaseHandler.commit();
 
       const foundUsers = await dataSource.getRepository(TypeormUser).find();
       const foundGroups = await dataSource.getRepository(TypeormGroup).find();

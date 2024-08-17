@@ -8,9 +8,9 @@ import {
   TypeormComment,
   TypeormSystemComment,
   TypeormUserComment,
-} from "../infrastructure/persistence/typeorm/comment/typeorm-comment.entity";
-import { TypeormUser } from "../infrastructure/persistence/typeorm/user/typeorm-user.entity";
-import { TypeormGroup } from "../infrastructure/persistence/typeorm/group/typeorm-group.entity";
+} from "../../src/infrastructure/persistence/typeorm/comment/typeorm-comment.entity";
+import { TypeormUser } from "../../src/infrastructure/persistence/typeorm/user/typeorm-user.entity";
+import { TypeormGroup } from "../../src/infrastructure/persistence/typeorm/group/typeorm-group.entity";
 import { faker } from "@faker-js/faker";
 import {
   TypeormBucket,
@@ -19,7 +19,7 @@ import {
   TypeormPost,
   TypeormSchedule,
   TypeormSystemContent,
-} from "../infrastructure/persistence/typeorm/content/typeorm-content.entity";
+} from "../../src/infrastructure/persistence/typeorm/content/typeorm-content.entity";
 
 import { add } from "date-fns";
 // TODO : 폴더위치 변경 필요
