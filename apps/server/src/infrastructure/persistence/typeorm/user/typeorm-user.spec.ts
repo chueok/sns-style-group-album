@@ -24,16 +24,6 @@ describe("", () => {
     testDatabaseHandler = new TestDatabaseHandler(dataSource);
     await testDatabaseHandler.clearDatabase();
 
-    // TODO : 수정 필요
-    // targetItem 생성
-    /**
-     * 유저 삭제 시
-     * ownerGroup : null
-     * content : null
-     * comment : null
-     * like : null
-     *
-     */
     await testDatabaseHandler.buildDummyData({
       numUser: 10,
       numGroup: 10,

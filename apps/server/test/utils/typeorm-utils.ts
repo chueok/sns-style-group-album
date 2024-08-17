@@ -22,7 +22,7 @@ import {
 } from "../../src/infrastructure/persistence/typeorm/content/typeorm-content.entity";
 
 import { add } from "date-fns";
-// TODO : 폴더위치 변경 필요
+
 export class TestDatabaseHandler {
   userList: TypeormUser[] = [];
 
@@ -269,7 +269,7 @@ export class TestDatabaseHandler {
         break;
       case CommentTypeEnum.SYSTEM_COMMENT:
         (instance as TypeormSystemComment).subText = getRandomElement([
-          undefined,
+          null,
           faker.lorem.sentence(),
         ]);
         break;

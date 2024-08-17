@@ -49,8 +49,8 @@ export class TypeormUserComment extends TypeormComment {
   @ManyToOne(() => TypeormUser, { nullable: true, onDelete: "SET NULL" })
   owner!: Promise<Nullable<TypeormUser>>;
 
-  @Column({ nullable: false })
-  ownerId!: string;
+  @Column({ type: "text", nullable: true })
+  ownerId!: Nullable<string>;
 
   @ManyToMany(() => TypeormUser, { nullable: false })
   @JoinTable({ name: "CommentTagsRelation" })
@@ -61,6 +61,6 @@ export class TypeormUserComment extends TypeormComment {
 export class TypeormSystemComment extends TypeormComment {
   override type = CommentTypeEnum.SYSTEM_COMMENT;
 
-  @Column({ nullable: true })
-  subText?: string;
+  @Column({ type: "text", nullable: true })
+  subText!: Nullable<string>;
 }

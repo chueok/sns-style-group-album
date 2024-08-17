@@ -67,7 +67,7 @@ export class TypeormSystemContent extends TypeormContent {
 @ChildEntity()
 export class TypeormMedia extends TypeormContent {
   override type!: ContentTypeEnum.IMAGE | ContentTypeEnum.VIDEO;
-  override referred!: Promise<TypeormContent[]>; // TODO should have empty array
+  override referred!: Promise<never[]>; // empty array
 
   @Column({ nullable: true })
   largeRelativePath?: string;
