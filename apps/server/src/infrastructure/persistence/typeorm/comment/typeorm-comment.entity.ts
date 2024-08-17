@@ -26,6 +26,7 @@ export class TypeormComment {
 
   @ManyToOne(() => TypeormContent, {
     nullable: false,
+    onDelete: "CASCADE",
   })
   content!: Promise<TypeormContent>;
   @Column({ nullable: false })
