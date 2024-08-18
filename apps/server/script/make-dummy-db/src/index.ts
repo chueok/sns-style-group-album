@@ -1,41 +1,31 @@
-import { Test } from "@nestjs/testing";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { DataSource } from "typeorm";
-import { TestDatabaseHandler } from "../../../test/utils/typeorm-utils";
-
 import { join } from "path";
+import { makeDummyDB } from "./make-dummy-db";
+import { access } from "fs/promises";
 
 const rootPath = join(__dirname, "..", "..", "..");
 const entitiesPath = join(rootPath, "src", "**", "*.entity.{ts,js}");
 const dbPath = join(rootPath, "db", "dummy.sqlite");
+const nums = {
+  numUser: 10,
+  numGroup: 4,
+  numContent: 100,
+  numComment: 300,
+};
 
 void (async () => {
-  const module = await Test.createTestingModule({
-    imports: [
-      TypeOrmModule.forRoot({
-        type: "sqlite",
-        database: dbPath,
-        autoLoadEntities: true,
-        logging: false,
-        entities: [entitiesPath],
-
-        // 개발용
-        synchronize: true,
-        dropSchema: true,
-      }),
-    ],
-  }).compile();
-
-  const dataSource = module.get<DataSource>(DataSource);
-  const testDatabaseHandler = new TestDatabaseHandler(dataSource);
-  await testDatabaseHandler.buildDummyData({
-    numUser: 10,
-    numGroup: 4,
-    numContent: 100,
-    numComment: 300,
-  });
-
-  await testDatabaseHandler.commit();
-
-  await module.close();
+  if (await checkFileExists(dbPath)) {
+    console.log(`🟢 The file already exists: ${dbPath}`);
+    return;
+  }
+  console.log(`🟡 Creating a dummy database: ${dbPath}`);
+  await makeDummyDB(entitiesPath, dbPath, nums);
 })();
+
+async function checkFileExists(file: string): Promise<boolean> {
+  try {
+    await access(file);
+    return true;
+  } catch {
+    return false;
+  }
+}
