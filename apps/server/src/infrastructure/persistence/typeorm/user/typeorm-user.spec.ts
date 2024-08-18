@@ -4,8 +4,14 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { typeormSqliteOptions } from "../config/typeorm-config";
 import { TypeormUser } from "./typeorm-user.entity";
 import { TestDatabaseHandler } from "@test/utils/typeorm-utils";
+import { join } from "path";
 
-describe("", () => {
+const parameters = {
+  testDbPath: join("db", "TypeormUser.sqlite"),
+  dummyDbPath: join("db", "dummy.sqlite"),
+};
+
+describe("TypeormUser", () => {
   let module: TestingModule;
   let dataSource: DataSource;
   let repository: Repository<TypeormUser>;
@@ -15,7 +21,14 @@ describe("", () => {
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [TypeOrmModule.forRoot(typeormSqliteOptions)],
+      imports: [
+        TypeOrmModule.forRoot({
+          ...typeormSqliteOptions,
+          database: parameters.testDbPath,
+          synchronize: false,
+          dropSchema: false,
+        }),
+      ],
     }).compile();
 
     dataSource = module.get<DataSource>(DataSource);
@@ -24,17 +37,8 @@ describe("", () => {
     testDatabaseHandler = new TestDatabaseHandler(dataSource);
     await testDatabaseHandler.clearDatabase();
 
-    await testDatabaseHandler.buildDummyData({
-      numUser: 10,
-      numGroup: 10,
-      numContent: 10,
-      numComment: 10,
-    });
-    targetItem = testDatabaseHandler.userList.at(-1) as TypeormUser;
-    await testDatabaseHandler.commit();
-    // targetItem = testDatabaseHandler.makeDummyUser();
-    // await repository.save(targetItem);
-    testDatabaseHandler.reset();
+    await testDatabaseHandler.load(parameters.dummyDbPath);
+    targetItem = testDatabaseHandler.getListMap(TypeormUser).at(-1)!;
   });
 
   afterAll(async () => {

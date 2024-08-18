@@ -1,23 +1,22 @@
 import { Test } from "@nestjs/testing";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { DataSource } from "typeorm";
-import { TestDatabaseHandler } from "../../../src/test/typeorm-utils";
+import { TestDatabaseHandler } from "../../../test/utils/typeorm-utils";
 
-import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { join } from "path";
 
 const rootPath = join(__dirname, "..", "..", "..");
 const entitiesPath = join(rootPath, "src", "**", "*.entity.{ts,js}");
 const dbPath = join(rootPath, "db", "dummy.sqlite");
 
-(async () => {
+void (async () => {
   const module = await Test.createTestingModule({
     imports: [
       TypeOrmModule.forRoot({
         type: "sqlite",
         database: dbPath,
         autoLoadEntities: true,
-        logging: true,
+        logging: false,
         entities: [entitiesPath],
 
         // 개발용
@@ -29,7 +28,7 @@ const dbPath = join(rootPath, "db", "dummy.sqlite");
 
   const dataSource = module.get<DataSource>(DataSource);
   const testDatabaseHandler = new TestDatabaseHandler(dataSource);
-  testDatabaseHandler.buildDummyData({
+  await testDatabaseHandler.buildDummyData({
     numUser: 10,
     numGroup: 4,
     numContent: 100,

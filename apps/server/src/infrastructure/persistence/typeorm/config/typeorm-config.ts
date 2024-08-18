@@ -3,10 +3,11 @@ import { join } from "path";
 import { DatabaseConfig } from "../../../config/DatabaseConfig";
 
 const entitiesPath = join(__dirname, "..", "**", "*.entity.{ts,js}");
+const databasePath = join("db", DatabaseConfig.DB_FILE);
 
-export const typeormSqliteOptions: TypeOrmModuleOptions = {
+export const typeormSqliteOptions = {
   type: "sqlite",
-  database: `db/${DatabaseConfig.DB_FILE}`,
+  database: databasePath,
   autoLoadEntities: true,
   logging: DatabaseConfig.DB_LOG_ENABLE,
   entities: [entitiesPath],
@@ -14,4 +15,4 @@ export const typeormSqliteOptions: TypeOrmModuleOptions = {
   // 개발용
   synchronize: true,
   dropSchema: true,
-};
+} satisfies TypeOrmModuleOptions;

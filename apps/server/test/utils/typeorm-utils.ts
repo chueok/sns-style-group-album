@@ -22,24 +22,38 @@ import {
 } from "../../src/infrastructure/persistence/typeorm/content/typeorm-content.entity";
 
 import { add } from "date-fns";
+import { copyFile } from "fs/promises";
+
+type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 
 export class TestDatabaseHandler {
-  userList: TypeormUser[] = [];
+  // 종속성이 없는 엔티티 순서대로
+  entities = [
+    TypeormUser,
+    TypeormGroup,
+    TypeormContent,
+    TypeormComment,
+  ] as const;
 
-  groupList: TypeormGroup[] = [];
+  private listMap: Record<string, any[]>;
+  public getListMap<T extends ArrayElement<typeof this.entities>>(
+    constructor: T,
+  ): InstanceType<T>[] {
+    return this.listMap[constructor.name] as InstanceType<T>[];
+  }
 
-  commentList: TypeormComment[] = [];
-
-  contentList: TypeormContent[] = [];
-
-  constructor(private dataSource: DataSource) {}
+  constructor(private dataSource: DataSource) {
+    this.listMap = {};
+    Object.values(this.entities).forEach((v) => {
+      this.listMap[v.name] = [];
+    });
+  }
 
   async clearDatabase(): Promise<void> {
     // Pormise.all 사용하지 말것. 순차적으로 삭제 필요
-    await this.dataSource.getRepository(TypeormComment).delete({});
-    await this.dataSource.getRepository(TypeormContent).delete({});
-    await this.dataSource.getRepository(TypeormGroup).delete({});
-    await this.dataSource.getRepository(TypeormUser).delete({});
+    for (const entity of [...this.entities].reverse()) {
+      await this.dataSource.getRepository(entity).delete({});
+    }
     this.reset();
   }
 
@@ -64,17 +78,29 @@ export class TestDatabaseHandler {
   }
 
   async commit(): Promise<void> {
-    await this.dataSource.getRepository(TypeormUser).save(this.userList);
-    await this.dataSource.getRepository(TypeormGroup).save(this.groupList);
-    await this.dataSource.getRepository(TypeormContent).save(this.contentList);
-    await this.dataSource.getRepository(TypeormComment).save(this.commentList);
+    for (const entity of this.entities) {
+      const list = this.getListMap(entity);
+      await this.dataSource.getRepository(entity).save(list);
+    }
+  }
+
+  async load(dbPath: string): Promise<void> {
+    if (typeof this.dataSource.options.database !== "string") {
+      throw new Error("Database is not a file");
+    }
+    await this.dataSource.destroy();
+    await copyFile(dbPath, this.dataSource.options.database);
+    await this.dataSource.initialize();
+    for (const entity of this.entities) {
+      const list = await this.dataSource.getRepository(entity).find();
+      this.getListMap(entity).push(...list);
+    }
   }
 
   reset(): void {
-    this.userList = [];
-    this.groupList = [];
-    this.commentList = [];
-    this.contentList = [];
+    this.entities.forEach((entity) => {
+      this.getListMap(entity).length = 0;
+    });
   }
 
   makeDummyUser(): TypeormUser {
@@ -92,30 +118,35 @@ export class TestDatabaseHandler {
     typeormEntity.updatedDateTime = getRandomElement([null, faker.date.past()]);
     typeormEntity.deletedDateTime = getRandomElement([null, faker.date.past()]);
 
-    this.userList.push(typeormEntity);
+    this.getListMap(TypeormUser).push(typeormEntity);
+
     return typeormEntity;
   }
 
   makeDummyGroup(): TypeormGroup {
-    if (this.userList.length === 0) {
+    const userList = this.getListMap(TypeormUser);
+    if (userList.length === 0) {
       throw new Error("User is empty");
     }
     const typeormEntity = new TypeormGroup();
     typeormEntity.id = faker.string.uuid();
     typeormEntity.name = faker.internet.userName();
     typeormEntity.members = Promise.resolve([]);
-    typeormEntity.owner = Promise.resolve(getRandomElement(this.userList));
+    typeormEntity.owner = Promise.resolve(getRandomElement(userList));
 
     typeormEntity.createdDateTime = faker.date.past();
     typeormEntity.updatedDateTime = getRandomElement([null, faker.date.past()]);
     typeormEntity.deletedDateTime = getRandomElement([null, faker.date.past()]);
 
-    this.groupList.push(typeormEntity);
+    this.getListMap(TypeormGroup).push(typeormEntity);
     return typeormEntity;
   }
 
   makeDummyContent(): TypeormContent {
-    if (this.groupList.length === 0 || this.userList.length === 0) {
+    const groupList = this.getListMap(TypeormGroup);
+    const userList = this.getListMap(TypeormUser);
+    const contentList = this.getListMap(TypeormContent);
+    if (groupList.length === 0 || userList.length === 0) {
       throw new Error("Group or User is empty");
     }
 
@@ -141,15 +172,15 @@ export class TestDatabaseHandler {
         break;
     }
     instance.id = faker.string.uuid();
-    instance.group = Promise.resolve(getRandomElement(this.groupList));
-    instance.owner = getRandomElement(this.userList);
+    instance.group = Promise.resolve(getRandomElement(groupList));
+    instance.owner = getRandomElement(userList);
     instance.type = contentType;
     instance.referred = Promise.resolve([]);
-    if (this.contentList.length > 0) {
-      const num = Math.random() * this.contentList.length;
+    if (contentList.length > 0) {
+      const num = Math.random() * contentList.length;
       const referred: Set<TypeormContent> = new Set();
       for (let i = 0; i < num; i++) {
-        referred.add(getRandomElement(this.contentList));
+        referred.add(getRandomElement(contentList));
       }
       instance.referred = Promise.resolve(Array.from(referred));
     }
@@ -221,12 +252,15 @@ export class TestDatabaseHandler {
         break;
     }
 
-    this.contentList.push(instance);
+    contentList.push(instance);
     return instance;
   }
 
   makeDummyComment(): TypeormComment {
-    if (this.contentList.length === 0 || this.userList.length === 0) {
+    const contentList = this.getListMap(TypeormContent);
+    const userList = this.getListMap(TypeormUser);
+    const commentList = this.getListMap(TypeormComment);
+    if (contentList.length === 0 || userList.length === 0) {
       throw new Error("Content or User is empty");
     }
 
@@ -245,7 +279,7 @@ export class TestDatabaseHandler {
     instance.id = faker.string.uuid();
     instance.type = commentType;
     instance.text = faker.lorem.sentence();
-    instance.contentId = getRandomElement(this.contentList).id;
+    instance.contentId = getRandomElement(contentList).id;
 
     instance.createdDateTime = faker.date.past();
     instance.updatedDateTime = getRandomElement([undefined, faker.date.past()]);
@@ -256,12 +290,12 @@ export class TestDatabaseHandler {
     switch (commentType) {
       case CommentTypeEnum.USER_COMMENT:
         (instance as TypeormUserComment).owner = Promise.resolve(
-          getRandomElement([null, ...this.userList]),
+          getRandomElement([null, ...userList]),
         );
-        itterNum = Math.random() * this.userList.length;
+        itterNum = Math.random() * userList.length;
         tags = new Set();
         for (let i = 0; i < itterNum; i++) {
-          tags.add(getRandomElement(this.userList));
+          tags.add(getRandomElement(userList));
         }
         (instance as TypeormUserComment).tags = Promise.resolve(
           Array.from(tags),
@@ -275,7 +309,7 @@ export class TestDatabaseHandler {
         break;
     }
 
-    this.commentList.push(instance);
+    commentList.push(instance);
     return instance;
   }
 }

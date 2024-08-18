@@ -6,10 +6,13 @@ import { typeormSqliteOptions } from "../../src/infrastructure/persistence/typeo
 import { TypeormUser } from "../../src/infrastructure/persistence/typeorm/user/typeorm-user.entity";
 import { TypeormGroup } from "../../src/infrastructure/persistence/typeorm/group/typeorm-group.entity";
 import { TypeormContent } from "../../src/infrastructure/persistence/typeorm/content/typeorm-content.entity";
-import {
-  TypeormComment,
-  TypeormUserComment,
-} from "../../src/infrastructure/persistence/typeorm/comment/typeorm-comment.entity";
+import { TypeormComment } from "../../src/infrastructure/persistence/typeorm/comment/typeorm-comment.entity";
+import { join } from "path";
+
+const parameters = {
+  testDbPath: join("db", "TestDatabaseHandler.sqlite"),
+  dummyDbPath: join("db", "dummy.sqlite"),
+};
 
 /**
  * DB 상호작용 Test로, 순차적인 Test가 필요하여 아래와 같이 설정함
@@ -24,7 +27,12 @@ describe("TestDatabaseHandler", () => {
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [TypeOrmModule.forRoot(typeormSqliteOptions)],
+      imports: [
+        TypeOrmModule.forRoot({
+          ...typeormSqliteOptions,
+          database: parameters.testDbPath,
+        }),
+      ],
     }).compile();
 
     dataSource = module.get<DataSource>(DataSource);
@@ -129,6 +137,61 @@ describe("TestDatabaseHandler", () => {
       expect(foundGroups.length).toBe(payload.numGroup);
       expect(foundContents.length).toBe(payload.numContent);
       expect(foundComments.length).toBe(payload.numComment);
+    });
+  });
+
+  describe("load dummy db", () => {
+    it("should loaded db and dummy db", async () => {
+      await testDatabaseHandler.load(parameters.dummyDbPath);
+      await testDatabaseHandler.commit();
+
+      const dummyDataSource = new DataSource({
+        ...typeormSqliteOptions,
+        database: parameters.dummyDbPath,
+        synchronize: false,
+        dropSchema: false,
+      });
+      await dummyDataSource.initialize();
+
+      const targetUsers = await dataSource.getRepository(TypeormUser).find();
+      const targetGroups = await dataSource.getRepository(TypeormGroup).find();
+      const targetContents = await dataSource
+        .getRepository(TypeormContent)
+        .find();
+      const targetComments = await dataSource
+        .getRepository(TypeormComment)
+        .find();
+
+      const firstUser = targetUsers[0]!;
+      const firstGroup = targetGroups[0]!;
+      const firstContent = targetContents[0]!;
+      const firstComment = targetComments[0]!;
+
+      //
+
+      const copiedUsers = await dataSource.getRepository(TypeormUser).find();
+      const copiedGroups = await dataSource.getRepository(TypeormGroup).find();
+      const copiedContents = await dataSource
+        .getRepository(TypeormContent)
+        .find();
+      const copiedComments = await dataSource
+        .getRepository(TypeormComment)
+        .find();
+
+      const copiedFirstUser = copiedUsers[0]!;
+      const copiedFirstGroup = copiedGroups[0]!;
+      const copiedFirstContent = copiedContents[0]!;
+      const copiedComment = copiedComments[0]!;
+
+      expect(copiedUsers.length).toBe(targetUsers.length);
+      expect(copiedGroups.length).toBe(targetGroups.length);
+      expect(copiedContents.length).toBe(targetContents.length);
+      expect(copiedComments.length).toBe(targetComments.length);
+
+      expect(copiedFirstUser).toStrictEqual(firstUser);
+      expect(copiedFirstGroup).toStrictEqual(firstGroup);
+      expect(copiedFirstContent).toStrictEqual(firstContent);
+      expect(copiedComment).toStrictEqual(firstComment);
     });
   });
 });
