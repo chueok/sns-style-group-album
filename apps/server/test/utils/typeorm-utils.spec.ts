@@ -194,4 +194,24 @@ describe("TestDatabaseHandler", () => {
       expect(copiedComment).toStrictEqual(firstComment);
     });
   });
+
+  describe("make dummy after load", () => {
+    it("should make dummy after load", async () => {
+      await testDatabaseHandler.load(parameters.dummyDbPath);
+      await testDatabaseHandler.commit();
+
+      const newComment = testDatabaseHandler.makeDummyComment();
+      expect(newComment instanceof TypeormComment).toBe(true);
+
+      await testDatabaseHandler.commit();
+
+      const foundComment = (await dataSource
+        .getRepository(TypeormComment)
+        .findOneBy({
+          id: newComment.id,
+        }))!;
+
+      expect(foundComment.id).toEqual(newComment.id);
+    });
+  });
 });

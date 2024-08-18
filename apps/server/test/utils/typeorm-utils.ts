@@ -54,7 +54,7 @@ export class TestDatabaseHandler {
     for (const entity of [...this.entities].reverse()) {
       await this.dataSource.getRepository(entity).delete({});
     }
-    this.reset();
+    this.cacheReset();
   }
 
   async buildDummyData(payload: {
@@ -79,8 +79,10 @@ export class TestDatabaseHandler {
 
   async commit(): Promise<void> {
     for (const entity of this.entities) {
-      const list = this.getListMap(entity);
-      await this.dataSource.getRepository(entity).save(list);
+      const list = this.getListMap(entity) as unknown as TypeormUser[];
+      await this.dataSource
+        .getRepository(entity as typeof TypeormUser)
+        .save(list);
     }
   }
 
@@ -97,7 +99,7 @@ export class TestDatabaseHandler {
     }
   }
 
-  reset(): void {
+  cacheReset(): void {
     this.entities.forEach((entity) => {
       this.getListMap(entity).length = 0;
     });
