@@ -54,7 +54,7 @@ export class TestDatabaseHandler {
     for (const entity of [...this.entities].reverse()) {
       await this.dataSource.getRepository(entity).delete({});
     }
-    this.cacheReset();
+    this.resetCache();
   }
 
   async buildDummyData(payload: {
@@ -99,7 +99,15 @@ export class TestDatabaseHandler {
     }
   }
 
-  cacheReset(): void {
+  async loadCache(): Promise<void> {
+    this.resetCache();
+    for (const entity of this.entities) {
+      const list = await this.dataSource.getRepository(entity).find();
+      this.getListMap(entity).push(...list);
+    }
+  }
+
+  resetCache(): void {
     this.entities.forEach((entity) => {
       this.getListMap(entity).length = 0;
     });
@@ -192,8 +200,8 @@ export class TestDatabaseHandler {
     ]);
 
     instance.createdDateTime = faker.date.past();
-    instance.updatedDateTime = getRandomElement([undefined, faker.date.past()]);
-    instance.deletedDateTime = getRandomElement([undefined, faker.date.past()]);
+    instance.updatedDateTime = getRandomElement([null, faker.date.past()]);
+    instance.deletedDateTime = getRandomElement([null, faker.date.past()]);
 
     let dates: Date[];
     switch (contentType) {

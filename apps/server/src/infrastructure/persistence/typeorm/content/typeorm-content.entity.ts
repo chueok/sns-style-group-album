@@ -34,7 +34,9 @@ export class TypeormContent {
   @Column({ type: "varchar", nullable: false })
   type!: ContentTypeEnum;
 
-  @ManyToMany(() => TypeormContent)
+  @ManyToMany(() => TypeormContent, {
+    onDelete: "CASCADE",
+  })
   @JoinTable({
     name: "ContentReferences",
     joinColumn: { name: "contentId" },
@@ -48,9 +50,9 @@ export class TypeormContent {
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;
   @Column({ type: "datetime", nullable: true })
-  updatedDateTime?: Date;
+  updatedDateTime!: Nullable<Date>;
   @Column({ type: "datetime", nullable: true })
-  deletedDateTime?: Date;
+  deletedDateTime!: Nullable<Date>;
 }
 
 @ChildEntity()
