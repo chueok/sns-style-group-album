@@ -12,7 +12,6 @@ const config = {
   coverageDirectory: "../coverage",
   testEnvironment: "node",
   setupFiles: ["dotenv/config"],
-  maxWorkers: 1,
   moduleNameMapper: {
     "^@test/(.*)$": "<rootDir>/test/$1",
   },
