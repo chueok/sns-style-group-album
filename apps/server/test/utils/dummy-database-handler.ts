@@ -141,7 +141,7 @@ export class DummyDatabaseHandler {
     const typeormEntity = new TypeormGroup();
     typeormEntity.id = faker.string.uuid();
     typeormEntity.name = faker.internet.userName();
-    typeormEntity.members = Promise.resolve([]);
+    typeormEntity.members = Promise.resolve(getRandomElementList(userList));
     typeormEntity.owner = Promise.resolve(getRandomElement(userList));
 
     typeormEntity.createdDateTime = faker.date.past();
@@ -330,4 +330,13 @@ function getRandomElement<T>(array: T[]): T {
   }
   const randomIndex = Math.floor(Math.random() * array.length);
   return array.at(randomIndex) as T;
+}
+
+function getRandomElementList<T>(array: T[], maxNum?: number): T[] {
+  const list = new Set<T>();
+  const cnt = Math.floor(Math.random() * (maxNum || array.length));
+  for (let i = 0; i < cnt; i++) {
+    list.add(getRandomElement(array));
+  }
+  return Array.from(list);
 }
