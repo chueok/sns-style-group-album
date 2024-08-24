@@ -40,20 +40,16 @@ export class TypeormComment {
   deletedDateTime?: Date;
 }
 
+// NOTE ChildEntity에서 정의된 모든 property 는 db상에서 nullable임
 @ChildEntity()
 export class TypeormUserComment extends TypeormComment {
   override type = CommentTypeEnum.USER_COMMENT;
 
-  // user가 삭제 되었을 경우 Comment의 owner가 null 일 수 있음
-  // Promise Type이 lazy loading인 것을 알려주고,
-  // Promise가 아니면 eager임을 알기에 생략
-  @ManyToOne(() => TypeormUser, {
-    nullable: false,
-  })
+  @ManyToOne(() => TypeormUser)
   owner!: Promise<TypeormUser>;
 
-  @Column({ type: "text", nullable: true })
-  ownerId!: Nullable<string>;
+  @Column({ type: "text" })
+  ownerId!: string;
 
   @ManyToMany(() => TypeormUser)
   @JoinTable({ name: "CommentTagsRelation" })
@@ -64,6 +60,6 @@ export class TypeormUserComment extends TypeormComment {
 export class TypeormSystemComment extends TypeormComment {
   override type = CommentTypeEnum.SYSTEM_COMMENT;
 
-  @Column({ type: "text", nullable: true })
+  @Column({ type: "text" })
   subText!: Nullable<string>;
 }

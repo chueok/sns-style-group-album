@@ -55,10 +55,10 @@ export class TypeormContent {
 export class TypeormSystemContent extends TypeormContent {
   override type: ContentTypeEnum.SYSTEM = ContentTypeEnum.SYSTEM;
 
-  @Column({ nullable: false })
+  @Column()
   text!: string;
 
-  @Column({ type: "text", nullable: true })
+  @Column({ type: "text" })
   subText!: Nullable<string>;
 }
 
@@ -67,50 +67,50 @@ export class TypeormMedia extends TypeormContent {
   override type!: ContentTypeEnum.IMAGE | ContentTypeEnum.VIDEO;
   override referred!: Promise<never[]>; // empty array
 
-  @Column({ type: "text", nullable: true })
+  @Column({ type: "text" })
   largeRelativePath!: Nullable<string>;
 
-  @Column({ nullable: false })
+  @Column()
   originalRelativePath!: string;
 
-  @Column({ nullable: false })
+  @Column()
   size!: number;
-  @Column({ nullable: false })
+  @Column()
   ext!: string;
-  @Column({ nullable: false })
+  @Column()
   mimetype!: string;
 }
 
 @ChildEntity()
 export class TypeormPost extends TypeormContent {
   override type = ContentTypeEnum.POST;
-  @Column({ nullable: false })
+  @Column()
   title!: string;
-  @Column({ nullable: false })
+  @Column()
   text!: string;
 }
 
 @ChildEntity()
 export class TypeormBucket extends TypeormContent {
   override type = ContentTypeEnum.BUCKET;
-  @Column({ nullable: false })
+  @Column()
   title!: string;
-  @Column({ type: "varchar", nullable: false })
+  @Column({ type: "varchar" })
   status!: BucketStatusEnum;
 }
 
 @ChildEntity()
 export class TypeormSchedule extends TypeormContent {
   override type = ContentTypeEnum.SCHEDULE;
-  @Column({ nullable: false })
+  @Column()
   title!: string;
 
-  @Column({ type: "datetime", nullable: false })
+  @Column({ type: "datetime" })
   startDateTime!: Date;
 
-  @Column({ type: "datetime", nullable: true })
+  @Column({ type: "datetime" })
   endDateTime!: Nullable<Date>;
 
-  @Column({ type: "boolean", nullable: true })
+  @Column({ type: "boolean" })
   isAllDay!: Nullable<boolean>;
 }
