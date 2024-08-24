@@ -5,7 +5,6 @@ import {
   ManyToMany,
   ManyToOne,
   JoinTable,
-  JoinColumn,
 } from "typeorm";
 import { TypeormUser } from "../user/typeorm-user.entity";
 import { Nullable } from "@repo/be-core";
@@ -18,12 +17,14 @@ export class TypeormGroup {
   @Column({ nullable: false })
   name!: string;
 
-  @ManyToMany(() => TypeormUser, (user) => user.groups, { onDelete: "CASCADE" })
+  @ManyToMany(() => TypeormUser, (user) => user.groups)
   @JoinTable({ name: "GroupMembersRelation" })
   members!: Promise<TypeormUser[]>;
 
-  @ManyToOne(() => TypeormUser, { nullable: true, onDelete: "SET NULL" })
-  owner!: Promise<Nullable<TypeormUser>>;
+  @ManyToOne(() => TypeormUser, {
+    nullable: false,
+  })
+  owner!: Promise<TypeormUser>;
 
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;

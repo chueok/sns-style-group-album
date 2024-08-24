@@ -47,13 +47,15 @@ export class TypeormUserComment extends TypeormComment {
   // user가 삭제 되었을 경우 Comment의 owner가 null 일 수 있음
   // Promise Type이 lazy loading인 것을 알려주고,
   // Promise가 아니면 eager임을 알기에 생략
-  @ManyToOne(() => TypeormUser, { nullable: true, onDelete: "SET NULL" })
-  owner!: Promise<Nullable<TypeormUser>>;
+  @ManyToOne(() => TypeormUser, {
+    nullable: false,
+  })
+  owner!: Promise<TypeormUser>;
 
   @Column({ type: "text", nullable: true })
   ownerId!: Nullable<string>;
 
-  @ManyToMany(() => TypeormUser, { nullable: false })
+  @ManyToMany(() => TypeormUser)
   @JoinTable({ name: "CommentTagsRelation" })
   tags!: Promise<TypeormUser[]>;
 }

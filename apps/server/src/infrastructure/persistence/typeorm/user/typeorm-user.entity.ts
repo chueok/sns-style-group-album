@@ -17,11 +17,8 @@ export class TypeormUser {
   @Column({ type: "text", nullable: true })
   thumbnailRelativePath!: Nullable<string>;
 
-  // NOTE nullable: false를 하더라도 효과 없음.
-  // Join Table로 관리되기 때문인 것 같음.
-  @ManyToMany(() => TypeormGroup, (group) => group.members, {
-    onDelete: "CASCADE",
-  })
+  // NOTE nullable: false를 하더라도 Join Table에서 관리 되므로 효과 없음.
+  @ManyToMany(() => TypeormGroup, (group) => group.members)
   groups!: Promise<TypeormGroup[]>;
 
   @Column({ type: "datetime", nullable: false })

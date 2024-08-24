@@ -183,7 +183,7 @@ export class DummyDatabaseHandler {
     }
     instance.id = faker.string.uuid();
     instance.group = Promise.resolve(getRandomElement(groupList));
-    instance.owner = getRandomElement(userList);
+    instance.owner = Promise.resolve(getRandomElement(userList));
     instance.type = contentType;
     instance.referred = Promise.resolve([]);
     if (contentList.length > 0) {
@@ -219,7 +219,7 @@ export class DummyDatabaseHandler {
         (instance as TypeormMedia).referred = Promise.resolve([]);
         (instance as TypeormMedia).thumbnailRelativePath =
           faker.system.filePath();
-        (instance as TypeormMedia).largeRelativePath = undefined;
+        (instance as TypeormMedia).largeRelativePath = null;
         (instance as TypeormMedia).originalRelativePath =
           faker.system.filePath();
         (instance as TypeormMedia).size = faker.number.int();
@@ -238,8 +238,8 @@ export class DummyDatabaseHandler {
         });
         (instance as TypeormSchedule).startDateTime = dates[0] as Date;
         (instance as TypeormSchedule).endDateTime = getRandomElement([
-          undefined,
-          dates[1],
+          null,
+          dates[1]!,
         ]);
         (instance as TypeormSchedule).isAllDay = getRandomElement([
           false,
@@ -256,7 +256,7 @@ export class DummyDatabaseHandler {
       case ContentTypeEnum.SYSTEM:
         (instance as TypeormSystemContent).text = faker.lorem.sentence();
         (instance as TypeormSystemContent).subText = getRandomElement([
-          undefined,
+          null,
           faker.lorem.sentence(),
         ]);
         break;
@@ -300,7 +300,7 @@ export class DummyDatabaseHandler {
     switch (commentType) {
       case CommentTypeEnum.USER_COMMENT:
         (instance as TypeormUserComment).owner = Promise.resolve(
-          getRandomElement([null, ...userList]),
+          getRandomElement(userList),
         );
         itterNum = Math.random() * userList.length;
         tags = new Set();

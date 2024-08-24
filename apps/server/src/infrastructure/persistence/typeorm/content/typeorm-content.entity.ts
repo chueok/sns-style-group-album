@@ -25,18 +25,14 @@ export class TypeormContent {
   group!: Promise<TypeormGroup>;
 
   @ManyToOne(() => TypeormUser, {
-    eager: true,
-    nullable: true,
-    onDelete: "SET NULL",
+    nullable: false,
   })
-  owner!: Nullable<TypeormUser>;
+  owner!: Promise<TypeormUser>;
 
   @Column({ type: "varchar", nullable: false })
   type!: ContentTypeEnum;
 
-  @ManyToMany(() => TypeormContent, {
-    onDelete: "CASCADE",
-  })
+  @ManyToMany(() => TypeormContent)
   @JoinTable({
     name: "ContentReferences",
     joinColumn: { name: "contentId" },
@@ -62,8 +58,8 @@ export class TypeormSystemContent extends TypeormContent {
   @Column({ nullable: false })
   text!: string;
 
-  @Column({ nullable: true })
-  subText?: string;
+  @Column({ type: "text", nullable: true })
+  subText!: Nullable<string>;
 }
 
 @ChildEntity()
@@ -71,8 +67,8 @@ export class TypeormMedia extends TypeormContent {
   override type!: ContentTypeEnum.IMAGE | ContentTypeEnum.VIDEO;
   override referred!: Promise<never[]>; // empty array
 
-  @Column({ nullable: true })
-  largeRelativePath?: string;
+  @Column({ type: "text", nullable: true })
+  largeRelativePath!: Nullable<string>;
 
   @Column({ nullable: false })
   originalRelativePath!: string;
@@ -113,8 +109,8 @@ export class TypeormSchedule extends TypeormContent {
   startDateTime!: Date;
 
   @Column({ type: "datetime", nullable: true })
-  endDateTime?: Date;
+  endDateTime!: Nullable<Date>;
 
-  @Column({ nullable: true })
-  isAllDay?: boolean;
+  @Column({ type: "boolean", nullable: true })
+  isAllDay!: Nullable<boolean>;
 }

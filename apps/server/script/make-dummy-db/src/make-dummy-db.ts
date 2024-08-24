@@ -23,6 +23,7 @@ export async function makeDummyDB(
   });
   await dataSource.initialize();
   const testDatabaseHandler = new DummyDatabaseHandler(dataSource);
+  // TODO : async 아닌데 await 할 때 lint error 필요.
   await testDatabaseHandler.buildDummyData({
     numUser: nums.numUser,
     numGroup: nums.numGroup,
