@@ -3,8 +3,8 @@ import { DataSource, Repository } from "typeorm";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { typeormSqliteOptions } from "../config/typeorm-config";
 import { TypeormUser } from "./typeorm-user.entity";
-import { TestDatabaseHandler } from "@test/utils/typeorm-utils";
 import { join } from "path";
+import { DummyDatabaseHandler } from "@test/utils/dummy-database-handler";
 
 const parameters = {
   testDbPath: join("db", "TypeormUser.sqlite"),
@@ -15,7 +15,7 @@ describe("TypeormUser", () => {
   let module: TestingModule;
   let dataSource: DataSource;
   let repository: Repository<TypeormUser>;
-  let testDatabaseHandler: TestDatabaseHandler;
+  let testDatabaseHandler: DummyDatabaseHandler;
 
   let targetItem: TypeormUser;
 
@@ -34,10 +34,10 @@ describe("TypeormUser", () => {
     dataSource = module.get<DataSource>(DataSource);
     repository = dataSource.getRepository(TypeormUser);
 
-    testDatabaseHandler = new TestDatabaseHandler(dataSource);
+    testDatabaseHandler = new DummyDatabaseHandler(dataSource);
 
     await testDatabaseHandler.load(parameters.dummyDbPath);
-    targetItem = testDatabaseHandler.getListMap(TypeormUser).at(-1)!;
+    targetItem = testDatabaseHandler.getDbCacheList(TypeormUser).at(-1)!;
   });
 
   afterAll(async () => {

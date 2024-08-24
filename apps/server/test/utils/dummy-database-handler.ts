@@ -26,7 +26,7 @@ import { copyFile } from "fs/promises";
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 
-export class TestDatabaseHandler {
+export class DummyDatabaseHandler {
   // 종속성이 없는 엔티티 순서대로
   entities = [
     TypeormUser,
@@ -35,17 +35,17 @@ export class TestDatabaseHandler {
     TypeormComment,
   ] as const;
 
-  private listMap: Record<string, any[]>;
-  public getListMap<T extends ArrayElement<typeof this.entities>>(
+  private dbCacheListMap: Record<string, any[]>;
+  public getDbCacheList<T extends ArrayElement<typeof this.entities>>(
     constructor: T,
   ): InstanceType<T>[] {
-    return this.listMap[constructor.name] as InstanceType<T>[];
+    return this.dbCacheListMap[constructor.name] as InstanceType<T>[];
   }
 
   constructor(private dataSource: DataSource) {
-    this.listMap = {};
+    this.dbCacheListMap = {};
     Object.values(this.entities).forEach((v) => {
-      this.listMap[v.name] = [];
+      this.dbCacheListMap[v.name] = [];
     });
   }
 
@@ -54,15 +54,15 @@ export class TestDatabaseHandler {
     for (const entity of [...this.entities].reverse()) {
       await this.dataSource.getRepository(entity).delete({});
     }
-    this.resetCache();
+    this.resetDbCache();
   }
 
-  async buildDummyData(payload: {
+  buildDummyData(payload: {
     numUser: number;
     numGroup: number;
     numContent: number;
     numComment: number;
-  }): Promise<void> {
+  }): void {
     for (let i = 0; i < payload.numUser; i++) {
       this.makeDummyUser();
     }
@@ -79,37 +79,37 @@ export class TestDatabaseHandler {
 
   async commit(): Promise<void> {
     for (const entity of this.entities) {
-      const list = this.getListMap(entity) as unknown as TypeormUser[];
+      const list = this.getDbCacheList(entity) as unknown as TypeormUser[];
       await this.dataSource
         .getRepository(entity as typeof TypeormUser)
         .save(list);
     }
   }
 
-  async load(dbPath: string): Promise<void> {
+  async load(dbFilePath: string): Promise<void> {
     if (typeof this.dataSource.options.database !== "string") {
       throw new Error("Database is not a file");
     }
     await this.dataSource.destroy();
-    await copyFile(dbPath, this.dataSource.options.database);
+    await copyFile(dbFilePath, this.dataSource.options.database);
     await this.dataSource.initialize();
     for (const entity of this.entities) {
       const list = await this.dataSource.getRepository(entity).find();
-      this.getListMap(entity).push(...list);
+      this.getDbCacheList(entity).push(...list);
     }
   }
 
-  async loadCache(): Promise<void> {
-    this.resetCache();
+  async loadDbCache(): Promise<void> {
+    this.resetDbCache();
     for (const entity of this.entities) {
       const list = await this.dataSource.getRepository(entity).find();
-      this.getListMap(entity).push(...list);
+      this.getDbCacheList(entity).push(...list);
     }
   }
 
-  resetCache(): void {
+  resetDbCache(): void {
     this.entities.forEach((entity) => {
-      this.getListMap(entity).length = 0;
+      this.getDbCacheList(entity).length = 0;
     });
   }
 
@@ -128,13 +128,13 @@ export class TestDatabaseHandler {
     typeormEntity.updatedDateTime = getRandomElement([null, faker.date.past()]);
     typeormEntity.deletedDateTime = getRandomElement([null, faker.date.past()]);
 
-    this.getListMap(TypeormUser).push(typeormEntity);
+    this.getDbCacheList(TypeormUser).push(typeormEntity);
 
     return typeormEntity;
   }
 
   makeDummyGroup(): TypeormGroup {
-    const userList = this.getListMap(TypeormUser);
+    const userList = this.getDbCacheList(TypeormUser);
     if (userList.length === 0) {
       throw new Error("User is empty");
     }
@@ -148,14 +148,14 @@ export class TestDatabaseHandler {
     typeormEntity.updatedDateTime = getRandomElement([null, faker.date.past()]);
     typeormEntity.deletedDateTime = getRandomElement([null, faker.date.past()]);
 
-    this.getListMap(TypeormGroup).push(typeormEntity);
+    this.getDbCacheList(TypeormGroup).push(typeormEntity);
     return typeormEntity;
   }
 
   makeDummyContent(): TypeormContent {
-    const groupList = this.getListMap(TypeormGroup);
-    const userList = this.getListMap(TypeormUser);
-    const contentList = this.getListMap(TypeormContent);
+    const groupList = this.getDbCacheList(TypeormGroup);
+    const userList = this.getDbCacheList(TypeormUser);
+    const contentList = this.getDbCacheList(TypeormContent);
     if (groupList.length === 0 || userList.length === 0) {
       throw new Error("Group or User is empty");
     }
@@ -267,9 +267,9 @@ export class TestDatabaseHandler {
   }
 
   makeDummyComment(): TypeormComment {
-    const contentList = this.getListMap(TypeormContent);
-    const userList = this.getListMap(TypeormUser);
-    const commentList = this.getListMap(TypeormComment);
+    const contentList = this.getDbCacheList(TypeormContent);
+    const userList = this.getDbCacheList(TypeormUser);
+    const commentList = this.getDbCacheList(TypeormComment);
     if (contentList.length === 0 || userList.length === 0) {
       throw new Error("Content or User is empty");
     }

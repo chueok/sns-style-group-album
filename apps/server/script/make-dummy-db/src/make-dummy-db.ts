@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm";
-import { TestDatabaseHandler } from "../../../test/utils/typeorm-utils";
+import { DummyDatabaseHandler } from "../../../test/utils/dummy-database-handler";
 
 export async function makeDummyDB(
   entitiesPath: string,
@@ -22,7 +22,7 @@ export async function makeDummyDB(
     dropSchema: true,
   });
   await dataSource.initialize();
-  const testDatabaseHandler = new TestDatabaseHandler(dataSource);
+  const testDatabaseHandler = new DummyDatabaseHandler(dataSource);
   await testDatabaseHandler.buildDummyData({
     numUser: nums.numUser,
     numGroup: nums.numGroup,

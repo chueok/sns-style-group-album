@@ -2,7 +2,6 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { DataSource, Repository } from "typeorm";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { typeormSqliteOptions } from "../config/typeorm-config";
-import { TestDatabaseHandler } from "@test/utils/typeorm-utils";
 import { join } from "path";
 import {
   TypeormBucket,
@@ -13,6 +12,7 @@ import {
   TypeormSystemContent,
 } from "./typeorm-content.entity";
 import { ContentTypeEnum } from "@repo/be-core";
+import { DummyDatabaseHandler } from "@test/utils/dummy-database-handler";
 
 const parameters = {
   testDbPath: join("db", "TypeormContent.sqlite"),
@@ -23,7 +23,7 @@ describe("TypeormContent", () => {
   let module: TestingModule;
   let dataSource: DataSource;
   let repository: Repository<TypeormContent>;
-  let testDatabaseHandler: TestDatabaseHandler;
+  let testDatabaseHandler: DummyDatabaseHandler;
 
   let targetItem: TypeormContent;
 
@@ -42,10 +42,10 @@ describe("TypeormContent", () => {
     dataSource = module.get<DataSource>(DataSource);
     repository = dataSource.getRepository(TypeormContent);
 
-    testDatabaseHandler = new TestDatabaseHandler(dataSource);
+    testDatabaseHandler = new DummyDatabaseHandler(dataSource);
 
     await testDatabaseHandler.load(parameters.dummyDbPath);
-    targetItem = testDatabaseHandler.getListMap(TypeormContent).at(-1)!;
+    targetItem = testDatabaseHandler.getDbCacheList(TypeormContent).at(-1)!;
   });
 
   afterAll(async () => {
@@ -89,7 +89,7 @@ describe("TypeormContent", () => {
   // TODO : type 별 null 테스트 필요.
   describe("should throw error when not-nullable property is null", () => {
     beforeEach(async () => {
-      await testDatabaseHandler.loadCache();
+      await testDatabaseHandler.loadDbCache();
     });
     const itList: { property: string; nullable: boolean }[] = [
       { property: "id", nullable: false },

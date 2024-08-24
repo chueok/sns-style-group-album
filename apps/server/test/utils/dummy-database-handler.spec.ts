@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm";
-import { TestDatabaseHandler } from "./typeorm-utils";
+import { DummyDatabaseHandler } from "./dummy-database-handler";
 import { Test, TestingModule } from "@nestjs/testing";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { typeormSqliteOptions } from "../../src/infrastructure/persistence/typeorm/config/typeorm-config";
@@ -23,7 +23,7 @@ const parameters = {
 describe("TestDatabaseHandler", () => {
   let module: TestingModule;
   let dataSource: DataSource;
-  let testDatabaseHandler: TestDatabaseHandler;
+  let testDatabaseHandler: DummyDatabaseHandler;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -37,7 +37,7 @@ describe("TestDatabaseHandler", () => {
 
     dataSource = module.get<DataSource>(DataSource);
 
-    testDatabaseHandler = new TestDatabaseHandler(dataSource);
+    testDatabaseHandler = new DummyDatabaseHandler(dataSource);
 
     await testDatabaseHandler.clearDatabase();
   });
