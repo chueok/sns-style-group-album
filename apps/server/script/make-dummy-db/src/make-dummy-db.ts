@@ -9,6 +9,7 @@ export async function makeDummyDB(
     numGroup: number;
     numContent: number;
     numComment: number;
+    numLike: number;
   },
 ) {
   const dataSource = new DataSource({
@@ -29,6 +30,7 @@ export async function makeDummyDB(
     numGroup: nums.numGroup,
     numContent: nums.numContent,
     numComment: nums.numComment,
+    numLike: nums.numLike,
   });
 
   await testDatabaseHandler.commit();

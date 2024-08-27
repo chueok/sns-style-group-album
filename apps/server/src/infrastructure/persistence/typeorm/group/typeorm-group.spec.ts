@@ -54,6 +54,7 @@ describe("TypeormGroup", () => {
     let targetGroup: TypeormGroup;
     let targetOwner: TypeormUser;
     let targetMembers: TypeormUser[];
+    let targetContents: TypeormContent[];
     beforeAll(async () => {
       const groupList = testDatabaseHandler.getDbCacheList(TypeormGroup);
       for (const group of groupList.reverse()) {
@@ -62,11 +63,7 @@ describe("TypeormGroup", () => {
           conditionFlag = false;
         }
 
-        const contents = await dataSource
-          .getRepository(TypeormContent)
-          .createQueryBuilder("content")
-          .where("content.groupId = :groupId", { groupId: group.id })
-          .getMany();
+        const contents = await getGroupContents(dataSource, group.id);
         if (contents.length === 0) {
           conditionFlag = false;
         }
@@ -75,6 +72,7 @@ describe("TypeormGroup", () => {
           targetGroup = group;
           targetOwner = await targetGroup.owner;
           targetMembers = await targetGroup.members;
+          targetContents = contents;
           break;
         }
       }
@@ -115,14 +113,14 @@ describe("TypeormGroup", () => {
     });
 
     it("content should be deleted by cascade", async () => {
-      await dataSource
-        .getRepository(TypeormContent)
-        .createQueryBuilder("content")
-        .where("content.groupId = :groupId", { groupId: targetGroup.id })
-        .getMany()
-        .then((contents) => {
-          expect(contents.length).toEqual(0);
-        });
+      await Promise.all(
+        targetContents.map(async (content) => {
+          const foundContent = await dataSource
+            .getRepository(TypeormContent)
+            .findOneBy({ id: content.id });
+          expect(foundContent).toBeNull();
+        }),
+      );
     });
   });
 });
@@ -136,4 +134,12 @@ async function expectEqualGroup(lhs: TypeormGroup, rhs: TypeormGroup) {
   expect(lhs.createdDateTime).toEqual(rhs.createdDateTime);
   expect(lhs.updatedDateTime).toEqual(rhs.updatedDateTime);
   expect(lhs.deletedDateTime).toEqual(rhs.deletedDateTime);
+}
+
+async function getGroupContents(dataSource: DataSource, groupId: string) {
+  return dataSource
+    .getRepository(TypeormContent)
+    .createQueryBuilder("content")
+    .where("content.groupId = :groupId", { groupId })
+    .getMany();
 }

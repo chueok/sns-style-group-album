@@ -8,6 +8,7 @@ import { TypeormGroup } from "../../src/infrastructure/persistence/typeorm/group
 import { TypeormContent } from "../../src/infrastructure/persistence/typeorm/content/typeorm-content.entity";
 import { TypeormComment } from "../../src/infrastructure/persistence/typeorm/comment/typeorm-comment.entity";
 import { join } from "path";
+import { TypeormLike } from "../../src/infrastructure/persistence/typeorm/like/typeorm-like.entity";
 
 const parameters = {
   testDbPath: join("db", "TestDatabaseHandler.sqlite"),
@@ -31,12 +32,13 @@ describe("TestDatabaseHandler", () => {
         TypeOrmModule.forRoot({
           ...typeormSqliteOptions,
           database: parameters.testDbPath,
+          synchronize: false,
+          dropSchema: false,
         }),
       ],
     }).compile();
 
     dataSource = module.get<DataSource>(DataSource);
-
     testDatabaseHandler = new DummyDatabaseHandler(dataSource);
 
     await testDatabaseHandler.clearDatabase();
@@ -73,7 +75,7 @@ describe("TestDatabaseHandler", () => {
   });
 
   it("should create a dummy content", async () => {
-    const dummyContent = testDatabaseHandler.makeDummyContent();
+    const dummyContent = await testDatabaseHandler.makeDummyContent();
     expect(dummyContent instanceof TypeormContent).toBe(true);
 
     await testDatabaseHandler.commit();
@@ -110,6 +112,7 @@ describe("TestDatabaseHandler", () => {
         numGroup: 10,
         numContent: 10,
         numComment: 10,
+        numLike: 10,
       };
 
       await testDatabaseHandler.buildDummyData(payload);
@@ -136,14 +139,6 @@ describe("TestDatabaseHandler", () => {
     await testDatabaseHandler.load(parameters.dummyDbPath);
     await testDatabaseHandler.commit();
 
-    const dummyDataSource = new DataSource({
-      ...typeormSqliteOptions,
-      database: parameters.dummyDbPath,
-      synchronize: false,
-      dropSchema: false,
-    });
-    await dummyDataSource.initialize();
-
     const targetUsers = await dataSource.getRepository(TypeormUser).find();
     const targetGroups = await dataSource.getRepository(TypeormGroup).find();
     const targetContents = await dataSource
@@ -152,11 +147,13 @@ describe("TestDatabaseHandler", () => {
     const targetComments = await dataSource
       .getRepository(TypeormComment)
       .find();
+    const targetLikes = await dataSource.getRepository(TypeormLike).find();
 
     const firstUser = targetUsers[0]!;
     const firstGroup = targetGroups[0]!;
     const firstContent = targetContents[0]!;
     const firstComment = targetComments[0]!;
+    const firstLike = targetLikes[0]!;
 
     //
 
@@ -168,26 +165,29 @@ describe("TestDatabaseHandler", () => {
     const copiedComments = await dataSource
       .getRepository(TypeormComment)
       .find();
+    const copiedLikes = await dataSource.getRepository(TypeormLike).find();
 
     const copiedFirstUser = copiedUsers[0]!;
     const copiedFirstGroup = copiedGroups[0]!;
     const copiedFirstContent = copiedContents[0]!;
     const copiedComment = copiedComments[0]!;
+    const copiedLike = copiedLikes[0]!;
 
     expect(copiedUsers.length).toBe(targetUsers.length);
     expect(copiedGroups.length).toBe(targetGroups.length);
     expect(copiedContents.length).toBe(targetContents.length);
     expect(copiedComments.length).toBe(targetComments.length);
+    expect(copiedLikes.length).toBe(targetLikes.length);
 
     expect(copiedFirstUser).toStrictEqual(firstUser);
     expect(copiedFirstGroup).toStrictEqual(firstGroup);
     expect(copiedFirstContent).toStrictEqual(firstContent);
     expect(copiedComment).toStrictEqual(firstComment);
+    expect(copiedLike).toStrictEqual(firstLike);
   });
 
   it("should make dummy after load", async () => {
     await testDatabaseHandler.load(parameters.dummyDbPath);
-    await testDatabaseHandler.commit();
 
     const newComment = testDatabaseHandler.makeDummyComment();
     expect(newComment instanceof TypeormComment).toBe(true);

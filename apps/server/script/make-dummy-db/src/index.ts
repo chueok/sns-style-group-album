@@ -10,6 +10,7 @@ const nums = {
   numGroup: 4,
   numContent: 100,
   numComment: 300,
+  numLike: 500,
 };
 
 void (async () => {

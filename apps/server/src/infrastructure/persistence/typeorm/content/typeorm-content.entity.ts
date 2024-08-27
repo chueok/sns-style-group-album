@@ -5,12 +5,15 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryColumn,
   TableInheritance,
 } from "typeorm";
 import { TypeormGroup } from "../group/typeorm-group.entity";
 import { TypeormUser } from "../user/typeorm-user.entity";
 import { BucketStatusEnum, ContentTypeEnum, Nullable } from "@repo/be-core";
+import { TypeormComment } from "../comment/typeorm-comment.entity";
+import { TypeormLike } from "../like/typeorm-like.entity";
 
 @Entity("Content")
 @TableInheritance({ column: { type: "varchar", name: "type" } })
@@ -42,6 +45,12 @@ export class TypeormContent {
 
   @Column({ type: "text", nullable: true })
   thumbnailRelativePath!: Nullable<string>;
+
+  @OneToMany(() => TypeormComment, (comment) => comment.content)
+  comments!: Promise<TypeormComment[]>;
+
+  @OneToMany(() => TypeormLike, (like) => like.content)
+  likes!: Promise<TypeormLike[]>;
 
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;

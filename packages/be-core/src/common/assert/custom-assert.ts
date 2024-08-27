@@ -1,13 +1,19 @@
 import { Nullable, Optional } from "../type/common-types";
 
 export class CustomAssert {
-  public static isTrue(expression: boolean, exception: Error): void {
+  public static isTrue(
+    expression: boolean,
+    exception: Error,
+  ): asserts expression {
     if (!expression) {
       throw exception;
     }
   }
 
-  public static isFalse(expression: boolean, exception: Error): void {
+  public static isFalse(
+    expression: boolean,
+    exception: Error,
+  ): asserts expression {
     if (expression) {
       throw exception;
     }

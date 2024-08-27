@@ -2,6 +2,7 @@ import {
   BucketStatusEnum,
   CommentTypeEnum,
   ContentTypeEnum,
+  CustomAssert,
 } from "@repo/be-core";
 import { DataSource } from "typeorm";
 import {
@@ -23,6 +24,7 @@ import {
 
 import { add } from "date-fns";
 import { copyFile } from "fs/promises";
+import { TypeormLike } from "../../src/infrastructure/persistence/typeorm/like/typeorm-like.entity";
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 
@@ -33,6 +35,7 @@ export class DummyDatabaseHandler {
     TypeormGroup,
     TypeormContent,
     TypeormComment,
+    TypeormLike,
   ] as const;
 
   private dbCacheListMap: Record<string, any[]>;
@@ -57,12 +60,13 @@ export class DummyDatabaseHandler {
     this.resetDbCache();
   }
 
-  buildDummyData(payload: {
+  async buildDummyData(payload: {
     numUser: number;
     numGroup: number;
     numContent: number;
     numComment: number;
-  }): void {
+    numLike: number;
+  }): Promise<void> {
     for (let i = 0; i < payload.numUser; i++) {
       this.makeDummyUser();
     }
@@ -70,10 +74,13 @@ export class DummyDatabaseHandler {
       this.makeDummyGroup();
     }
     for (let i = 0; i < payload.numContent; i++) {
-      this.makeDummyContent();
+      await this.makeDummyContent();
     }
     for (let i = 0; i < payload.numComment; i++) {
       this.makeDummyComment();
+    }
+    for (let i = 0; i < payload.numLike; i++) {
+      await this.makeDummyLike();
     }
   }
 
@@ -87,12 +94,15 @@ export class DummyDatabaseHandler {
   }
 
   async load(dbFilePath: string): Promise<void> {
-    if (typeof this.dataSource.options.database !== "string") {
-      throw new Error("Database is not a file");
-    }
+    CustomAssert.isTrue(
+      typeof this.dataSource.options.database === "string",
+      new Error("Database is not a file"),
+    );
     await this.dataSource.destroy();
     await copyFile(dbFilePath, this.dataSource.options.database);
     await this.dataSource.initialize();
+
+    this.resetDbCache();
     for (const entity of this.entities) {
       const list = await this.dataSource.getRepository(entity).find();
       this.getDbCacheList(entity).push(...list);
@@ -135,14 +145,18 @@ export class DummyDatabaseHandler {
 
   makeDummyGroup(): TypeormGroup {
     const userList = this.getDbCacheList(TypeormUser);
-    if (userList.length === 0) {
-      throw new Error("User is empty");
-    }
+    CustomAssert.isTrue(userList.length > 0, new Error("User is empty"));
+
     const typeormEntity = new TypeormGroup();
     typeormEntity.id = faker.string.uuid();
     typeormEntity.name = faker.internet.userName();
-    typeormEntity.members = Promise.resolve(getRandomElementList(userList));
-    typeormEntity.owner = Promise.resolve(getRandomElement(userList));
+
+    const owner = getRandomElement(userList);
+    typeormEntity.owner = Promise.resolve(owner);
+
+    const members = new Set(getRandomElementList(userList));
+    members.add(owner); // owner는 멤버에 포함
+    typeormEntity.members = Promise.resolve(Array.from(members));
 
     typeormEntity.createdDateTime = faker.date.past();
     typeormEntity.updatedDateTime = getRandomElement([null, faker.date.past()]);
@@ -152,15 +166,23 @@ export class DummyDatabaseHandler {
     return typeormEntity;
   }
 
-  makeDummyContent(): TypeormContent {
+  async makeDummyContent(payload?: {
+    type?: ContentTypeEnum;
+  }): Promise<TypeormContent> {
     const groupList = this.getDbCacheList(TypeormGroup);
-    const userList = this.getDbCacheList(TypeormUser);
-    const contentList = this.getDbCacheList(TypeormContent);
-    if (groupList.length === 0 || userList.length === 0) {
-      throw new Error("Group or User is empty");
-    }
+    CustomAssert.isTrue(groupList.length > 0, new Error("Group is empty"));
 
-    const contentType = getRandomElement(Object.values(ContentTypeEnum));
+    const group = getRandomElement(groupList);
+    const memberList = await group.members;
+    CustomAssert.isTrue(memberList.length > 0, new Error("Member is empty"));
+
+    const contentList = this.getDbCacheList(TypeormContent);
+    const groupContentList = contentList.filter(
+      async (content) => (await content.group).id === group.id,
+    );
+
+    const contentType =
+      payload?.type || getRandomElement(Object.values(ContentTypeEnum));
 
     let instance!: TypeormContent;
     switch (contentType) {
@@ -182,15 +204,15 @@ export class DummyDatabaseHandler {
         break;
     }
     instance.id = faker.string.uuid();
-    instance.group = Promise.resolve(getRandomElement(groupList));
-    instance.owner = Promise.resolve(getRandomElement(userList));
+    instance.group = Promise.resolve(group);
+    instance.owner = Promise.resolve(getRandomElement(memberList));
     instance.type = contentType;
     instance.referred = Promise.resolve([]);
-    if (contentList.length > 0) {
-      const num = Math.random() * contentList.length;
+    if (groupContentList.length > 0) {
+      const num = Math.random() * groupContentList.length;
       const referred: Set<TypeormContent> = new Set();
       for (let i = 0; i < num; i++) {
-        referred.add(getRandomElement(contentList));
+        referred.add(getRandomElement(groupContentList));
       }
       instance.referred = Promise.resolve(Array.from(referred));
     }
@@ -198,6 +220,8 @@ export class DummyDatabaseHandler {
       null,
       faker.system.filePath(),
     ]);
+
+    instance.likes = Promise.resolve([]);
 
     instance.createdDateTime = faker.date.past();
     instance.updatedDateTime = getRandomElement([null, faker.date.past()]);
@@ -266,13 +290,37 @@ export class DummyDatabaseHandler {
     return instance;
   }
 
+  async makeDummyLike(): Promise<TypeormLike> {
+    const contentList = this.getDbCacheList(TypeormContent);
+    const groupList = this.getDbCacheList(TypeormGroup);
+    CustomAssert.isTrue(contentList.length > 0, new Error("Content is empty"));
+
+    const targetcontent = getRandomElement(contentList);
+    CustomAssert.isTrue(!!targetcontent, new Error("Content is empty"));
+    const contentGroupId = (await targetcontent.group).id;
+    const group = groupList.find((group) => group.id === contentGroupId);
+    CustomAssert.isTrue(!!group, new Error("Group was not found"));
+    const memberList = await group.members;
+    CustomAssert.isTrue(memberList.length > 0, new Error("Member is empty"));
+
+    const typeormLike = new TypeormLike();
+    typeormLike.id = faker.string.uuid();
+    typeormLike.createdDateTime = faker.date.past();
+
+    typeormLike.content = Promise.resolve(targetcontent);
+    typeormLike.user = Promise.resolve(getRandomElement(memberList));
+
+    this.getDbCacheList(TypeormLike).push(typeormLike);
+    return typeormLike;
+  }
+
   makeDummyComment(): TypeormComment {
     const contentList = this.getDbCacheList(TypeormContent);
     const userList = this.getDbCacheList(TypeormUser);
-    const commentList = this.getDbCacheList(TypeormComment);
-    if (contentList.length === 0 || userList.length === 0) {
-      throw new Error("Content or User is empty");
-    }
+    CustomAssert.isTrue(
+      contentList.length > 0 && userList.length > 0,
+      new Error("Content or User is empty"),
+    );
 
     const commentType = getRandomElement(Object.values(CommentTypeEnum));
 
@@ -319,15 +367,14 @@ export class DummyDatabaseHandler {
         break;
     }
 
+    const commentList = this.getDbCacheList(TypeormComment);
     commentList.push(instance);
     return instance;
   }
 }
 
 function getRandomElement<T>(array: T[]): T {
-  if (array.length === 0) {
-    throw new Error("Array is empty");
-  }
+  CustomAssert.isTrue(array.length > 0, new Error("Array is empty"));
   const randomIndex = Math.floor(Math.random() * array.length);
   return array.at(randomIndex) as T;
 }
