@@ -340,8 +340,8 @@ export class DummyDatabaseHandler {
     instance.contentId = getRandomElement(contentList).id;
 
     instance.createdDateTime = faker.date.past();
-    instance.updatedDateTime = getRandomElement([undefined, faker.date.past()]);
-    instance.deletedDateTime = getRandomElement([undefined, faker.date.past()]);
+    instance.updatedDateTime = getRandomElement([null, faker.date.past()]);
+    instance.deletedDateTime = getRandomElement([null, faker.date.past()]);
 
     let itterNum: number;
     let tags: Set<TypeormUser>;

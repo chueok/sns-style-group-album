@@ -35,9 +35,9 @@ export class TypeormComment {
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;
   @Column({ type: "datetime", nullable: true })
-  updatedDateTime?: Date;
+  updatedDateTime!: Nullable<Date>;
   @Column({ type: "datetime", nullable: true })
-  deletedDateTime?: Date;
+  deletedDateTime!: Nullable<Date>;
 }
 
 // NOTE ChildEntity에서 정의된 모든 property 는 db상에서 nullable임
