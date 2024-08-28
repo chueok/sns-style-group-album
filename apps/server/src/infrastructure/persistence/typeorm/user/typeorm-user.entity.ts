@@ -2,7 +2,6 @@ import { PrimaryColumn, Column, ManyToMany, Entity } from "typeorm";
 import { TypeormGroup } from "../group/typeorm-group.entity";
 import { Nullable } from "@repo/be-core";
 
-// TODO USER를 DB에서 실제 삭제하지 않음??
 @Entity("User")
 export class TypeormUser {
   @PrimaryColumn()
