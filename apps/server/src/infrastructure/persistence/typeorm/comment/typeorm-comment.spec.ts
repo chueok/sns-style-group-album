@@ -3,8 +3,8 @@ import { DataSource, Repository } from "typeorm";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { typeormSqliteOptions } from "../config/typeorm-config";
 import { join } from "path";
-import { DummyDatabaseHandler } from "@test/utils/dummy-database-handler";
 import { TypeormComment } from "./typeorm-comment.entity";
+import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
 
 const parameters = {
   testDbPath: join("db", "TypeormComment.sqlite"),

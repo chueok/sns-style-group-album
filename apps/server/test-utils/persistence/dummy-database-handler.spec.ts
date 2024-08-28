@@ -32,13 +32,13 @@ describe("TestDatabaseHandler", () => {
         TypeOrmModule.forRoot({
           ...typeormSqliteOptions,
           database: parameters.testDbPath,
-          synchronize: false,
+          synchronize: true,
           dropSchema: false,
         }),
       ],
     }).compile();
-
     dataSource = module.get<DataSource>(DataSource);
+
     testDatabaseHandler = new DummyDatabaseHandler(dataSource);
 
     await testDatabaseHandler.clearDatabase();

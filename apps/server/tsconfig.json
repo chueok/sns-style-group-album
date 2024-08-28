@@ -3,9 +3,9 @@
   "compilerOptions": {
     "outDir": "./dist",
     "paths": {
-      "@test/*": ["./test/*"],
+      "@test-utils/*": ["./test-utils/*"],
     }
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "*.js"],
+  "include": ["src/**/*.ts", "test-utils/**/*.ts", "*.js"],
   "exclude": ["node_modules", "dist"]
 }

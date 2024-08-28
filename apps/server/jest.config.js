@@ -13,7 +13,7 @@ const config = {
   testEnvironment: "node",
   setupFiles: ["dotenv/config"],
   moduleNameMapper: {
-    "^@test/(.*)$": "<rootDir>/test/$1",
+    "^@test-utils/(.*)$": "<rootDir>/test-utils/$1",
   },
 };
 

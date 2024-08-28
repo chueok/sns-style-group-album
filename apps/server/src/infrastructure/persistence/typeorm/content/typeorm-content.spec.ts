@@ -12,9 +12,9 @@ import {
   TypeormSystemContent,
 } from "./typeorm-content.entity";
 import { ContentTypeEnum } from "@repo/be-core";
-import { DummyDatabaseHandler } from "@test/utils/dummy-database-handler";
 import { TypeormComment } from "../comment/typeorm-comment.entity";
 import { TypeormLike } from "../like/typeorm-like.entity";
+import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
 
 const parameters = {
   testDbPath: join("db", "TypeormContent.sqlite"),

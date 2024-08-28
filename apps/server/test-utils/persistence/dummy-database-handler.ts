@@ -100,6 +100,7 @@ export class DummyDatabaseHandler {
     );
     await this.dataSource.destroy();
     await copyFile(dbFilePath, this.dataSource.options.database);
+    this.dataSource.setOptions({ dropSchema: false });
     await this.dataSource.initialize();
 
     this.resetDbCache();

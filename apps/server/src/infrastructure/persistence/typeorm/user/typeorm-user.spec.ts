@@ -4,7 +4,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { typeormSqliteOptions } from "../config/typeorm-config";
 import { TypeormUser } from "./typeorm-user.entity";
 import { join } from "path";
-import { DummyDatabaseHandler } from "@test/utils/dummy-database-handler";
+import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
 
 const parameters = {
   testDbPath: join("db", "TypeormUser.sqlite"),

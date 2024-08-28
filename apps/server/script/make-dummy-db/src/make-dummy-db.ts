@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm";
-import { DummyDatabaseHandler } from "../../../test/utils/dummy-database-handler";
+import { DummyDatabaseHandler } from "../../../test-utils/persistence/dummy-database-handler";
 
 export async function makeDummyDB(
   entitiesPath: string,
