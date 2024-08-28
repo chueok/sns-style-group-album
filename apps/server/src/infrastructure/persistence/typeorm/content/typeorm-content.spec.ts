@@ -125,18 +125,45 @@ describe("TypeormContent", () => {
       await repository.delete(targetContent.id);
     });
 
-    it("targetContent should be defined", async () => {
+    it("target should be defined before delete", async () => {
       expect(targetContent).not.toBeNull();
       expect(targetComments).not.toBeNull();
       expect(targetLikes).not.toBeNull();
       expect(targetReferred).not.toBeNull();
     });
 
-    it("should delete comment", async () => {});
+    it("should delete comment", async () => {
+      await Promise.all(
+        targetComments.map(async (target) => {
+          const foundComment = await dataSource
+            .getRepository(TypeormComment)
+            .findOneBy({ id: target.id });
+          expect(foundComment).toBeNull();
+        }),
+      );
+    });
 
-    it("should delete like", async () => {});
+    it("should delete like", async () => {
+      await Promise.all(
+        targetLikes.map(async (target) => {
+          const foundLike = await dataSource
+            .getRepository(TypeormLike)
+            .findOneBy({ id: target.id });
+          expect(foundLike).toBeNull();
+        }),
+      );
+    });
 
-    it("should not delete referrenced content", async () => {});
+    it("should not delete referrenced content", async () => {
+      await Promise.all(
+        targetReferred.map(async (target) => {
+          const foundContent = await dataSource
+            .getRepository(TypeormContent)
+            .findOneBy({ id: target.id });
+          expect(foundContent).not.toBeNull();
+        }),
+      );
+    });
   });
 });
 
