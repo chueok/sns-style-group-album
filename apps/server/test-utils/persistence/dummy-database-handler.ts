@@ -9,9 +9,9 @@ import {
   TypeormComment,
   TypeormSystemComment,
   TypeormUserComment,
-} from "../../src/infrastructure/persistence/typeorm/comment/typeorm-comment.entity";
-import { TypeormUser } from "../../src/infrastructure/persistence/typeorm/user/typeorm-user.entity";
-import { TypeormGroup } from "../../src/infrastructure/persistence/typeorm/group/typeorm-group.entity";
+} from "../../src/infrastructure/persistence/typeorm/entity/comment/typeorm-comment.entity";
+import { TypeormUser } from "../../src/infrastructure/persistence/typeorm/entity/user/typeorm-user.entity";
+import { TypeormGroup } from "../../src/infrastructure/persistence/typeorm/entity/group/typeorm-group.entity";
 import { faker } from "@faker-js/faker";
 import {
   TypeormBucket,
@@ -20,11 +20,11 @@ import {
   TypeormPost,
   TypeormSchedule,
   TypeormSystemContent,
-} from "../../src/infrastructure/persistence/typeorm/content/typeorm-content.entity";
+} from "../../src/infrastructure/persistence/typeorm/entity/content/typeorm-content.entity";
 
 import { add } from "date-fns";
 import { copyFile } from "fs/promises";
-import { TypeormLike } from "../../src/infrastructure/persistence/typeorm/like/typeorm-like.entity";
+import { TypeormLike } from "../../src/infrastructure/persistence/typeorm/entity/like/typeorm-like.entity";
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 

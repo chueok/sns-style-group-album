@@ -1,7 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { DataSource, Repository } from "typeorm";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { typeormSqliteOptions } from "../config/typeorm-config";
+import { typeormSqliteOptions } from "../../config/typeorm-config";
 import { join } from "path";
 import {
   TypeormBucket,
@@ -13,8 +13,8 @@ import {
 } from "./typeorm-content.entity";
 import { ContentTypeEnum } from "@repo/be-core";
 import { TypeormComment } from "../comment/typeorm-comment.entity";
-import { TypeormLike } from "../like/typeorm-like.entity";
 import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
+import { TypeormLike } from "../like/typeorm-like.entity";
 
 const parameters = {
   testDbPath: join("db", "TypeormContent.sqlite"),

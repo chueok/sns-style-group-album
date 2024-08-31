@@ -6,8 +6,8 @@ import {
   ManyToOne,
   JoinTable,
 } from "typeorm";
-import { TypeormUser } from "../user/typeorm-user.entity";
 import { Nullable } from "@repo/be-core";
+import { TypeormUser } from "../user/typeorm-user.entity";
 
 @Entity("Group")
 export class TypeormGroup {

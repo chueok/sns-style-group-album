@@ -1,20 +1,20 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { DataSource, Repository } from "typeorm";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { typeormSqliteOptions } from "../config/typeorm-config";
 import { join } from "path";
-import { TypeormLike } from "../like/typeorm-like.entity";
+import { TypeormComment } from "./typeorm-comment.entity";
 import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
+import { typeormSqliteOptions } from "../../config/typeorm-config";
 
 const parameters = {
-  testDbPath: join("db", "TypeormLike.sqlite"),
+  testDbPath: join("db", "TypeormComment.sqlite"),
   dummyDbPath: join("db", "dummy.sqlite"),
 };
 
-describe("TypeormLike", () => {
+describe("TypeormComment", () => {
   let module: TestingModule;
   let dataSource: DataSource;
-  let repository: Repository<TypeormLike>;
+  let repository: Repository<TypeormComment>;
   let testDatabaseHandler: DummyDatabaseHandler;
 
   beforeAll(async () => {
@@ -30,7 +30,7 @@ describe("TypeormLike", () => {
     }).compile();
 
     dataSource = module.get<DataSource>(DataSource);
-    repository = dataSource.getRepository(TypeormLike);
+    repository = dataSource.getRepository(TypeormComment);
 
     testDatabaseHandler = new DummyDatabaseHandler(dataSource);
 
@@ -43,16 +43,16 @@ describe("TypeormLike", () => {
 
   describe("save", () => {
     it("should save normally", async () => {
-      const like = await testDatabaseHandler.makeDummyLike();
-      const savedLike = await repository.save(like);
-      await expectEqualLike(like, savedLike);
+      const comment = testDatabaseHandler.makeDummyComment();
+      const savedComment = await repository.save(comment);
+      expectEqualComment(comment, savedComment);
     });
   });
 
   describe("delete", () => {
-    let target!: TypeormLike;
+    let target!: TypeormComment;
     beforeEach(async () => {
-      target = await testDatabaseHandler.makeDummyLike();
+      target = testDatabaseHandler.makeDummyComment();
       target = await repository.save(target);
     });
 
@@ -62,20 +62,21 @@ describe("TypeormLike", () => {
 
     it("should delete normally", async () => {
       await repository.delete(target.id);
-
-      const deletedLike = await repository.findOneBy({ id: target.id });
-
-      expect(deletedLike).toBeNull();
+      const deletedComment = await repository.findOneBy({ id: target.id });
+      expect(deletedComment).toBeNull();
     });
   });
 });
 
-async function expectEqualLike(
-  like: TypeormLike,
-  savedLike: TypeormLike,
-): Promise<void> {
-  expect(like.id).toBe(savedLike.id);
-  expect((await like.content).id).toBe((await savedLike.content).id);
-  expect((await like.user).id).toBe((await savedLike.user).id);
-  expect(like.createdDateTime).toBe(savedLike.createdDateTime);
+function expectEqualComment(
+  comment: TypeormComment,
+  savedComment: TypeormComment,
+) {
+  expect(comment.id).toBe(savedComment.id);
+  expect(comment.type).toBe(savedComment.type);
+  expect(comment.text).toBe(savedComment.text);
+  expect(comment.contentId).toBe(savedComment.contentId);
+  expect(comment.createdDateTime).toBe(savedComment.createdDateTime);
+  expect(comment.updatedDateTime).toBe(savedComment.updatedDateTime);
+  expect(comment.deletedDateTime).toBe(savedComment.deletedDateTime);
 }

@@ -9,10 +9,10 @@ import {
   PrimaryColumn,
   TableInheritance,
 } from "typeorm";
-import { TypeormGroup } from "../group/typeorm-group.entity";
-import { TypeormUser } from "../user/typeorm-user.entity";
 import { BucketStatusEnum, ContentTypeEnum, Nullable } from "@repo/be-core";
 import { TypeormComment } from "../comment/typeorm-comment.entity";
+import { TypeormGroup } from "../group/typeorm-group.entity";
+import { TypeormUser } from "../user/typeorm-user.entity";
 import { TypeormLike } from "../like/typeorm-like.entity";
 
 @Entity("Content")

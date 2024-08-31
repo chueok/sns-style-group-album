@@ -3,10 +3,10 @@ import { join } from "path";
 import { DataSource, Repository } from "typeorm";
 import { TypeormGroup } from "./typeorm-group.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { typeormSqliteOptions } from "../config/typeorm-config";
-import { TypeormContent } from "../content/typeorm-content.entity";
-import { TypeormUser } from "../user/typeorm-user.entity";
 import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
+import { typeormSqliteOptions } from "../../config/typeorm-config";
+import { TypeormUser } from "../user/typeorm-user.entity";
+import { TypeormContent } from "../content/typeorm-content.entity";
 
 const parameters = {
   testDbPath: join("db", "TypeormGroup.sqlite"),

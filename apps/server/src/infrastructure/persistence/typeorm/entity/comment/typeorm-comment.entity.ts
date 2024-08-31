@@ -8,9 +8,9 @@ import {
   TableInheritance,
   ChildEntity,
 } from "typeorm";
-import { TypeormUser } from "../user/typeorm-user.entity";
-import { TypeormContent } from "../content/typeorm-content.entity";
 import { CommentTypeEnum, Nullable } from "@repo/be-core";
+import { TypeormContent } from "../content/typeorm-content.entity";
+import { TypeormUser } from "../user/typeorm-user.entity";
 
 @Entity("Comment")
 @TableInheritance({ column: { type: "varchar", name: "type" } })
