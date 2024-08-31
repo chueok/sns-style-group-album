@@ -1,3 +1,4 @@
+import { Nullable } from "src/common/type/common-types";
 import { GroupMember } from "../group-member";
 
 type CreateNewGroupEntityPayload = {
@@ -9,8 +10,8 @@ type CreateExistingGroupEntityPayload = CreateNewGroupEntityPayload & {
   id: string;
   createdDateTime: Date;
   members: GroupMember[];
-  updatedDateTime?: Date;
-  deletedDateTime?: Date;
+  updatedDateTime: Nullable<Date>;
+  deletedDateTime: Nullable<Date>;
 };
 
 type CreateGroupEntityPayloadMap = {
