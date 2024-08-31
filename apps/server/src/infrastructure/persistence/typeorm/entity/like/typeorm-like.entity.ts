@@ -12,9 +12,13 @@ export class TypeormLike {
     onDelete: "CASCADE",
   })
   content!: Promise<TypeormContent>;
+  @Column()
+  contentId!: string;
 
   @ManyToOne(() => TypeormUser, { nullable: false })
   user!: Promise<TypeormUser>;
+  @Column()
+  userId!: string;
 
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;

@@ -26,11 +26,15 @@ export class TypeormContent {
     onDelete: "CASCADE",
   })
   group!: Promise<TypeormGroup>;
+  @Column()
+  groupId!: string;
 
   @ManyToOne(() => TypeormUser, {
     nullable: false,
   })
   owner!: Promise<TypeormUser>;
+  @Column()
+  ownerId!: string;
 
   @Column({ type: "varchar", nullable: false })
   type!: ContentTypeEnum;

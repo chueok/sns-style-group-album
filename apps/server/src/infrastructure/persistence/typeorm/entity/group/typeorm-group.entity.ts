@@ -25,6 +25,8 @@ export class TypeormGroup {
     nullable: false,
   })
   owner!: Promise<TypeormUser>;
+  @Column()
+  ownerId!: string;
 
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;

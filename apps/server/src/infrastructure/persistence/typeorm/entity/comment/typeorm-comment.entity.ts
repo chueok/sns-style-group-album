@@ -29,7 +29,7 @@ export class TypeormComment {
     onDelete: "CASCADE",
   })
   content!: Promise<TypeormContent>;
-  @Column({ nullable: false })
+  @Column()
   contentId!: string;
 
   @Column({ type: "datetime", nullable: false })
@@ -47,8 +47,7 @@ export class TypeormUserComment extends TypeormComment {
 
   @ManyToOne(() => TypeormUser)
   owner!: Promise<TypeormUser>;
-
-  @Column({ type: "text" })
+  @Column()
   ownerId!: string;
 
   @ManyToMany(() => TypeormUser)
