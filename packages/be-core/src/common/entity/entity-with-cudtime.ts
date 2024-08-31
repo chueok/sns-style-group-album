@@ -7,7 +7,7 @@ export abstract class EntityWithCUDTime<
 > extends Entity<TIdentifier> {
   @IsDate()
   protected _createdDateTime!: Date;
-  get createdDateTime(): Nullable<Date> {
+  get createdDateTime(): Date {
     return this._createdDateTime;
   }
 

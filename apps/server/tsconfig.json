@@ -6,6 +6,6 @@
       "@test-utils/*": ["./test-utils/*"],
     }
   },
-  "include": ["src/**/*.ts", "test-utils/**/*.ts", "*.js"],
+  "include": ["src/**/*.ts", "test-utils/**/*.ts", "test/**/*.ts", "*.js"],
   "exclude": ["node_modules", "dist"]
 }

@@ -1,10 +1,11 @@
-import { IsString, IsUUID } from "class-validator";
+import { IsOptional, IsString, IsUUID } from "class-validator";
 import { CreateUserEntityPayload } from "./type/create-user-entity-payload";
 import { v4 } from "uuid";
 import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
 import { IPasswordEncryptionService } from "../../encryption/password-encryption-service.interface";
 import { Exception } from "../../../common/exception/exception";
 import { Code } from "../../../common/exception/code";
+import { Nullable } from "src/common/type/common-types";
 
 export class User extends EntityWithCUDTime<string> {
   @IsUUID()
@@ -22,9 +23,10 @@ export class User extends EntityWithCUDTime<string> {
     return this._hashedPassword;
   }
 
+  @IsOptional()
   @IsString()
-  private _thumbnailRelativePath: string;
-  get thumbnailRelativePath(): string {
+  private _thumbnailRelativePath: Nullable<string>;
+  get thumbnailRelativePath(): Nullable<string> {
     return this._thumbnailRelativePath;
   }
 
@@ -65,8 +67,8 @@ export class User extends EntityWithCUDTime<string> {
     if ("id" in payload) {
       this._id = payload.id;
       this._createdDateTime = payload.createdDateTime;
-      this._updatedDateTime = payload.updatedDateTime || null;
-      this._deletedDateTime = payload.deletedDateTime || null;
+      this._updatedDateTime = payload.updatedDateTime;
+      this._deletedDateTime = payload.deletedDateTime;
     } else {
       this._id = v4();
       this._createdDateTime = new Date();
