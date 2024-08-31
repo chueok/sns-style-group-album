@@ -10,7 +10,7 @@ import {
 } from "typeorm";
 import { TypeormUser } from "../user/typeorm-user.entity";
 import { TypeormContent } from "../content/typeorm-content.entity";
-import { CommentTypeEnum } from "@repo/be-core";
+import { CommentTypeEnum, Nullable } from "@repo/be-core";
 
 @Entity("Comment")
 @TableInheritance({ column: { type: "varchar", name: "type" } })
@@ -25,35 +25,41 @@ export class TypeormComment {
   text!: string;
 
   @ManyToOne(() => TypeormContent, {
-    nullable: true,
+    nullable: false,
+    onDelete: "CASCADE",
   })
-  content?: Promise<TypeormContent>;
+  content!: Promise<TypeormContent>;
+  @Column({ nullable: false })
+  contentId!: string;
 
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;
   @Column({ type: "datetime", nullable: true })
-  updatedDateTime?: Date;
+  updatedDateTime!: Nullable<Date>;
   @Column({ type: "datetime", nullable: true })
-  deletedDateTime?: Date;
+  deletedDateTime!: Nullable<Date>;
 }
 
+// NOTE ChildEntity에서 정의된 모든 property 는 db상에서 nullable임
 @ChildEntity()
 export class TypeormUserComment extends TypeormComment {
   override type = CommentTypeEnum.USER_COMMENT;
 
-  // child entity 이기 때문에 nullable false로 설정할 경우 문제 될 것으로 보임.
-  @ManyToOne(() => TypeormUser, { nullable: false, eager: true })
-  owner!: TypeormUser;
+  @ManyToOne(() => TypeormUser)
+  owner!: Promise<TypeormUser>;
 
-  @ManyToMany(() => TypeormUser, { nullable: true })
+  @Column({ type: "text" })
+  ownerId!: string;
+
+  @ManyToMany(() => TypeormUser)
   @JoinTable({ name: "CommentTagsRelation" })
-  tags?: Promise<TypeormUser[]>;
+  tags!: Promise<TypeormUser[]>;
 }
 
 @ChildEntity()
 export class TypeormSystemComment extends TypeormComment {
   override type = CommentTypeEnum.SYSTEM_COMMENT;
 
-  @Column({ nullable: true })
-  subText?: string;
+  @Column({ type: "text" })
+  subText!: Nullable<string>;
 }

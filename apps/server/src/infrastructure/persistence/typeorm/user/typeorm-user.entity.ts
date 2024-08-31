@@ -1,5 +1,6 @@
 import { PrimaryColumn, Column, ManyToMany, Entity } from "typeorm";
 import { TypeormGroup } from "../group/typeorm-group.entity";
+import { Nullable } from "@repo/be-core";
 
 @Entity("User")
 export class TypeormUser {
@@ -12,21 +13,19 @@ export class TypeormUser {
   @Column({ nullable: false })
   hashedPassword!: string;
 
-  @Column({ nullable: true })
-  thumbnailRelativePath?: string;
+  @Column({ type: "text", nullable: true })
+  thumbnailRelativePath!: Nullable<string>;
 
-  @ManyToMany(() => TypeormGroup, (group) => group.members, {
-    nullable: true,
-    eager: true,
-  })
-  groups?: TypeormGroup[];
+  // NOTE nullable: false를 하더라도 Join Table에서 관리 되므로 효과 없음.
+  @ManyToMany(() => TypeormGroup, (group) => group.members)
+  groups!: Promise<TypeormGroup[]>;
 
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;
 
   @Column({ type: "datetime", nullable: true })
-  updatedDateTime?: Date;
+  updatedDateTime!: Nullable<Date>;
 
   @Column({ type: "datetime", nullable: true })
-  deletedDateTime?: Date;
+  deletedDateTime!: Nullable<Date>;
 }

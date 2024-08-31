@@ -9,6 +9,7 @@ export class TypeormLike {
 
   @ManyToOne(() => TypeormContent, {
     nullable: false,
+    onDelete: "CASCADE",
   })
   content!: Promise<TypeormContent>;
 

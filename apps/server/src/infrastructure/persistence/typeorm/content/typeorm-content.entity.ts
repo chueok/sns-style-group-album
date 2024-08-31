@@ -5,12 +5,15 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryColumn,
   TableInheritance,
 } from "typeorm";
 import { TypeormGroup } from "../group/typeorm-group.entity";
 import { TypeormUser } from "../user/typeorm-user.entity";
-import { BucketContent, ContentTypeEnum } from "@repo/be-core";
+import { BucketStatusEnum, ContentTypeEnum, Nullable } from "@repo/be-core";
+import { TypeormComment } from "../comment/typeorm-comment.entity";
+import { TypeormLike } from "../like/typeorm-like.entity";
 
 @Entity("Content")
 @TableInheritance({ column: { type: "varchar", name: "type" } })
@@ -18,97 +21,105 @@ export class TypeormContent {
   @PrimaryColumn()
   id!: string;
 
-  @ManyToOne(() => TypeormGroup, { nullable: false })
-  group!: TypeormGroup;
+  @ManyToOne(() => TypeormGroup, {
+    nullable: false,
+    onDelete: "CASCADE",
+  })
+  group!: Promise<TypeormGroup>;
 
-  @ManyToOne(() => TypeormUser, { nullable: false })
-  owner!: TypeormUser;
+  @ManyToOne(() => TypeormUser, {
+    nullable: false,
+  })
+  owner!: Promise<TypeormUser>;
 
   @Column({ type: "varchar", nullable: false })
   type!: ContentTypeEnum;
 
-  @ManyToMany(() => TypeormContent, { nullable: true })
+  @ManyToMany(() => TypeormContent)
   @JoinTable({
     name: "ContentReferences",
     joinColumn: { name: "contentId" },
     inverseJoinColumn: { name: "referencedId" },
   })
-  referred?: Promise<TypeormContent[]>;
+  referred!: Promise<TypeormContent[]>;
 
-  @Column({ nullable: true })
-  thumbnailRelativePath?: string;
+  @Column({ type: "text", nullable: true })
+  thumbnailRelativePath!: Nullable<string>;
+
+  @OneToMany(() => TypeormComment, (comment) => comment.content)
+  comments!: Promise<TypeormComment[]>;
+
+  @OneToMany(() => TypeormLike, (like) => like.content)
+  likes!: Promise<TypeormLike[]>;
 
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;
   @Column({ type: "datetime", nullable: true })
-  updatedDateTime?: Date;
+  updatedDateTime!: Nullable<Date>;
   @Column({ type: "datetime", nullable: true })
-  deletedDateTime?: Date;
+  deletedDateTime!: Nullable<Date>;
 }
 
 @ChildEntity()
 export class TypeormSystemContent extends TypeormContent {
   override type: ContentTypeEnum.SYSTEM = ContentTypeEnum.SYSTEM;
 
-  @Column({ nullable: false })
+  @Column()
   text!: string;
 
-  @Column({ nullable: true })
-  subText?: string;
+  @Column({ type: "text" })
+  subText!: Nullable<string>;
 }
 
 @ChildEntity()
 export class TypeormMedia extends TypeormContent {
   override type!: ContentTypeEnum.IMAGE | ContentTypeEnum.VIDEO;
-  override referred: undefined = undefined;
+  override referred!: Promise<never[]>; // empty array
 
-  @Column({ nullable: false })
-  override thumbnailRelativePath!: string;
+  @Column({ type: "text" })
+  largeRelativePath!: Nullable<string>;
 
-  @Column({ nullable: true })
-  largeRelativePath?: string;
-
-  @Column({ nullable: false })
+  @Column()
   originalRelativePath!: string;
 
-  @Column({ nullable: false })
+  @Column()
   size!: number;
-  @Column({ nullable: false })
+  @Column()
   ext!: string;
-  @Column({ nullable: false })
+  @Column()
   mimetype!: string;
 }
 
 @ChildEntity()
 export class TypeormPost extends TypeormContent {
   override type = ContentTypeEnum.POST;
-  @Column({ nullable: false })
+  @Column()
   title!: string;
-  @Column({ nullable: false })
+  @Column()
   text!: string;
 }
 
 @ChildEntity()
 export class TypeormBucket extends TypeormContent {
   override type = ContentTypeEnum.BUCKET;
-  @Column({ nullable: false })
+  @Column()
   title!: string;
-  @Column({ type: "varchar", nullable: false })
-  status!: BucketContent;
+  @Column({ type: "varchar" })
+  status!: BucketStatusEnum;
 }
 
 @ChildEntity()
 export class TypeormSchedule extends TypeormContent {
   override type = ContentTypeEnum.SCHEDULE;
-  @Column({ nullable: false })
+  @Column()
   title!: string;
 
-  @Column({ type: "datetime", nullable: false })
+  @Column({ type: "datetime" })
   startDateTime!: Date;
 
-  @Column({ type: "datetime", nullable: true })
-  endDateTime?: Date;
+  @Column({ type: "datetime" })
+  endDateTime!: Nullable<Date>;
 
-  @Column({ nullable: true })
-  isAllDay?: boolean;
+  @Column({ type: "boolean" })
+  isAllDay!: Nullable<boolean>;
 }
