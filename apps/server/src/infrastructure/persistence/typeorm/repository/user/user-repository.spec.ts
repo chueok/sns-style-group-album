@@ -2,10 +2,11 @@ import { join } from "path";
 import { DataSource } from "typeorm";
 import { typeormSqliteOptions } from "../../config/typeorm-config";
 import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
-import { UserRepository } from "./user-repository";
+import { TypeormUserRepository } from "./user-repository";
 import { TypeormUser } from "../../entity/user/typeorm-user.entity";
 import { TypeormGroup } from "../../entity/group/typeorm-group.entity";
 import { UserMapper } from "./mapper/user-mapper";
+import { User } from "@repo/be-core";
 
 const parameters = {
   testDbPath: join("db", "user-repository.sqlite"),
@@ -15,7 +16,7 @@ const parameters = {
 describe("UserRepository", () => {
   let dataSource: DataSource;
   let testDatabaseHandler: DummyDatabaseHandler;
-  let userRepository: UserRepository;
+  let userRepository: TypeormUserRepository;
   let targetOrmUser: TypeormUser;
 
   beforeAll(async () => {
@@ -30,17 +31,18 @@ describe("UserRepository", () => {
 
     testDatabaseHandler = new DummyDatabaseHandler(dataSource);
 
-    userRepository = new UserRepository(dataSource);
+    userRepository = new TypeormUserRepository(dataSource);
 
     await testDatabaseHandler.load(parameters.dummyDbPath);
 
-    targetOrmUser = testDatabaseHandler.getDbCacheList(TypeormUser)[0]!;
+    targetOrmUser = testDatabaseHandler.getDbCacheList(TypeormUser).at(-1)!;
   });
 
   describe("findUserById", () => {
     it("should find a user by id", async () => {
       const user = await userRepository.findUserById(targetOrmUser.id);
       expect(user).not.toBeNull();
+      expect(user).toBeInstanceOf(User);
       expect(user!.id).toEqual(targetOrmUser.id);
     });
 

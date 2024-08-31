@@ -67,7 +67,9 @@ describe("UserMapper", () => {
       const ormUserList = UserMapper.toOrmEntity(domainUserList);
       expect(ormUserList).toBeInstanceOf(Array);
       expect(ormUserList.length).toEqual(domainUserList.length);
-      expect(ormUserList[0]).toBeInstanceOf(TypeormUser);
+      ormUserList.forEach((ormUser) => {
+        expect(ormUser).toBeInstanceOf(TypeormUser);
+      });
     });
   });
 });

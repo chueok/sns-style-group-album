@@ -3,7 +3,7 @@ import { DataSource, Repository } from "typeorm";
 import { TypeormUser } from "../../entity/user/typeorm-user.entity";
 import { UserMapper } from "./mapper/user-mapper";
 
-export class UserRepository implements IUserRepository {
+export class TypeormUserRepository implements IUserRepository {
   private typeormUserRepository: Repository<TypeormUser>;
 
   constructor(dataSource: DataSource) {
