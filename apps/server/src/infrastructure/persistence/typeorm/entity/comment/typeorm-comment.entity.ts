@@ -11,15 +11,16 @@ import {
 import { CommentTypeEnum, Nullable } from "@repo/be-core";
 import { TypeormContent } from "../content/typeorm-content.entity";
 import { TypeormUser } from "../user/typeorm-user.entity";
+import { TableAlias } from "../table-alias";
 
-@Entity("Comment")
+@Entity(TableAlias.COMMENT)
 @TableInheritance({ column: { type: "varchar", name: "type" } })
 export class TypeormComment {
   @PrimaryColumn()
   id!: string;
 
   @Column({ nullable: false })
-  type!: CommentTypeEnum;
+  commentType!: CommentTypeEnum;
 
   @Column({ nullable: false })
   text!: string;
@@ -43,7 +44,7 @@ export class TypeormComment {
 // NOTE ChildEntity에서 정의된 모든 property 는 db상에서 nullable임
 @ChildEntity()
 export class TypeormUserComment extends TypeormComment {
-  override type = CommentTypeEnum.USER_COMMENT;
+  override commentType = CommentTypeEnum.USER_COMMENT;
 
   @ManyToOne(() => TypeormUser)
   owner!: Promise<TypeormUser>;
@@ -57,7 +58,7 @@ export class TypeormUserComment extends TypeormComment {
 
 @ChildEntity()
 export class TypeormSystemComment extends TypeormComment {
-  override type = CommentTypeEnum.SYSTEM_COMMENT;
+  override commentType = CommentTypeEnum.SYSTEM_COMMENT;
 
   @Column({ type: "text" })
   subText!: Nullable<string>;

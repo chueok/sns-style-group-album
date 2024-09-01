@@ -1,8 +1,9 @@
-import { Optional } from "../../../common/type/common-types";
+import { Nullable, Optional } from "../../../common/type/common-types";
 import { CommentOwner } from "./comment-owner";
 import { CreateCommentEntityPayload } from "./type/create-comment-entity-payload";
 import { Comment } from "./comment.abstract";
-import { IsInstance, IsOptional } from "class-validator";
+import { IsInstance, IsOptional, IsString } from "class-validator";
+import { CommentTypeEnum } from "../enum/comment-type-enum";
 
 export class UserComment extends Comment {
   @IsInstance(CommentOwner)
@@ -20,6 +21,7 @@ export class UserComment extends Comment {
 
   constructor(payload: CreateCommentEntityPayload<"user", "all">) {
     super(payload);
+    this._type = CommentTypeEnum.USER_COMMENT;
     this._owner = payload.owner;
     this._tags = payload.tags;
   }
@@ -34,13 +36,16 @@ export class UserComment extends Comment {
 }
 
 export class SystemComment extends Comment {
-  protected _subText: Optional<string>;
-  get subText(): Optional<string> {
+  @IsOptional()
+  @IsString()
+  protected _subText: Nullable<string>;
+  get subText(): Nullable<string> {
     return this._subText;
   }
 
   constructor(payload: CreateCommentEntityPayload<"system", "all">) {
     super(payload);
+    this._type = CommentTypeEnum.SYSTEM_COMMENT;
     this._subText = payload.subText;
   }
 

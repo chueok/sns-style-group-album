@@ -73,7 +73,7 @@ function expectEqualComment(
   savedComment: TypeormComment,
 ) {
   expect(comment.id).toBe(savedComment.id);
-  expect(comment.type).toBe(savedComment.type);
+  expect(comment.commentType).toBe(savedComment.commentType);
   expect(comment.text).toBe(savedComment.text);
   expect(comment.contentId).toBe(savedComment.contentId);
   expect(comment.createdDateTime).toBe(savedComment.createdDateTime);

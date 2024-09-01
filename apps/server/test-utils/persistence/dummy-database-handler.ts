@@ -207,7 +207,7 @@ export class DummyDatabaseHandler {
     instance.id = faker.string.uuid();
     instance.group = Promise.resolve(group);
     instance.owner = Promise.resolve(getRandomElement(memberList));
-    instance.type = contentType;
+    instance.contentType = contentType;
     instance.referred = Promise.resolve([]);
     if (groupContentList.length > 0) {
       const num = Math.random() * groupContentList.length;
@@ -239,6 +239,7 @@ export class DummyDatabaseHandler {
           faker.system.filePath();
         (instance as TypeormMedia).size = faker.number.int();
         (instance as TypeormMedia).ext = faker.system.commonFileExt();
+        (instance as TypeormMedia).mimetype = faker.system.mimeType();
         break;
       case ContentTypeEnum.VIDEO:
         (instance as TypeormMedia).referred = Promise.resolve([]);
@@ -249,6 +250,7 @@ export class DummyDatabaseHandler {
           faker.system.filePath();
         (instance as TypeormMedia).size = faker.number.int();
         (instance as TypeormMedia).ext = faker.system.commonFileExt();
+        (instance as TypeormMedia).mimetype = faker.system.mimeType();
         break;
       case ContentTypeEnum.POST:
         (instance as TypeormPost).title = faker.lorem.sentence();
@@ -261,11 +263,11 @@ export class DummyDatabaseHandler {
           to: add(new Date(), { years: 1 }),
           count: 2,
         });
-        (instance as TypeormSchedule).startDateTime = dates[0] as Date;
-        (instance as TypeormSchedule).endDateTime = getRandomElement([
+        (instance as TypeormSchedule).startDateTime = getRandomElement([
           null,
-          dates[1]!,
+          dates[0]!,
         ]);
+        (instance as TypeormSchedule).endDateTime = dates[1]!;
         (instance as TypeormSchedule).isAllDay = getRandomElement([
           false,
           true,
@@ -336,7 +338,7 @@ export class DummyDatabaseHandler {
     }
 
     instance.id = faker.string.uuid();
-    instance.type = commentType;
+    instance.commentType = commentType;
     instance.text = faker.lorem.sentence();
     instance.contentId = getRandomElement(contentList).id;
 

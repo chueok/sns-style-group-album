@@ -14,8 +14,9 @@ import { TypeormComment } from "../comment/typeorm-comment.entity";
 import { TypeormGroup } from "../group/typeorm-group.entity";
 import { TypeormUser } from "../user/typeorm-user.entity";
 import { TypeormLike } from "../like/typeorm-like.entity";
+import { TableAlias } from "../table-alias";
 
-@Entity("Content")
+@Entity(TableAlias.CONTENT)
 @TableInheritance({ column: { type: "varchar", name: "type" } })
 export class TypeormContent {
   @PrimaryColumn()
@@ -37,7 +38,7 @@ export class TypeormContent {
   ownerId!: string;
 
   @Column({ type: "varchar", nullable: false })
-  type!: ContentTypeEnum;
+  contentType!: ContentTypeEnum;
 
   @ManyToMany(() => TypeormContent)
   @JoinTable({
@@ -66,7 +67,7 @@ export class TypeormContent {
 
 @ChildEntity()
 export class TypeormSystemContent extends TypeormContent {
-  override type: ContentTypeEnum.SYSTEM = ContentTypeEnum.SYSTEM;
+  override contentType: ContentTypeEnum.SYSTEM = ContentTypeEnum.SYSTEM;
 
   @Column()
   text!: string;
@@ -77,7 +78,7 @@ export class TypeormSystemContent extends TypeormContent {
 
 @ChildEntity()
 export class TypeormMedia extends TypeormContent {
-  override type!: ContentTypeEnum.IMAGE | ContentTypeEnum.VIDEO;
+  override contentType!: ContentTypeEnum.IMAGE | ContentTypeEnum.VIDEO;
   override referred!: Promise<never[]>; // empty array
 
   @Column({ type: "text" })
@@ -96,7 +97,7 @@ export class TypeormMedia extends TypeormContent {
 
 @ChildEntity()
 export class TypeormPost extends TypeormContent {
-  override type = ContentTypeEnum.POST;
+  override contentType = ContentTypeEnum.POST;
   @Column()
   title!: string;
   @Column()
@@ -105,7 +106,7 @@ export class TypeormPost extends TypeormContent {
 
 @ChildEntity()
 export class TypeormBucket extends TypeormContent {
-  override type = ContentTypeEnum.BUCKET;
+  override contentType = ContentTypeEnum.BUCKET;
   @Column()
   title!: string;
   @Column({ type: "varchar" })
@@ -114,16 +115,16 @@ export class TypeormBucket extends TypeormContent {
 
 @ChildEntity()
 export class TypeormSchedule extends TypeormContent {
-  override type = ContentTypeEnum.SCHEDULE;
+  override contentType = ContentTypeEnum.SCHEDULE;
   @Column()
   title!: string;
 
   @Column({ type: "datetime" })
-  startDateTime!: Date;
+  endDateTime!: Date;
 
-  @Column({ type: "datetime" })
-  endDateTime!: Nullable<Date>;
+  @Column({ type: "datetime", nullable: true })
+  startDateTime!: Nullable<Date>;
 
   @Column({ type: "boolean" })
-  isAllDay!: Nullable<boolean>;
+  isAllDay!: boolean;
 }

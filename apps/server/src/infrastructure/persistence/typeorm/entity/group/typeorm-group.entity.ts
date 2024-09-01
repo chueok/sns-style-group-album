@@ -8,8 +8,9 @@ import {
 } from "typeorm";
 import { Nullable } from "@repo/be-core";
 import { TypeormUser } from "../user/typeorm-user.entity";
+import { TableAlias } from "../table-alias";
 
-@Entity("Group")
+@Entity(TableAlias.GROUP)
 export class TypeormGroup {
   @PrimaryColumn()
   id!: string;

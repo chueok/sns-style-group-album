@@ -1,17 +1,18 @@
-import { Optional } from "../../../../common/type/common-types";
+import { Nullable } from "../../../../common/type/common-types";
 import { CommentOwner } from "../comment-owner";
 
 type CreateNewBaseCommentEntityPayload = {
   text: string;
   contentId: string;
+  contentThumbnailRelativePath: Nullable<string>;
 };
 
 type CreateExistingBaseCommentEntityPayload =
   CreateNewBaseCommentEntityPayload & {
     id: string;
     createdDateTime: Date;
-    updatedDateTime?: Date;
-    deletedDateTime?: Date;
+    updatedDateTime: Nullable<Date>;
+    deletedDateTime: Nullable<Date>;
   };
 
 type CreateBaseCommentEntityPayload = {
@@ -24,11 +25,11 @@ type CreateBaseCommentEntityPayload = {
 
 type UserCommentAdditionalPayload = {
   owner: CommentOwner;
-  tags: Optional<CommentOwner[]>;
+  tags: CommentOwner[];
 };
 
 type SystemCommentAdditionalPayload = {
-  subText?: string;
+  subText: Nullable<string>;
 };
 
 type CommentAdditionalPayload = {

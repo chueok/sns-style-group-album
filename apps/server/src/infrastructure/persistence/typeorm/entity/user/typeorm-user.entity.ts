@@ -1,8 +1,9 @@
 import { PrimaryColumn, Column, ManyToMany, Entity, OneToMany } from "typeorm";
 import { TypeormGroup } from "../group/typeorm-group.entity";
 import { Nullable } from "@repo/be-core";
+import { TableAlias } from "../table-alias";
 
-@Entity("User")
+@Entity(TableAlias.USER)
 export class TypeormUser {
   @PrimaryColumn()
   id!: string;

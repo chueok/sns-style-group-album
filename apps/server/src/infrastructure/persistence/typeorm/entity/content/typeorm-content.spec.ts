@@ -171,7 +171,7 @@ async function expectEqualContent(lhs: TypeormContent, rhs: TypeormContent) {
   expect(lhs.id).toEqual(rhs.id);
   expect(await lhs.group).toEqual(await rhs.group);
   expect(lhs.owner).toEqual(rhs.owner);
-  expect(lhs.type).toEqual(rhs.type);
+  expect(lhs.contentType).toEqual(rhs.contentType);
 
   expect(await lhs.referred).toStrictEqual(await rhs.referred);
   expect(lhs.thumbnailRelativePath).toStrictEqual(rhs.thumbnailRelativePath);
@@ -180,7 +180,7 @@ async function expectEqualContent(lhs: TypeormContent, rhs: TypeormContent) {
   expect(lhs.updatedDateTime).toEqual(rhs.updatedDateTime);
   expect(lhs.deletedDateTime).toEqual(rhs.deletedDateTime);
 
-  switch (lhs.type) {
+  switch (lhs.contentType) {
     case ContentTypeEnum.IMAGE:
     case ContentTypeEnum.VIDEO:
       expect((lhs as TypeormMedia).largeRelativePath).toBe(
