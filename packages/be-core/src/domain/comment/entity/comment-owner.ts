@@ -1,7 +1,7 @@
 import { Nullable } from "../../../common/type/common-types";
 
 // TODO CommentUser 로 이름 변경 필요
-export class CommentOwner {
+export class CommentUser {
   readonly id: string;
 
   readonly username: string;

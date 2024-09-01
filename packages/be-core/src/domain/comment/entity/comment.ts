@@ -1,21 +1,21 @@
 import { Nullable, Optional } from "../../../common/type/common-types";
-import { CommentOwner } from "./comment-owner";
 import { CreateCommentEntityPayload } from "./type/create-comment-entity-payload";
 import { Comment } from "./comment.abstract";
 import { IsInstance, IsOptional, IsString } from "class-validator";
 import { CommentTypeEnum } from "../enum/comment-type-enum";
+import { CommentUser } from "./comment-owner";
 
 export class UserComment extends Comment {
-  @IsInstance(CommentOwner)
-  protected _owner: CommentOwner;
-  get owner(): CommentOwner {
+  @IsInstance(CommentUser)
+  protected _owner: CommentUser;
+  get owner(): CommentUser {
     return this._owner;
   }
 
   @IsOptional()
-  @IsInstance(CommentOwner, { each: true })
-  protected _tags: Optional<CommentOwner[]>;
-  get tags(): Optional<CommentOwner[]> {
+  @IsInstance(CommentUser, { each: true })
+  protected _tags: Optional<CommentUser[]>;
+  get tags(): Optional<CommentUser[]> {
     return this._tags;
   }
 

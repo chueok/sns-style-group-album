@@ -1,5 +1,5 @@
 import { Nullable } from "../../../../common/type/common-types";
-import { CommentOwner } from "../comment-owner";
+import { CommentUser } from "../comment-owner";
 
 type CreateNewBaseCommentEntityPayload = {
   text: string;
@@ -24,8 +24,8 @@ type CreateBaseCommentEntityPayload = {
 };
 
 type UserCommentAdditionalPayload = {
-  owner: CommentOwner;
-  tags: CommentOwner[];
+  owner: CommentUser;
+  tags: CommentUser[];
 };
 
 type SystemCommentAdditionalPayload = {

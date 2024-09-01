@@ -5,7 +5,7 @@ import {
   CommentTypeEnum,
   UserComment,
   SystemComment,
-  CommentOwner,
+  CommentUser,
   Exception,
   Code,
 } from "@repo/be-core";
@@ -39,15 +39,15 @@ export class CommentMapper {
           if (item.comment.commentType === CommentTypeEnum.USER_COMMENT) {
             const typeormOwner = await (item.comment as TypeormUserComment)
               .owner;
-            const owner: CommentOwner = new CommentOwner({
+            const owner: CommentUser = new CommentUser({
               id: typeormOwner.id,
               username: typeormOwner.username,
               thumbnailRelativePath: typeormOwner.thumbnailRelativePath,
             });
 
             const typeormTags = await (item.comment as TypeormUserComment).tags;
-            const tags: CommentOwner[] = typeormTags.map((item) => {
-              return new CommentOwner({
+            const tags: CommentUser[] = typeormTags.map((item) => {
+              return new CommentUser({
                 id: item.id,
                 username: item.username,
                 thumbnailRelativePath: item.thumbnailRelativePath,
