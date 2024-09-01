@@ -135,6 +135,7 @@ export class CommentMapper {
         // TODO Tags 생성 시 User의 전체 정보를 알아야 함...
         // 일부 userId만 가지고 tag생성 할 수 있도록 개선 필요
         // typeormUserComment.tags = Promise.resolve([]);
+        // join table 에 쿼리빌더는 불가능??
 
         return typeormUserComment;
       } else if (item instanceof SystemComment) {

@@ -51,12 +51,23 @@ export class TypeormContentRepository implements IContentRepository {
   }
 
   async findContentById(contentId: string): Promise<Nullable<Content>> {
-    const elements = await this.getContentElements(contentId);
-    if (!elements) {
+    const [content, likeList, numLikes, commentList, numComments] =
+      await Promise.all([
+        this.typeormContentRepository.findOne({
+          where: { id: contentId },
+        }),
+        this.getRecentLikeList(contentId, TypeormContentRepository.likeLimit),
+        this.getNumLikes(contentId),
+        this.getRecentCommentList(
+          contentId,
+          TypeormContentRepository.commentLimit,
+        ),
+        this.getNumComments(contentId),
+      ]);
+    if (!content) {
       return null;
     }
 
-    const { content, likeList, numLikes, commentList, numComments } = elements;
     return ContentMapper.toDomainEntity({
       content,
       numLikes,
@@ -95,22 +106,8 @@ export class TypeormContentRepository implements IContentRepository {
     }
 
     const ormContentList = await query.getMany();
-    const contentList = await Promise.all(
-      ormContentList.map(async (ormContent) => {
-        const { likeList, numLikes, commentList, numComments } =
-          await this.getContentElementsExceptContent(ormContent.id);
 
-        return ContentMapper.toDomainEntity({
-          content: ormContent,
-          numLikes,
-          likeList,
-          numComments,
-          commentList,
-        });
-      }),
-    );
-
-    return contentList.filter((content) => content !== null);
+    return this.ormEntityList2DomainEntityList(ormContentList);
   }
 
   async findContentsByGroupMember(payload: {
@@ -123,88 +120,82 @@ export class TypeormContentRepository implements IContentRepository {
       .andWhere("content.groupId = :groupId", { groupId: payload.groupId })
       .getMany();
 
-    const domainContentList = await Promise.all(
-      ormContentList.map(async (ormContent) => {
-        const { likeList, numLikes, commentList, numComments } =
-          await this.getContentElementsExceptContent(ormContent.id);
-
-        return ContentMapper.toDomainEntity({
-          content: ormContent,
-          numLikes,
-          likeList,
-          numComments,
-          commentList,
-        });
-      }),
-    );
-    return domainContentList.filter((content) => content !== null);
+    return this.ormEntityList2DomainEntityList(ormContentList);
   }
 
-  private async getContentElements(contentId: string) {
-    const [content, likeList, numLikes, commentList, numComments] =
-      await Promise.all([
-        this.typeormContentRepository.findOne({
-          where: { id: contentId },
-        }),
-        this.typeormLikeRepository
-          .createQueryBuilder("like")
-          .innerJoinAndSelect("like.content", "content")
-          .where("content.id = :contentId", { contentId })
-          .orderBy("like.createdDateTime", "DESC")
-          .limit(TypeormContentRepository.likeLimit)
-          .getMany(),
-        this.typeormLikeRepository
-          .createQueryBuilder("like")
-          .innerJoinAndSelect("like.content", "content")
-          .where("content.id = :contentId", { contentId })
-          .getCount(),
-        this.typeormCommentRepository
-          .createQueryBuilder("comment")
-          .innerJoinAndSelect("comment.content", "content")
-          .where("content.id = :contentId", { contentId })
-          .orderBy("comment.createdDateTime", "DESC")
-          .limit(TypeormContentRepository.commentLimit)
-          .getMany(),
-        this.typeormCommentRepository
-          .createQueryBuilder("comment")
-          .innerJoinAndSelect("comment.content", "content")
-          .where("content.id = :contentId", { contentId })
-          .getCount(),
-      ]);
-
-    if (!content) {
-      return null;
-    }
-    return { content, likeList, numLikes, commentList, numComments };
+  private async getNumLikes(contentId: string): Promise<number> {
+    return this.typeormLikeRepository
+      .createQueryBuilder("like")
+      .innerJoinAndSelect("like.content", "content")
+      .where("content.id = :contentId", { contentId })
+      .getCount();
   }
 
-  private async getContentElementsExceptContent(contentId: string) {
+  private async getRecentLikeList(
+    contentId: string,
+    limit: number,
+  ): Promise<TypeormLike[]> {
+    return this.typeormLikeRepository
+      .createQueryBuilder("like")
+      .innerJoinAndSelect("like.content", "content")
+      .where("content.id = :contentId", { contentId })
+      .orderBy("like.createdDateTime", "DESC")
+      .limit(limit)
+      .getMany();
+  }
+
+  private async getNumComments(contentId: string): Promise<number> {
+    return this.typeormCommentRepository
+      .createQueryBuilder("comment")
+      .innerJoinAndSelect("comment.content", "content")
+      .where("content.id = :contentId", { contentId })
+      .getCount();
+  }
+
+  private async getRecentCommentList(
+    contentId: string,
+    limit: number,
+  ): Promise<TypeormComment[]> {
+    return this.typeormCommentRepository
+      .createQueryBuilder("comment")
+      .innerJoinAndSelect("comment.content", "content")
+      .where("content.id = :contentId", { contentId })
+      .orderBy("comment.createdDateTime", "DESC")
+      .limit(limit)
+      .getMany();
+  }
+
+  private async ormEntity2DomainEntity(
+    ormContent: TypeormContent,
+  ): Promise<Content | null> {
     const [likeList, numLikes, commentList, numComments] = await Promise.all([
-      this.typeormLikeRepository
-        .createQueryBuilder("like")
-        .innerJoinAndSelect("like.content", "content")
-        .where("content.id = :contentId", { contentId })
-        .orderBy("like.createdDateTime", "DESC")
-        .limit(TypeormContentRepository.likeLimit)
-        .getMany(),
-      this.typeormLikeRepository
-        .createQueryBuilder("like")
-        .innerJoinAndSelect("like.content", "content")
-        .where("content.id = :contentId", { contentId })
-        .getCount(),
-      this.typeormCommentRepository
-        .createQueryBuilder("comment")
-        .innerJoinAndSelect("comment.content", "content")
-        .where("content.id = :contentId", { contentId })
-        .orderBy("comment.createdDateTime", "DESC")
-        .limit(TypeormContentRepository.commentLimit)
-        .getMany(),
-      this.typeormCommentRepository
-        .createQueryBuilder("comment")
-        .innerJoinAndSelect("comment.content", "content")
-        .where("content.id = :contentId", { contentId })
-        .getCount(),
+      this.getRecentLikeList(ormContent.id, TypeormContentRepository.likeLimit),
+      this.getNumLikes(ormContent.id),
+      this.getRecentCommentList(
+        ormContent.id,
+        TypeormContentRepository.commentLimit,
+      ),
+      this.getNumComments(ormContent.id),
     ]);
-    return { likeList, numLikes, commentList, numComments };
+
+    return ContentMapper.toDomainEntity({
+      content: ormContent,
+      numLikes,
+      likeList,
+      numComments,
+      commentList,
+    });
+  }
+
+  private async ormEntityList2DomainEntityList(
+    ormContentList: TypeormContent[],
+  ): Promise<Content[]> {
+    return Promise.all(
+      ormContentList.map((ormContent) =>
+        this.ormEntity2DomainEntity(ormContent),
+      ),
+    ).then((domainContentList) =>
+      domainContentList.filter((domainContent) => domainContent !== null),
+    );
   }
 }
