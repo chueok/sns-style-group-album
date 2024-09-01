@@ -1,4 +1,4 @@
-import { Nullable } from "src/common/type/common-types";
+import { Nullable } from "../../../common/type/common-types";
 import { Content } from "../entity/content.abstract";
 
 export interface IContentRepository {

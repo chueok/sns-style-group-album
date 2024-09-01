@@ -1,4 +1,4 @@
-import { Nullable } from "src/common/type/common-types";
+import { Nullable } from "../../../../common/type/common-types";
 import { GroupMember } from "../group-member";
 
 type CreateNewGroupEntityPayload = {

@@ -5,7 +5,7 @@ import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
 import { IPasswordEncryptionService } from "../../encryption/password-encryption-service.interface";
 import { Exception } from "../../../common/exception/exception";
 import { Code } from "../../../common/exception/code";
-import { Nullable } from "src/common/type/common-types";
+import { Nullable } from "../../../common/type/common-types";
 
 export class User extends EntityWithCUDTime<string> {
   @IsUUID()
