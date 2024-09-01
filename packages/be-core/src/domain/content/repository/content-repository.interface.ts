@@ -1,30 +1,31 @@
 import { Nullable } from "../../../common/type/common-types";
 import { Content } from "../entity/content.abstract";
+import { ContentTypeEnum } from "../enum/content-type-enum";
+
+export type ContentPagenationType = {
+  cursor: Date;
+  by: "createdDateTime";
+  direction: "asc" | "desc";
+  limit: number;
+};
 
 export interface IContentRepository {
-  createContent(content: Content): Promise<Content>;
+  createContent(content: Content): Promise<boolean>;
 
-  updateContent(content: Content): Promise<Content>;
-
-  deleteContent(contentId: string): Promise<boolean>;
+  updateContent(content: Content): Promise<boolean>;
 
   findContentById(contentId: string): Promise<Nullable<Content>>;
 
-  findContentsByGroupId(payload: {
+  findContentsByGroupIdAndType(payload: {
     groupId: string;
-    cursor: string; // content id
-    pageSize: number;
-    direction: "next" | "prev";
-    sort: "recent" | "likes" | "comments" | "oldest";
+    contentType: ContentTypeEnum;
+    pagination: ContentPagenationType;
   }): Promise<Content[]>;
 
-  findContentsByOwnerAndGroupId(payload: {
-    ownerId: string;
+  findContentsByGroupMember(payload: {
+    userId: string;
     groupId: string;
   }): Promise<Content[]>;
 
-  findContentsByReferedAndGroupId(payload: {
-    referedId: string;
-    groupId: string;
-  }): Promise<Content[]>;
+  // delete is not supported
 }
