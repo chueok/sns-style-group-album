@@ -8,7 +8,7 @@ import { Comment } from "@repo/be-core";
 import { TypeormContent } from "../../../entity/content/typeorm-content.entity";
 
 const parameters = {
-  testDbPath: join("db", "comment-mapper.sqlite"),
+  testDbPath: join("db", `${__filename}.sqlite`),
   dummyDbPath: join("db", "dummy.sqlite"),
 };
 

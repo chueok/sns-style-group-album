@@ -9,7 +9,7 @@ import { TypeormUser } from "../../entity/user/typeorm-user.entity";
 import { GroupMapper } from "./mapper/group-mapper";
 
 const parameters = {
-  testDbPath: join("db", "group-repository.sqlite"),
+  testDbPath: join("db", `${__filename}.sqlite`),
   dummyDbPath: join("db", "dummy.sqlite"),
 };
 

@@ -10,7 +10,7 @@ import { Comment } from "@repo/be-core";
 import { TypeormUser } from "../../entity/user/typeorm-user.entity";
 
 const parameters = {
-  testDbPath: join("db", "comment-repository.sqlite"),
+  testDbPath: join("db", `${__filename}.sqlite`),
   dummyDbPath: join("db", "dummy.sqlite"),
 };
 

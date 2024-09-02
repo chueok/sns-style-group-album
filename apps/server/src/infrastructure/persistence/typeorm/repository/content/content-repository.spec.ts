@@ -9,7 +9,7 @@ import { TypeormGroup } from "../../entity/group/typeorm-group.entity";
 import { ContentTypeEnum } from "@repo/be-core";
 
 const parameters = {
-  testDbPath: join("db", "content-repository.sqlite"),
+  testDbPath: join("db", `${__filename}.sqlite`),
   dummyDbPath: join("db", "dummy.sqlite"),
 };
 

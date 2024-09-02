@@ -7,7 +7,7 @@ import { GroupMapper } from "./group-mapper";
 import { Group } from "@repo/be-core";
 
 const parameters = {
-  testDbPath: join("db", "group-mapper.sqlite"),
+  testDbPath: join("db", `${__filename}.sqlite`),
   dummyDbPath: join("db", "dummy.sqlite"),
 };
 

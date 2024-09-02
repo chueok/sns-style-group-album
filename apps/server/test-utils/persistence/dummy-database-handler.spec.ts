@@ -11,7 +11,7 @@ import { join } from "path";
 import { TypeormLike } from "../../src/infrastructure/persistence/typeorm/entity/like/typeorm-like.entity";
 
 const parameters = {
-  testDbPath: join("db", "TestDatabaseHandler.sqlite"),
+  testDbPath: join("db", `${__filename}.sqlite`),
   dummyDbPath: join("db", "dummy.sqlite"),
 };
 

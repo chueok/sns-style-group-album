@@ -8,7 +8,7 @@ import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-han
 import { typeormSqliteOptions } from "../../config/typeorm-config";
 
 const parameters = {
-  testDbPath: join("db", "TypeormUser.sqlite"),
+  testDbPath: join("db", `${__filename}.sqlite`),
   dummyDbPath: join("db", "dummy.sqlite"),
 };
 

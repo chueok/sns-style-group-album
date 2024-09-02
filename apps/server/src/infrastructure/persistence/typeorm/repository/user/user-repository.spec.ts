@@ -9,7 +9,7 @@ import { UserMapper } from "./mapper/user-mapper";
 import { User } from "@repo/be-core";
 
 const parameters = {
-  testDbPath: join("db", "user-repository.sqlite"),
+  testDbPath: join("db", `${__filename}.sqlite`),
   dummyDbPath: join("db", "dummy.sqlite"),
 };
 

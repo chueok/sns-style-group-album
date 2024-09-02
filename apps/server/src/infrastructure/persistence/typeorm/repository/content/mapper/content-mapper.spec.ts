@@ -7,7 +7,7 @@ import { ContentMapper } from "./content-mapper";
 import { Content } from "@repo/be-core";
 
 const parameters = {
-  testDbPath: join("db", "content-mapper.sqlite"),
+  testDbPath: join("db", `${__filename}.sqlite`),
   dummyDbPath: join("db", "dummy.sqlite"),
 };
 

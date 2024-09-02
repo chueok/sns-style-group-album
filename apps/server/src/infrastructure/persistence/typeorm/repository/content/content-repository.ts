@@ -26,6 +26,7 @@ export class TypeormContentRepository implements IContentRepository {
   }
 
   // TODO 트랜잭션 처리 필요
+  // 중요한 문제가 생기는건 아닌데, 트랜젝션 안하는게 나을까?
   async createContent(content: Content): Promise<boolean> {
     const { content: ormContent, likeList } =
       ContentMapper.toOrmEntity(content);
