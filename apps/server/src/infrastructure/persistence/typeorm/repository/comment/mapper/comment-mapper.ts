@@ -15,6 +15,7 @@ import {
   TypeormUserComment,
 } from "../../../entity/comment/typeorm-comment.entity";
 import { TypeormContent } from "../../../entity/content/typeorm-content.entity";
+import { TypeormUser } from "../../../entity/user/typeorm-user.entity";
 
 type OrmToDomainPayloadType = {
   comment: TypeormComment;
@@ -46,13 +47,10 @@ export class CommentMapper {
             });
 
             const typeormTags = await (item.comment as TypeormUserComment).tags;
-            const tags: CommentUser[] = typeormTags.map((item) => {
-              return new CommentUser({
-                id: item.id,
-                username: item.username,
-                thumbnailRelativePath: item.thumbnailRelativePath,
-              });
+            const userTags: string[] = typeormTags.map((item) => {
+              return item.id;
             });
+
             const commentPayload: CreateCommentEntityPayload<
               "user",
               "existing"
@@ -62,17 +60,21 @@ export class CommentMapper {
               contentThumbnailRelativePath: item.content.thumbnailRelativePath,
 
               id: item.comment.id,
+              userTags: userTags,
               createdDateTime: item.comment.createdDateTime,
               updatedDateTime: item.comment.updatedDateTime,
               deletedDateTime: item.comment.deletedDateTime,
 
               owner,
-              tags,
             };
             return UserComment.new(commentPayload);
           } else if (
             item.comment.commentType === CommentTypeEnum.SYSTEM_COMMENT
           ) {
+            const typeormTags = await (item.comment as TypeormUserComment).tags;
+            const userTags: string[] = typeormTags.map((item) => {
+              return item.id;
+            });
             const commentPayload: CreateCommentEntityPayload<
               "system",
               "existing"
@@ -82,6 +84,7 @@ export class CommentMapper {
               contentThumbnailRelativePath: item.content.thumbnailRelativePath,
 
               id: item.comment.id,
+              userTags: userTags,
               createdDateTime: item.comment.createdDateTime,
               updatedDateTime: item.comment.updatedDateTime,
               deletedDateTime: item.comment.deletedDateTime,
@@ -132,10 +135,13 @@ export class CommentMapper {
 
         typeormUserComment.ownerId = item.owner.id;
 
-        // TODO Tags 생성 시 User의 전체 정보를 알아야 함...
-        // 일부 userId만 가지고 tag생성 할 수 있도록 개선 필요
-        // typeormUserComment.tags = Promise.resolve([]);
-        // join table 에 쿼리빌더는 불가능??
+        typeormUserComment.tags = Promise.resolve(
+          item.userTags.map((userId) => {
+            const user = new TypeormUser();
+            user.id = userId;
+            return user;
+          }),
+        );
 
         return typeormUserComment;
       } else if (item instanceof SystemComment) {
@@ -144,6 +150,14 @@ export class CommentMapper {
         typeormSystemComment.commentType = CommentTypeEnum.SYSTEM_COMMENT;
         typeormSystemComment.text = item.text;
         typeormSystemComment.contentId = item.contentId;
+
+        typeormSystemComment.tags = Promise.resolve(
+          item.userTags.map((userId) => {
+            const user = new TypeormUser();
+            user.id = userId;
+            return user;
+          }),
+        );
 
         typeormSystemComment.createdDateTime = item.createdDateTime;
         typeormSystemComment.updatedDateTime = item.updatedDateTime;

@@ -10,6 +10,7 @@ type CreateNewBaseCommentEntityPayload = {
 type CreateExistingBaseCommentEntityPayload =
   CreateNewBaseCommentEntityPayload & {
     id: string;
+    userTags: string[];
     createdDateTime: Date;
     updatedDateTime: Nullable<Date>;
     deletedDateTime: Nullable<Date>;
@@ -25,7 +26,6 @@ type CreateBaseCommentEntityPayload = {
 
 type UserCommentAdditionalPayload = {
   owner: CommentUser;
-  tags: CommentUser[];
 };
 
 type SystemCommentAdditionalPayload = {

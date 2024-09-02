@@ -23,8 +23,9 @@ export class TypeormCommentRepository implements ICommentRepository {
       .catch(() => false);
   }
   async updateComment(comment: Comment): Promise<boolean> {
+    const ormEntity = CommentMapper.toOrmEntity(comment);
     return this.typeormCommentRepository
-      .update(comment.id, CommentMapper.toOrmEntity(comment))
+      .save(ormEntity)
       .then(() => true)
       .catch(() => false);
   }

@@ -6,6 +6,8 @@ import { TypeormCommentRepository } from "./comment-repository";
 import { TypeormComment } from "../../entity/comment/typeorm-comment.entity";
 import { CommentMapper } from "./mapper/comment-mapper";
 import { TypeormContent } from "../../entity/content/typeorm-content.entity";
+import { Comment } from "@repo/be-core";
+import { TypeormUser } from "../../entity/user/typeorm-user.entity";
 
 const parameters = {
   testDbPath: join("db", "comment-repository.sqlite"),
@@ -180,12 +182,16 @@ describe("CommentRepository", () => {
   });
 
   describe("updateComment", () => {
-    it("should update a comment", async () => {
-      const targetDomainComment = (await CommentMapper.toDomainEntity({
+    let targetDomainComment: Comment;
+
+    beforeAll(async () => {
+      targetDomainComment = (await CommentMapper.toDomainEntity({
         comment: targetOrmComment,
         content: await targetOrmComment.content,
       }))!;
+    });
 
+    it("should update a comment", async () => {
       targetDomainComment.changeText("updated content");
 
       const result = await commentRepository.updateComment(targetDomainComment);
@@ -195,6 +201,26 @@ describe("CommentRepository", () => {
         targetDomainComment.id,
       );
       expect(updatedComment).toEqual(targetDomainComment);
+    });
+
+    it("should update tags of a comment", async () => {
+      const user1 = testDatabaseHandler.getDbCacheList(TypeormUser).at(-1)!;
+      const user2 = testDatabaseHandler.getDbCacheList(TypeormUser).at(-2)!;
+      const tagList = [user1.id, user2.id];
+
+      (targetDomainComment as any)._userTags = tagList;
+
+      const result = await commentRepository.updateComment(targetDomainComment);
+      expect(result).toBeTruthy();
+
+      const updatedComment = await commentRepository.findCommentById(
+        targetDomainComment.id,
+      );
+
+      expect(updatedComment?.userTags.length).toBe(tagList.length);
+      expect(updatedComment?.userTags).toEqual(
+        expect.arrayContaining(targetDomainComment.userTags),
+      );
     });
   });
 });

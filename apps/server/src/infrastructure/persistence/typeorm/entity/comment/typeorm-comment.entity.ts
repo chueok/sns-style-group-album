@@ -25,6 +25,10 @@ export class TypeormComment {
   @Column({ nullable: false })
   text!: string;
 
+  @ManyToMany(() => TypeormUser)
+  @JoinTable({ name: "CommentTagsRelation" })
+  tags!: Promise<TypeormUser[]>;
+
   @ManyToOne(() => TypeormContent, {
     nullable: false,
     onDelete: "CASCADE",
@@ -50,10 +54,6 @@ export class TypeormUserComment extends TypeormComment {
   owner!: Promise<TypeormUser>;
   @Column()
   ownerId!: string;
-
-  @ManyToMany(() => TypeormUser)
-  @JoinTable({ name: "CommentTagsRelation" })
-  tags!: Promise<TypeormUser[]>;
 }
 
 @ChildEntity()

@@ -21,6 +21,12 @@ export abstract class Comment extends EntityWithCUDTime<string> {
     return this._text;
   }
 
+  @IsUUID("all", { each: true })
+  protected _userTags: string[];
+  get userTags(): string[] {
+    return this._userTags;
+  }
+
   @IsUUID()
   protected _contentId: string;
   get contentId(): string {
@@ -34,9 +40,16 @@ export abstract class Comment extends EntityWithCUDTime<string> {
     return this._contentThumbnailRelativePath;
   }
 
-  public changeText(text: string) {
+  public async changeText(text: string) {
     this._text = text;
+    this._userTags = this.extractUserTags(this.text);
     this._updatedDateTime = new Date();
+    await this.validate();
+  }
+
+  private extractUserTags(text: string): string[] {
+    // TODO extract user tags from text
+    return [];
   }
 
   constructor(payload: CreateCommentEntityPayload<"base", "all">) {
@@ -46,6 +59,7 @@ export abstract class Comment extends EntityWithCUDTime<string> {
     this._contentThumbnailRelativePath = payload.contentThumbnailRelativePath;
     if ("id" in payload) {
       this._id = payload.id;
+      this._userTags = payload.userTags;
       this._createdDateTime = payload.createdDateTime;
       this._updatedDateTime = payload.updatedDateTime || null;
       this._deletedDateTime = payload.deletedDateTime || null;
@@ -54,6 +68,7 @@ export abstract class Comment extends EntityWithCUDTime<string> {
       this._createdDateTime = new Date();
       this._updatedDateTime = null;
       this._deletedDateTime = null;
+      this._userTags = this.extractUserTags(this.text);
     }
   }
 }

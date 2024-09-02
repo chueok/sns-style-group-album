@@ -1,4 +1,4 @@
-import { Nullable, Optional } from "../../../common/type/common-types";
+import { Nullable } from "../../../common/type/common-types";
 import { CreateCommentEntityPayload } from "./type/create-comment-entity-payload";
 import { Comment } from "./comment.abstract";
 import { IsInstance, IsOptional, IsString } from "class-validator";
@@ -12,18 +12,10 @@ export class UserComment extends Comment {
     return this._owner;
   }
 
-  @IsOptional()
-  @IsInstance(CommentUser, { each: true })
-  protected _tags: Optional<CommentUser[]>;
-  get tags(): Optional<CommentUser[]> {
-    return this._tags;
-  }
-
   constructor(payload: CreateCommentEntityPayload<"user", "all">) {
     super(payload);
     this._type = CommentTypeEnum.USER_COMMENT;
     this._owner = payload.owner;
-    this._tags = payload.tags;
   }
 
   static async new(
