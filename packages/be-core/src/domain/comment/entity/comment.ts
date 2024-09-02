@@ -3,7 +3,7 @@ import { CreateCommentEntityPayload } from "./type/create-comment-entity-payload
 import { Comment } from "./comment.abstract";
 import { IsInstance, IsOptional, IsString } from "class-validator";
 import { CommentTypeEnum } from "../enum/comment-type-enum";
-import { CommentUser } from "./comment-owner";
+import { CommentUser } from "./comment-user";
 
 export class UserComment extends Comment {
   @IsInstance(CommentUser)

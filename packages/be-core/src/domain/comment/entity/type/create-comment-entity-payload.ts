@@ -1,5 +1,5 @@
 import { Nullable } from "../../../../common/type/common-types";
-import { CommentUser } from "../comment-owner";
+import { CommentUser } from "../comment-user";
 
 type CreateNewBaseCommentEntityPayload = {
   text: string;
