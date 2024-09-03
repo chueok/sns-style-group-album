@@ -1,8 +1,7 @@
-import { IsInstance, IsString, IsUUID } from "class-validator";
+import { IsString, IsUUID } from "class-validator";
 import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
 import { CreateGroupEntityPayload } from "./type/create-group-entity-payload";
 import { v4 } from "uuid";
-import { GroupMember } from "./group-member";
 
 export class Group extends EntityWithCUDTime<string> {
   @IsUUID()
@@ -20,9 +19,9 @@ export class Group extends EntityWithCUDTime<string> {
     return this._name;
   }
 
-  @IsInstance(GroupMember, { each: true })
-  private _members: Set<GroupMember>; // User ID의 집합으로 저장
-  get members(): Set<GroupMember> {
+  @IsUUID("all", { each: true })
+  private _members: Set<string>; // User ID의 집합으로 저장
+  get members(): Set<string> {
     return this._members;
   }
 
@@ -31,16 +30,16 @@ export class Group extends EntityWithCUDTime<string> {
     return this.validate();
   }
 
-  public async changeOwner(owner: GroupMember): Promise<boolean> {
-    if (!this._members.has(owner)) {
+  public async changeOwner(ownerId: string): Promise<boolean> {
+    if (!this._members.has(ownerId)) {
       return false;
     }
-    this._ownerId = owner.id;
+    this._ownerId = ownerId;
     await this.validate();
     return true;
   }
 
-  public async addMember(user: GroupMember): Promise<boolean> {
+  public async addMember(user: string): Promise<boolean> {
     if (this._members.has(user)) {
       return false;
     }
@@ -49,13 +48,13 @@ export class Group extends EntityWithCUDTime<string> {
     return true;
   }
 
-  public async removeMember(user: GroupMember): Promise<boolean> {
+  public async removeMember(user: string): Promise<boolean> {
     const ret = this._members.delete(user);
     await this.validate();
     return ret;
   }
 
-  public hasMember(user: GroupMember): boolean {
+  public hasMember(user: string): boolean {
     return this._members.has(user);
   }
 

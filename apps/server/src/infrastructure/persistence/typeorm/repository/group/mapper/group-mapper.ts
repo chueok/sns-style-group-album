@@ -1,9 +1,4 @@
-import {
-  CreateGroupEntityPayload,
-  Group,
-  GroupMember,
-  Nullable,
-} from "@repo/be-core";
+import { CreateGroupEntityPayload, Group, Nullable } from "@repo/be-core";
 import { TypeormGroup } from "../../../entity/group/typeorm-group.entity";
 
 export class GroupMapper {
@@ -15,13 +10,7 @@ export class GroupMapper {
     const payloadList = Array.isArray(payload) ? payload : [payload];
 
     const promises = payloadList.map(async (item) => {
-      const members = (await item.members).map((member) => {
-        return new GroupMember({
-          id: member.id,
-          username: member.username,
-          thumbnailRelativePath: member.thumbnailRelativePath,
-        });
-      });
+      const members = (await item.members).map((member) => member.id);
 
       const groupPayload: CreateGroupEntityPayload<"existing"> = {
         ownerId: (await item.owner).id,
