@@ -121,7 +121,6 @@ export class ContentMapper {
         return new ContentLike({
           id: item.id,
           userId: item.userId,
-          userThumbnailRelativePath: (await item.user).thumbnailRelativePath,
           createdDateTime: item.createdDateTime,
         });
       }),

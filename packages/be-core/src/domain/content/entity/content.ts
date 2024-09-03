@@ -15,7 +15,7 @@ import { Nullable } from "../../../common/type/common-types";
 import { CreateContentEntityPayload } from "./type/create-content-entity-payload";
 
 export class SystemContent extends Content {
-  override _type: ContentTypeEnum.SYSTEM = ContentTypeEnum.SYSTEM;
+  override readonly _type: ContentTypeEnum.SYSTEM = ContentTypeEnum.SYSTEM;
 
   @IsString()
   protected _text: string;

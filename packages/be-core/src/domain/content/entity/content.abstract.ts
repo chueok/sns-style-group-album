@@ -18,13 +18,10 @@ import { Comment } from "../../comment/entity/comment.abstract";
 
 export abstract class Content extends EntityWithCUDTime<string> {
   @IsUUID()
-  protected override _id: string;
+  protected override readonly _id: string;
 
   @IsUUID()
-  protected _groupId: string;
-  get groupId(): string {
-    return this._groupId;
-  }
+  readonly groupId: string;
 
   @IsEnum(ContentTypeEnum)
   protected _type!: ContentTypeEnum;
@@ -32,11 +29,8 @@ export abstract class Content extends EntityWithCUDTime<string> {
     return this._type;
   }
 
-  @IsString()
-  protected _ownerId: string;
-  get ownerId(): string {
-    return this._ownerId;
-  }
+  @IsUUID("all")
+  readonly ownerId: string;
 
   @IsArray()
   protected _referred: ReferredContent[];
@@ -72,19 +66,12 @@ export abstract class Content extends EntityWithCUDTime<string> {
   }
 
   @IsArray()
-  protected _commentList: Readonly<Comment>[];
-  get commentList(): Readonly<Comment>[] {
-    return this._commentList;
-  }
+  readonly commentList: Comment[];
 
-  public async addLike(payload: {
-    userId: string;
-    userThumbnailRelativePath: string;
-  }): Promise<void> {
+  public async addLike(userId: string): Promise<void> {
     const newLike = new ContentLike({
       id: v4(),
-      userId: payload.userId,
-      userThumbnailRelativePath: payload.userThumbnailRelativePath,
+      userId: userId,
       createdDateTime: new Date(),
     });
     this._likeList.push(newLike);
@@ -95,8 +82,8 @@ export abstract class Content extends EntityWithCUDTime<string> {
   constructor(payload: CreateContentEntityPayload<"base", "all">) {
     super();
 
-    this._groupId = payload.groupId;
-    this._ownerId = payload.ownerId;
+    this.groupId = payload.groupId;
+    this.ownerId = payload.ownerId;
     this._referred = payload.referred;
     this._thumbnailRelativePath = payload.thumbnailRelativePath;
 
@@ -109,7 +96,7 @@ export abstract class Content extends EntityWithCUDTime<string> {
       this._numLikes = payload.numLikes;
       this._likeList = payload.likeList;
       this._numComments = payload.numComments;
-      this._commentList = payload.commentList;
+      this.commentList = payload.commentList;
     } else {
       this._id = v4();
       this._createdDateTime = new Date();
@@ -119,7 +106,7 @@ export abstract class Content extends EntityWithCUDTime<string> {
       this._numLikes = 0;
       this._likeList = [];
       this._numComments = 0;
-      this._commentList = [];
+      this.commentList = [];
     }
   }
 }
