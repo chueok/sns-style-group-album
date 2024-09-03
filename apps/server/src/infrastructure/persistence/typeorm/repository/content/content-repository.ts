@@ -1,5 +1,6 @@
 import {
   Content,
+  ContentId,
   ContentPagenationType,
   ContentTypeEnum,
   IContentRepository,
@@ -74,7 +75,7 @@ export class TypeormContentRepository implements IContentRepository {
       .catch(() => false);
   }
 
-  async findContentById(contentId: string): Promise<Nullable<Content>> {
+  async findContentById(contentId: ContentId): Promise<Nullable<Content>> {
     const [content, likeList, numLikes, commentList, numComments] =
       await Promise.all([
         this.typeormContentRepository.findOne({

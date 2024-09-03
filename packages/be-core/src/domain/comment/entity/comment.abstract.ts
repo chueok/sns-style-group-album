@@ -5,6 +5,7 @@ import { CreateCommentEntityPayload } from "./type/create-comment-entity-payload
 import { v4 } from "uuid";
 import { CommentId } from "./type/comment-id";
 import { UserId } from "../../user/entity/type/user-id";
+import { ContentId } from "../../content/entity/type/content-id";
 
 export abstract class Comment extends EntityWithCUDTime<CommentId> {
   @IsUUID()
@@ -29,8 +30,8 @@ export abstract class Comment extends EntityWithCUDTime<CommentId> {
   }
 
   @IsUUID()
-  protected _contentId: string;
-  get contentId(): string {
+  protected _contentId: ContentId;
+  get contentId(): ContentId {
     return this._contentId;
   }
 

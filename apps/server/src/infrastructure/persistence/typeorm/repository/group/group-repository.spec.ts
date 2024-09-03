@@ -4,7 +4,7 @@ import { typeormSqliteOptions } from "../../config/typeorm-config";
 import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
 import { TypeormGroup } from "../../entity/group/typeorm-group.entity";
 import { TypeormGroupRepository } from "./group-repository";
-import { Group } from "@repo/be-core";
+import { Group, GroupId, UserId } from "@repo/be-core";
 import { TypeormUser } from "../../entity/user/typeorm-user.entity";
 import { GroupMapper } from "./mapper/group-mapper";
 
@@ -58,7 +58,7 @@ describe("GroupRepository", () => {
     });
 
     it("should not find a group by id when an error occurs", async () => {
-      const group = await groupRepository.findGroupById("invalid");
+      const group = await groupRepository.findGroupById("invalid" as GroupId);
       expect(group).toBeNull();
     });
   });
@@ -79,7 +79,9 @@ describe("GroupRepository", () => {
     });
 
     it("should not find a group list by owner id when an error occurs", async () => {
-      const groups = await groupRepository.findGroupListByOwnerId("invalid");
+      const groups = await groupRepository.findGroupListByOwnerId(
+        "invalid" as UserId,
+      );
       expect(groups).not.toBeNull();
       expect(groups).toBeInstanceOf(Array);
       expect(groups.length).toEqual(0);
@@ -102,7 +104,9 @@ describe("GroupRepository", () => {
     });
 
     it("should not find a group list by user id when an error occurs", async () => {
-      const groups = await groupRepository.findGroupListByUserId("invalid");
+      const groups = await groupRepository.findGroupListByUserId(
+        "invalid" as UserId,
+      );
       expect(groups).not.toBeNull();
       expect(groups).toBeInstanceOf(Array);
       expect(groups.length).toEqual(0);

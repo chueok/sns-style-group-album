@@ -6,14 +6,14 @@ import {
   ManyToOne,
   JoinTable,
 } from "typeorm";
-import { Nullable } from "@repo/be-core";
+import { GroupId, Nullable, UserId } from "@repo/be-core";
 import { TypeormUser } from "../user/typeorm-user.entity";
 import { TableAlias } from "../table-alias";
 
 @Entity(TableAlias.GROUP)
 export class TypeormGroup {
   @PrimaryColumn()
-  id!: string;
+  id!: GroupId;
 
   @Column({ nullable: false })
   name!: string;
@@ -27,7 +27,7 @@ export class TypeormGroup {
   })
   owner!: Promise<TypeormUser>;
   @Column()
-  ownerId!: string;
+  ownerId!: UserId;
 
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;

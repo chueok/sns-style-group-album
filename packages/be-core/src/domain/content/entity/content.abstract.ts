@@ -16,13 +16,15 @@ import { ReferredContent } from "./referred-content";
 import { ContentLike } from "./content-like";
 import { Comment } from "../../comment/entity/comment.abstract";
 import { ContentId } from "./type/content-id";
+import { GroupId } from "../../group/entity/type/group-id";
+import { UserId } from "../../user/entity/type/user-id";
 
 export abstract class Content extends EntityWithCUDTime<ContentId> {
   @IsUUID()
   protected override readonly _id: ContentId;
 
   @IsUUID()
-  readonly groupId: string;
+  readonly groupId: GroupId;
 
   @IsEnum(ContentTypeEnum)
   protected _type!: ContentTypeEnum;
@@ -31,7 +33,7 @@ export abstract class Content extends EntityWithCUDTime<ContentId> {
   }
 
   @IsUUID("all")
-  readonly ownerId: string;
+  readonly ownerId: UserId;
 
   @IsArray()
   protected _referred: ReferredContent[];

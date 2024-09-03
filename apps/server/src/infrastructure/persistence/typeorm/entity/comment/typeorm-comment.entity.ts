@@ -8,7 +8,13 @@ import {
   TableInheritance,
   ChildEntity,
 } from "typeorm";
-import { CommentTypeEnum, Nullable } from "@repo/be-core";
+import {
+  CommentId,
+  CommentTypeEnum,
+  ContentId,
+  Nullable,
+  UserId,
+} from "@repo/be-core";
 import { TypeormContent } from "../content/typeorm-content.entity";
 import { TypeormUser } from "../user/typeorm-user.entity";
 import { TableAlias } from "../table-alias";
@@ -17,7 +23,7 @@ import { TableAlias } from "../table-alias";
 @TableInheritance({ column: { type: "varchar", name: "type" } })
 export class TypeormComment {
   @PrimaryColumn()
-  id!: string;
+  id!: CommentId;
 
   @Column({ nullable: false })
   commentType!: CommentTypeEnum;
@@ -35,7 +41,7 @@ export class TypeormComment {
   })
   content!: Promise<TypeormContent>;
   @Column()
-  contentId!: string;
+  contentId!: ContentId;
 
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;
@@ -53,7 +59,7 @@ export class TypeormUserComment extends TypeormComment {
   @ManyToOne(() => TypeormUser)
   owner!: Promise<TypeormUser>;
   @Column()
-  ownerId!: string;
+  ownerId!: UserId;
 }
 
 @ChildEntity()

@@ -3,11 +3,12 @@ import { CreateCommentEntityPayload } from "./type/create-comment-entity-payload
 import { Comment } from "./comment.abstract";
 import { IsOptional, IsString, IsUUID } from "class-validator";
 import { CommentTypeEnum } from "../enum/comment-type-enum";
+import { UserId } from "../../user/entity/type/user-id";
 
 export class UserComment extends Comment {
   @IsUUID("all")
-  protected _ownerId: string;
-  get ownerId(): string {
+  protected _ownerId: UserId;
+  get ownerId(): UserId {
     return this._ownerId;
   }
 

@@ -1,8 +1,12 @@
 import {
   BucketStatusEnum,
+  CommentId,
   CommentTypeEnum,
+  ContentId,
   ContentTypeEnum,
   CustomAssert,
+  GroupId,
+  UserId,
 } from "@repo/be-core";
 import { DataSource } from "typeorm";
 import {
@@ -126,7 +130,7 @@ export class DummyDatabaseHandler {
 
   makeDummyUser(): TypeormUser {
     const typeormEntity = new TypeormUser();
-    typeormEntity.id = faker.string.uuid();
+    typeormEntity.id = faker.string.uuid() as UserId;
     typeormEntity.username = faker.internet.userName();
     typeormEntity.hashedPassword = faker.internet.password();
     typeormEntity.groups = Promise.resolve([]);
@@ -149,7 +153,7 @@ export class DummyDatabaseHandler {
     CustomAssert.isTrue(userList.length > 0, new Error("User is empty"));
 
     const typeormEntity = new TypeormGroup();
-    typeormEntity.id = faker.string.uuid();
+    typeormEntity.id = faker.string.uuid() as GroupId;
     typeormEntity.name = faker.internet.userName();
 
     const owner = getRandomElement(userList);
@@ -204,7 +208,7 @@ export class DummyDatabaseHandler {
         instance = new TypeormSystemContent();
         break;
     }
-    instance.id = faker.string.uuid();
+    instance.id = faker.string.uuid() as ContentId;
     instance.group = Promise.resolve(group);
     instance.owner = Promise.resolve(getRandomElement(memberList));
     instance.contentType = contentType;
@@ -337,7 +341,7 @@ export class DummyDatabaseHandler {
         break;
     }
 
-    instance.id = faker.string.uuid();
+    instance.id = faker.string.uuid() as CommentId;
     instance.commentType = commentType;
     instance.text = faker.lorem.sentence();
     instance.contentId = getRandomElement(contentList).id;

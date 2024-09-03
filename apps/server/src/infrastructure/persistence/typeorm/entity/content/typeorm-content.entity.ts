@@ -9,7 +9,14 @@ import {
   PrimaryColumn,
   TableInheritance,
 } from "typeorm";
-import { BucketStatusEnum, ContentTypeEnum, Nullable } from "@repo/be-core";
+import {
+  BucketStatusEnum,
+  ContentId,
+  ContentTypeEnum,
+  GroupId,
+  Nullable,
+  UserId,
+} from "@repo/be-core";
 import { TypeormComment } from "../comment/typeorm-comment.entity";
 import { TypeormGroup } from "../group/typeorm-group.entity";
 import { TypeormUser } from "../user/typeorm-user.entity";
@@ -20,7 +27,7 @@ import { TableAlias } from "../table-alias";
 @TableInheritance({ column: { type: "varchar", name: "type" } })
 export class TypeormContent {
   @PrimaryColumn()
-  id!: string;
+  id!: ContentId;
 
   @ManyToOne(() => TypeormGroup, {
     nullable: false,
@@ -28,14 +35,14 @@ export class TypeormContent {
   })
   group!: Promise<TypeormGroup>;
   @Column()
-  groupId!: string;
+  groupId!: GroupId;
 
   @ManyToOne(() => TypeormUser, {
     nullable: false,
   })
   owner!: Promise<TypeormUser>;
   @Column()
-  ownerId!: string;
+  ownerId!: UserId;
 
   @Column({ type: "varchar", nullable: false })
   contentType!: ContentTypeEnum;

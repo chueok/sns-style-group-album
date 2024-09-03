@@ -6,6 +6,7 @@ import {
   SystemComment,
   Exception,
   Code,
+  UserId,
 } from "@repo/be-core";
 import {
   isTypeormSystemComment,
@@ -87,7 +88,7 @@ export class CommentMapper {
       const ownerId = payload.comment.ownerId;
 
       const typeormTags = await payload.comment.tags;
-      const userTags: string[] = typeormTags.map((item) => {
+      const userTags: UserId[] = typeormTags.map((item) => {
         return item.id;
       });
 
@@ -107,7 +108,7 @@ export class CommentMapper {
       return UserComment.new(commentPayload);
     } else if (isTypeormSystemComment(payload.comment)) {
       const typeormTags = await payload.comment.tags;
-      const userTags: string[] = typeormTags.map((item) => {
+      const userTags: UserId[] = typeormTags.map((item) => {
         return item.id;
       });
       const commentPayload: CreateCommentEntityPayload<"system", "existing"> = {

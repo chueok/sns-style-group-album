@@ -1,4 +1,10 @@
-import { Group, IGroupRepository, Nullable } from "@repo/be-core";
+import {
+  Group,
+  GroupId,
+  IGroupRepository,
+  Nullable,
+  UserId,
+} from "@repo/be-core";
 import { DataSource, Repository } from "typeorm";
 import { TypeormGroup } from "../../entity/group/typeorm-group.entity";
 import { GroupMapper } from "./mapper/group-mapper";
@@ -30,7 +36,7 @@ export class TypeormGroupRepository implements IGroupRepository {
       .catch(() => false);
   }
 
-  async findGroupById(groupId: string): Promise<Nullable<Group>> {
+  async findGroupById(groupId: GroupId): Promise<Nullable<Group>> {
     const ormGroup = await this.typeormGroupRepository.findOneBy({
       id: groupId,
     });
@@ -41,7 +47,7 @@ export class TypeormGroupRepository implements IGroupRepository {
     return GroupMapper.toDomainEntity(ormGroup);
   }
 
-  async findGroupListByOwnerId(ownerId: string): Promise<Group[]> {
+  async findGroupListByOwnerId(ownerId: UserId): Promise<Group[]> {
     const ormGroups = await this.typeormGroupRepository
       .createQueryBuilder("group")
       .innerJoinAndSelect("group.owner", "owner")
@@ -50,7 +56,7 @@ export class TypeormGroupRepository implements IGroupRepository {
     return GroupMapper.toDomainEntity(ormGroups);
   }
 
-  async findGroupListByUserId(userId: string): Promise<Group[]> {
+  async findGroupListByUserId(userId: UserId): Promise<Group[]> {
     const ormGroups = await this.typeormGroupRepository
       .createQueryBuilder("group")
       .innerJoinAndSelect("group.members", "member")

@@ -1,4 +1,4 @@
-import { IUserRepository, Nullable, User } from "@repo/be-core";
+import { IUserRepository, Nullable, User, UserId } from "@repo/be-core";
 import { DataSource, Repository } from "typeorm";
 import { TypeormUser } from "../../entity/user/typeorm-user.entity";
 import { UserMapper } from "./mapper/user-mapper";
@@ -29,7 +29,7 @@ export class TypeormUserRepository implements IUserRepository {
       .catch(() => false);
   }
 
-  async findUserById(id: string): Promise<Nullable<User>> {
+  async findUserById(id: UserId): Promise<Nullable<User>> {
     const ormUser = await this.typeormUserRepository.findOneBy({ id });
     if (!ormUser) {
       return null;

@@ -6,7 +6,7 @@ import { TypeormUserRepository } from "./user-repository";
 import { TypeormUser } from "../../entity/user/typeorm-user.entity";
 import { TypeormGroup } from "../../entity/group/typeorm-group.entity";
 import { UserMapper } from "./mapper/user-mapper";
-import { User } from "@repo/be-core";
+import { User, UserId } from "@repo/be-core";
 
 const parameters = {
   testDbPath: join("db", `${__filename}.sqlite`),
@@ -47,7 +47,7 @@ describe("UserRepository", () => {
     });
 
     it("should not find a user by id when an error occurs", async () => {
-      const user = await userRepository.findUserById("invalid");
+      const user = await userRepository.findUserById("invalid" as UserId);
       expect(user).toBeNull();
     });
   });

@@ -1,5 +1,6 @@
 import {
   Comment,
+  CommentId,
   CommentPagenationType,
   ICommentRepository,
   Nullable,
@@ -51,7 +52,7 @@ export class TypeormCommentRepository implements ICommentRepository {
       .catch(() => false);
   }
 
-  async findCommentById(commentId: string): Promise<Nullable<Comment>> {
+  async findCommentById(commentId: CommentId): Promise<Nullable<Comment>> {
     const ormComment = await this.typeormCommentRepository.findOne({
       where: { id: commentId },
       relations: {

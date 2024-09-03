@@ -6,7 +6,7 @@ import { TypeormCommentRepository } from "./comment-repository";
 import { TypeormComment } from "../../entity/comment/typeorm-comment.entity";
 import { CommentMapper } from "./mapper/comment-mapper";
 import { TypeormContent } from "../../entity/content/typeorm-content.entity";
-import { Comment } from "@repo/be-core";
+import { Comment, CommentId } from "@repo/be-core";
 import { TypeormUser } from "../../entity/user/typeorm-user.entity";
 
 const parameters = {
@@ -53,7 +53,9 @@ describe("CommentRepository", () => {
     });
 
     it("should not find a comment by id when an error occurs", async () => {
-      const comment = await commentRepository.findCommentById("invalid-id");
+      const comment = await commentRepository.findCommentById(
+        "invalid-id" as CommentId,
+      );
       expect(comment).toBeNull();
     });
   });
