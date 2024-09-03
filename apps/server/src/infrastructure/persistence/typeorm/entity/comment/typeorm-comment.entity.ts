@@ -63,3 +63,17 @@ export class TypeormSystemComment extends TypeormComment {
   @Column({ type: "text" })
   subText!: Nullable<string>;
 }
+
+//
+
+export function isTypeormUserComment(
+  comment: TypeormComment,
+): comment is TypeormUserComment {
+  return comment.commentType === CommentTypeEnum.USER_COMMENT;
+}
+
+export function isTypeormSystemComment(
+  comment: TypeormComment,
+): comment is TypeormSystemComment {
+  return comment.commentType === CommentTypeEnum.SYSTEM_COMMENT;
+}

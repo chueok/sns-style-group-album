@@ -1,13 +1,14 @@
 import {
   BucketContent,
+  Code,
   Comment,
   Content,
   ContentLike,
   ContentTypeEnum,
   ContentUser,
   CreateContentEntityPayload,
+  Exception,
   ImageContent,
-  Nullable,
   PostContent,
   ReferredContent,
   ScheduleContent,
@@ -15,6 +16,11 @@ import {
   VideoContent,
 } from "@repo/be-core";
 import {
+  isTypeormBucketContent,
+  isTypeormMediaContent,
+  isTypeormPostContent,
+  isTypeormScheduleContent,
+  isTypeormSystemContent,
   TypeormBucket,
   TypeormContent,
   TypeormMedia,
@@ -26,23 +32,31 @@ import { TypeormLike } from "../../../entity/like/typeorm-like.entity";
 import { TypeormComment } from "../../../entity/comment/typeorm-comment.entity";
 import { CommentMapper } from "../../comment/mapper/comment-mapper";
 
-type OrmToDomainPayloadType<T extends TypeormContent = TypeormContent> = {
-  content: T;
+type OrmToDomainPayloadType = {
+  content: TypeormContent;
   numLikes: number;
   likeList: TypeormLike[];
   numComments: number;
   commentList: TypeormComment[];
 };
 
+type OrmToDomainReturnType = {
+  results: Content[];
+  errors: Error[];
+};
+
 type DomainToOrmReturnType = {
-  content: TypeormContent;
-  likeList: TypeormLike[];
+  results: {
+    content: TypeormContent;
+    likeList: TypeormLike[];
+  }[];
+  errors: Error[];
 };
 
 export class ContentMapper {
   private static async toDomainContent(
     payload: OrmToDomainPayloadType,
-  ): Promise<Content | null> {
+  ): Promise<Content> {
     const ormOwner = await payload.content.owner;
     const owner: ContentUser = new ContentUser({
       id: ormOwner.id,
@@ -70,14 +84,14 @@ export class ContentMapper {
       }),
     );
 
-    const commentList: Comment[] = await CommentMapper.toDomainEntity(
+    const commentMapResult = await CommentMapper.toDomainEntity(
       payload.commentList.map((comment) => ({
         comment,
-        content: payload.content,
       })),
     );
+    const commentList: Comment[] = commentMapResult.results;
 
-    if (payload.content.contentType === ContentTypeEnum.SYSTEM) {
+    if (isTypeormSystemContent(payload.content)) {
       const contentPayload: CreateContentEntityPayload<"system", "existing"> = {
         groupId: payload.content.groupId,
         owner,
@@ -94,12 +108,15 @@ export class ContentMapper {
         numComments: payload.numComments,
         commentList,
 
-        text: (payload.content as TypeormSystemContent).text,
-        subText: (payload.content as TypeormSystemContent).subText,
+        text: payload.content.text,
+        subText: payload.content.subText,
       };
       return SystemContent.new(contentPayload);
-    } else if (payload.content.contentType === ContentTypeEnum.IMAGE) {
-      const contentPayload: CreateContentEntityPayload<"image", "existing"> = {
+    } else if (isTypeormMediaContent(payload.content)) {
+      const contentPayload: CreateContentEntityPayload<
+        "image" | "video",
+        "existing"
+      > = {
         groupId: payload.content.groupId,
         owner,
         referred,
@@ -115,39 +132,18 @@ export class ContentMapper {
         numComments: payload.numComments,
         commentList,
 
-        largeRelativePath: (payload.content as TypeormMedia).largeRelativePath,
-        originalRelativePath: (payload.content as TypeormMedia)
-          .originalRelativePath,
-        size: (payload.content as TypeormMedia).size,
-        ext: (payload.content as TypeormMedia).ext,
-        mimeType: (payload.content as TypeormMedia).mimetype,
+        largeRelativePath: payload.content.largeRelativePath,
+        originalRelativePath: payload.content.originalRelativePath,
+        size: payload.content.size,
+        ext: payload.content.ext,
+        mimeType: payload.content.mimetype,
       };
-      return ImageContent.new(contentPayload);
-    } else if (payload.content.contentType === ContentTypeEnum.VIDEO) {
-      const contentPayload: CreateContentEntityPayload<"video", "existing"> = {
-        groupId: payload.content.groupId,
-        owner,
-        referred,
-        thumbnailRelativePath: payload.content.thumbnailRelativePath,
-
-        id: payload.content.id,
-        createdDateTime: payload.content.createdDateTime,
-        updatedDateTime: payload.content.updatedDateTime,
-        deletedDateTime: payload.content.deletedDateTime,
-
-        numLikes: payload.numLikes,
-        likeList,
-        numComments: payload.numComments,
-        commentList,
-
-        originalRelativePath: (payload.content as TypeormMedia)
-          .originalRelativePath,
-        size: (payload.content as TypeormMedia).size,
-        ext: (payload.content as TypeormMedia).ext,
-        mimeType: (payload.content as TypeormMedia).mimetype,
-      };
-      return VideoContent.new(contentPayload);
-    } else if (payload.content.contentType === ContentTypeEnum.POST) {
+      if (payload.content.contentType === ContentTypeEnum.IMAGE) {
+        return ImageContent.new(contentPayload);
+      } else {
+        return VideoContent.new(contentPayload);
+      }
+    } else if (isTypeormPostContent(payload.content)) {
       const contentPayload: CreateContentEntityPayload<"post", "existing"> = {
         groupId: payload.content.groupId,
         owner,
@@ -164,11 +160,11 @@ export class ContentMapper {
         numComments: payload.numComments,
         commentList,
 
-        title: (payload.content as TypeormPost).title,
-        text: (payload.content as TypeormPost).text,
+        title: payload.content.title,
+        text: payload.content.text,
       };
       return PostContent.new(contentPayload);
-    } else if (payload.content.contentType === ContentTypeEnum.BUCKET) {
+    } else if (isTypeormBucketContent(payload.content)) {
       const contentPayload: CreateContentEntityPayload<"bucket", "existing"> = {
         groupId: payload.content.groupId,
         owner,
@@ -189,7 +185,7 @@ export class ContentMapper {
         status: (payload.content as TypeormBucket).status,
       };
       return BucketContent.new(contentPayload);
-    } else if (payload.content.contentType === ContentTypeEnum.SCHEDULE) {
+    } else if (isTypeormScheduleContent(payload.content)) {
       const contentPayload: CreateContentEntityPayload<"schedule", "existing"> =
         {
           groupId: payload.content.groupId,
@@ -214,42 +210,37 @@ export class ContentMapper {
         };
       return ScheduleContent.new(contentPayload);
     } else {
-      // TODO : error logging
-      return null;
+      throw Exception.new({
+        code: Code.UTIL_PROCESS_ERROR,
+        overrideMessage: "Invalid content type.",
+      });
     }
   }
 
-  public static toDomainEntity(
-    payload: OrmToDomainPayloadType,
-  ): Promise<Nullable<Content>>;
-  public static toDomainEntity(
-    payload: OrmToDomainPayloadType[],
-  ): Promise<Content[]>;
   public static async toDomainEntity(
-    payload: OrmToDomainPayloadType | OrmToDomainPayloadType[],
-  ): Promise<Nullable<Content> | Content[]> {
-    const payloadList = Array.isArray(payload) ? payload : [payload];
+    payload: OrmToDomainPayloadType[],
+  ): Promise<OrmToDomainReturnType> {
+    const results: Content[] = [];
+    const errors: Error[] = [];
 
-    const promises = payloadList.map(async (item) => {
+    const promiseList = payload.map(async (item) => {
       return this.toDomainContent(item);
     });
 
-    let domainEntities!: Content[];
-    try {
-      domainEntities = (await Promise.all(promises)).filter(
-        (item) => item !== null,
-      );
-    } catch (error) {
-      console.log((error as any).data, (error as any).data.errors);
-    }
-    if (Array.isArray(payload)) {
-      return domainEntities;
-    } else {
-      return domainEntities[0] || null;
-    }
+    const promiseAllSettledResult = await Promise.allSettled(promiseList);
+
+    promiseAllSettledResult.forEach((result) => {
+      if (result.status === "fulfilled") {
+        results.push(result.value);
+      } else {
+        errors.push(result.reason);
+      }
+    });
+
+    return { results, errors };
   }
 
-  private static toOrmContent(payload: Content): Nullable<TypeormContent> {
+  private static toOrmContent(payload: Content): TypeormContent {
     let ormContent!: TypeormContent;
     if (payload.type === ContentTypeEnum.SYSTEM) {
       ormContent = new TypeormSystemContent();
@@ -292,7 +283,10 @@ export class ContentMapper {
         payload as ScheduleContent
       ).endDateTime;
     } else {
-      return null;
+      throw Exception.new({
+        code: Code.UTIL_PROCESS_ERROR,
+        overrideMessage: "Invalid content type.",
+      });
     }
     ormContent.id = payload.id;
     ormContent.groupId = payload.groupId;
@@ -305,35 +299,29 @@ export class ContentMapper {
     return ormContent;
   }
 
-  public static toOrmEntity(payload: Content): DomainToOrmReturnType;
-  public static toOrmEntity(payload: Content[]): DomainToOrmReturnType[];
-  public static toOrmEntity(
-    payload: Content | Content[],
-  ): DomainToOrmReturnType | DomainToOrmReturnType[] {
-    const payloadList = Array.isArray(payload) ? payload : [payload];
+  public static toOrmEntity(payload: Content[]): DomainToOrmReturnType {
+    const results: DomainToOrmReturnType["results"] = [];
+    const errors: Error[] = [];
 
-    const resultList = payloadList.map((item) => {
-      const content = this.toOrmContent(item);
-      if (!content) return null;
-      const likeList = item.likeList.map((like) => {
-        const typeormLike = new TypeormLike();
-        typeormLike.id = like.id;
-        typeormLike.contentId = item.id;
-        typeormLike.userId = like.userId;
-        typeormLike.createdDateTime = like.createdDateTime;
-        return typeormLike;
-      });
-      return { content, likeList };
+    payload.forEach((item) => {
+      try {
+        const content = this.toOrmContent(item);
+        const likeList = item.likeList.map((like) => {
+          const typeormLike = new TypeormLike();
+          typeormLike.id = like.id;
+          typeormLike.contentId = item.id;
+          typeormLike.userId = like.userId;
+          typeormLike.createdDateTime = like.createdDateTime;
+          return typeormLike;
+        });
+        results.push({ content, likeList });
+      } catch (error) {
+        if (error instanceof Error) {
+          errors.push(error);
+        }
+      }
     });
 
-    const contentList: DomainToOrmReturnType[] = resultList.filter(
-      (item) => item !== null,
-    );
-
-    if (Array.isArray(payload)) {
-      return contentList;
-    } else {
-      return contentList[0]!;
-    }
+    return { results, errors };
   }
 }

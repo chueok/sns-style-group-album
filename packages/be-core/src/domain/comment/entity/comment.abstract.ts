@@ -33,13 +33,6 @@ export abstract class Comment extends EntityWithCUDTime<string> {
     return this._contentId;
   }
 
-  @IsOptional()
-  @IsString()
-  protected _contentThumbnailRelativePath: Nullable<string>;
-  get contentThumbnailRelativePath(): Nullable<string> {
-    return this._contentThumbnailRelativePath;
-  }
-
   public async changeText(text: string) {
     this._text = text;
     this._userTags = this.extractUserTags(this.text);
@@ -56,7 +49,6 @@ export abstract class Comment extends EntityWithCUDTime<string> {
     super();
     this._text = payload.text;
     this._contentId = payload.contentId;
-    this._contentThumbnailRelativePath = payload.contentThumbnailRelativePath;
     if ("id" in payload) {
       this._id = payload.id;
       this._userTags = payload.userTags;

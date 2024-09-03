@@ -1,21 +1,20 @@
 import { Nullable } from "../../../common/type/common-types";
 import { CreateCommentEntityPayload } from "./type/create-comment-entity-payload";
 import { Comment } from "./comment.abstract";
-import { IsInstance, IsOptional, IsString } from "class-validator";
+import { IsOptional, IsString, IsUUID } from "class-validator";
 import { CommentTypeEnum } from "../enum/comment-type-enum";
-import { CommentUser } from "./comment-user";
 
 export class UserComment extends Comment {
-  @IsInstance(CommentUser)
-  protected _owner: CommentUser;
-  get owner(): CommentUser {
-    return this._owner;
+  @IsUUID("all")
+  protected _ownerId: string;
+  get ownerId(): string {
+    return this._ownerId;
   }
 
   constructor(payload: CreateCommentEntityPayload<"user", "all">) {
     super(payload);
     this._type = CommentTypeEnum.USER_COMMENT;
-    this._owner = payload.owner;
+    this._ownerId = payload.ownerId;
   }
 
   static async new(

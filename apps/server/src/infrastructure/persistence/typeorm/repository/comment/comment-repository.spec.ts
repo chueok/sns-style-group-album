@@ -144,17 +144,23 @@ describe("CommentRepository", () => {
 
   describe("createComment", () => {
     it("should create a comment", async () => {
-      const ormDummyComment = testDatabaseHandler.makeDummyComment();
+      const ormDummyComment = testDatabaseHandler
+        .getDbCacheList(TypeormComment)
+        .at(-1)!;
 
       const content = (await dataSource
         .getRepository(TypeormContent)
         .findOneBy({ id: ormDummyComment.contentId }))!;
       expect(content).not.toBeNull();
 
-      const domainDummyComment = (await CommentMapper.toDomainEntity({
-        comment: ormDummyComment,
-        content,
-      }))!;
+      const mapResult = await CommentMapper.toDomainEntity([
+        {
+          comment: ormDummyComment,
+        },
+      ]);
+
+      const domainDummyComment = mapResult.results[0]!;
+
       expect(domainDummyComment).not.toBeNull();
 
       const result = await commentRepository.createComment(domainDummyComment);
@@ -162,17 +168,26 @@ describe("CommentRepository", () => {
     });
 
     it("should not create a comment when an error occurs", async () => {
-      const ormDummyComment = testDatabaseHandler.makeDummyComment();
+      const ormDummyComment = testDatabaseHandler
+        .getDbCacheList(TypeormComment)
+        .at(-1)!;
 
       const content = (await dataSource
         .getRepository(TypeormContent)
         .findOneBy({ id: ormDummyComment.contentId }))!;
       expect(content).not.toBeNull();
 
-      const domainDummyComment = (await CommentMapper.toDomainEntity({
-        comment: ormDummyComment,
-        content,
-      }))!;
+      const mapResult = (await CommentMapper.toDomainEntity([
+        {
+          comment: ormDummyComment,
+        },
+      ]))!;
+
+      if (mapResult.errors.length > 0) {
+        console.log(mapResult.errors);
+      }
+      const domainDummyComment = mapResult.results[0]!;
+
       expect(domainDummyComment).not.toBeNull();
 
       (domainDummyComment as any)._createdDateTime = null;
@@ -185,14 +200,17 @@ describe("CommentRepository", () => {
     let targetDomainComment: Comment;
 
     beforeAll(async () => {
-      targetDomainComment = (await CommentMapper.toDomainEntity({
-        comment: targetOrmComment,
-        content: await targetOrmComment.content,
-      }))!;
+      const mapResult = await CommentMapper.toDomainEntity([
+        {
+          comment: targetOrmComment,
+        },
+      ]);
+
+      targetDomainComment = mapResult.results[0]!;
     });
 
     it("should update a comment", async () => {
-      targetDomainComment.changeText("updated content");
+      await targetDomainComment.changeText("updated content");
 
       const result = await commentRepository.updateComment(targetDomainComment);
       expect(result).toBeTruthy();

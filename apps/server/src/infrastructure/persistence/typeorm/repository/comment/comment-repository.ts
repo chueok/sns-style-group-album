@@ -16,16 +16,34 @@ export class TypeormCommentRepository implements ICommentRepository {
   }
 
   async createComment(comment: Comment): Promise<boolean> {
-    const ormEntity = CommentMapper.toOrmEntity(comment);
+    const mapResult = CommentMapper.toOrmEntity([{ comment }]);
+
+    if (mapResult.results.length === 0) {
+      return false;
+    }
+
+    mapResult.errors.forEach((error) => {
+      // TODO log error
+    });
+
     return this.typeormCommentRepository
-      .save(ormEntity)
+      .save(mapResult.results)
       .then(() => true)
       .catch(() => false);
   }
+
   async updateComment(comment: Comment): Promise<boolean> {
-    const ormEntity = CommentMapper.toOrmEntity(comment);
+    const mapResult = CommentMapper.toOrmEntity([{ comment }]);
+    if (mapResult.results.length === 0) {
+      return false;
+    }
+
+    mapResult.errors.forEach((error) => {
+      // TODO log error
+    });
+
     return this.typeormCommentRepository
-      .save(ormEntity)
+      .save(mapResult.results)
       .then(() => true)
       .catch(() => false);
   }
@@ -41,10 +59,17 @@ export class TypeormCommentRepository implements ICommentRepository {
       return null;
     }
 
-    return CommentMapper.toDomainEntity({
-      content: await ormComment.content,
-      comment: ormComment,
-    });
+    const mapResult = await CommentMapper.toDomainEntity([
+      {
+        comment: ormComment,
+      },
+    ]);
+
+    if (mapResult.results.length === 0) {
+      return null;
+    }
+
+    return mapResult.results[0]!;
   }
 
   async findCommentListByContentId(payload: {
@@ -65,14 +90,14 @@ export class TypeormCommentRepository implements ICommentRepository {
     if (!firstOrmComment) {
       return [];
     }
-    const ormContent = await firstOrmComment.content;
 
-    return CommentMapper.toDomainEntity(
+    const mapResult = await CommentMapper.toDomainEntity(
       ormCommentList.map((comment) => ({
         comment,
-        content: ormContent,
       })),
     );
+
+    return mapResult.results;
   }
 
   async findCommentListForFeed(payload: {
@@ -99,17 +124,13 @@ export class TypeormCommentRepository implements ICommentRepository {
       });
     }
     const ormCommentList = await query.getMany();
-    const firstComment = ormCommentList[0];
-    if (!firstComment) {
-      return [];
-    }
-    const ormContent = await firstComment.content;
 
-    return CommentMapper.toDomainEntity(
+    const mapResult = await CommentMapper.toDomainEntity(
       ormCommentList.map((comment) => ({
         comment,
-        content: ormContent,
       })),
     );
+
+    return mapResult.results;
   }
 }

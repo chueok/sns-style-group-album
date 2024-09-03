@@ -128,3 +128,38 @@ export class TypeormSchedule extends TypeormContent {
   @Column({ type: "boolean" })
   isAllDay!: boolean;
 }
+
+//
+
+export function isTypeormSystemContent(
+  content: TypeormContent,
+): content is TypeormSystemContent {
+  return content.contentType === ContentTypeEnum.SYSTEM;
+}
+
+export function isTypeormMediaContent(
+  content: TypeormContent,
+): content is TypeormMedia {
+  return (
+    content.contentType === ContentTypeEnum.IMAGE ||
+    content.contentType === ContentTypeEnum.VIDEO
+  );
+}
+
+export function isTypeormPostContent(
+  content: TypeormContent,
+): content is TypeormPost {
+  return content.contentType === ContentTypeEnum.POST;
+}
+
+export function isTypeormBucketContent(
+  content: TypeormContent,
+): content is TypeormBucket {
+  return content.contentType === ContentTypeEnum.BUCKET;
+}
+
+export function isTypeormScheduleContent(
+  content: TypeormContent,
+): content is TypeormSchedule {
+  return content.contentType === ContentTypeEnum.SCHEDULE;
+}

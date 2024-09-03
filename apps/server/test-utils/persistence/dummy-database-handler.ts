@@ -348,11 +348,12 @@ export class DummyDatabaseHandler {
 
     let itterNum: number;
     let tags: Set<TypeormUser>;
+    let randomUser: TypeormUser;
     switch (commentType) {
       case CommentTypeEnum.USER_COMMENT:
-        (instance as TypeormUserComment).owner = Promise.resolve(
-          getRandomElement(userList),
-        );
+        randomUser = getRandomElement(userList);
+        (instance as TypeormUserComment).owner = Promise.resolve(randomUser);
+        (instance as TypeormUserComment).ownerId = randomUser.id;
         itterNum = Math.random() * userList.length;
         tags = new Set();
         for (let i = 0; i < itterNum; i++) {

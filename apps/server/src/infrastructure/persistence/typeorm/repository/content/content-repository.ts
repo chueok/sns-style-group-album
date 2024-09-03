@@ -28,25 +28,43 @@ export class TypeormContentRepository implements IContentRepository {
   // TODO 트랜잭션 처리 필요
   // 중요한 문제가 생기는건 아닌데, 트랜젝션 안하는게 나을까?
   async createContent(content: Content): Promise<boolean> {
-    const { content: ormContent, likeList } =
-      ContentMapper.toOrmEntity(content);
+    const { results, errors } = ContentMapper.toOrmEntity([content]);
+    errors.forEach((error) => {
+      // TODO log error
+    });
+    if (results.length === 0) {
+      return false;
+    }
 
-    return Promise.all([
-      this.typeormLikeRepository.save(likeList),
-      this.typeormContentRepository.save(ormContent),
-    ])
+    const promiseList = results.map(async (result) => {
+      return Promise.all([
+        this.typeormLikeRepository.save(result.likeList),
+        this.typeormContentRepository.save(result.content),
+      ]);
+    });
+
+    return Promise.all(promiseList)
       .then(() => true)
       .catch(() => false);
   }
 
   async updateContent(content: Content): Promise<boolean> {
-    const { content: ormContent, likeList } =
-      ContentMapper.toOrmEntity(content);
+    const { results, errors } = ContentMapper.toOrmEntity([content]);
+    errors.forEach((error) => {
+      // TODO log error
+    });
+    if (results.length === 0) {
+      return false;
+    }
 
-    return Promise.all([
-      this.typeormLikeRepository.save(likeList),
-      this.typeormContentRepository.update(ormContent.id, ormContent),
-    ])
+    const promiseList = results.map(async (result) => {
+      return Promise.all([
+        this.typeormLikeRepository.save(result.likeList),
+        this.typeormContentRepository.update(result.content.id, result.content),
+      ]);
+    });
+
+    return Promise.all(promiseList)
       .then(() => true)
       .catch(() => false);
   }
@@ -69,13 +87,22 @@ export class TypeormContentRepository implements IContentRepository {
       return null;
     }
 
-    return ContentMapper.toDomainEntity({
-      content,
-      numLikes,
-      likeList,
-      numComments,
-      commentList,
-    });
+    const { results, errors } = await ContentMapper.toDomainEntity([
+      {
+        content,
+        numLikes,
+        likeList,
+        numComments,
+        commentList,
+      },
+    ]);
+    if (errors.length > 0) {
+      // TODO log error
+    }
+    if (results.length === 0) {
+      return null;
+    }
+    return results[0]!;
   }
 
   async findContentsByGroupIdAndType(payload: {
@@ -166,37 +193,39 @@ export class TypeormContentRepository implements IContentRepository {
       .getMany();
   }
 
-  private async ormEntity2DomainEntity(
-    ormContent: TypeormContent,
-  ): Promise<Content | null> {
-    const [likeList, numLikes, commentList, numComments] = await Promise.all([
-      this.getRecentLikeList(ormContent.id, TypeormContentRepository.likeLimit),
-      this.getNumLikes(ormContent.id),
-      this.getRecentCommentList(
-        ormContent.id,
-        TypeormContentRepository.commentLimit,
-      ),
-      this.getNumComments(ormContent.id),
-    ]);
-
-    return ContentMapper.toDomainEntity({
-      content: ormContent,
-      numLikes,
-      likeList,
-      numComments,
-      commentList,
-    });
-  }
-
   private async ormEntityList2DomainEntityList(
     ormContentList: TypeormContent[],
   ): Promise<Content[]> {
-    return Promise.all(
-      ormContentList.map((ormContent) =>
-        this.ormEntity2DomainEntity(ormContent),
-      ),
-    ).then((domainContentList) =>
-      domainContentList.filter((domainContent) => domainContent !== null),
-    );
+    // return Promise.all(
+    const promiseList = await ormContentList.map(async (ormContent) => {
+      const [likeList, numLikes, commentList, numComments] = await Promise.all([
+        this.getRecentLikeList(
+          ormContent.id,
+          TypeormContentRepository.likeLimit,
+        ),
+        this.getNumLikes(ormContent.id),
+        this.getRecentCommentList(
+          ormContent.id,
+          TypeormContentRepository.commentLimit,
+        ),
+        this.getNumComments(ormContent.id),
+      ]);
+
+      return {
+        content: ormContent,
+        numLikes,
+        likeList,
+        numComments,
+        commentList,
+      };
+    });
+    const payload = await Promise.all(promiseList);
+
+    const { results, errors } = await ContentMapper.toDomainEntity(payload);
+
+    errors.forEach((error) => {
+      // TODO log error
+    });
+    return results;
   }
 }

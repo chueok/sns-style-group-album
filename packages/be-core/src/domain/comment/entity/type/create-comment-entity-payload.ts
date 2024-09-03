@@ -1,10 +1,8 @@
 import { Nullable } from "../../../../common/type/common-types";
-import { CommentUser } from "../comment-user";
 
 type CreateNewBaseCommentEntityPayload = {
   text: string;
   contentId: string;
-  contentThumbnailRelativePath: Nullable<string>;
 };
 
 type CreateExistingBaseCommentEntityPayload =
@@ -25,7 +23,7 @@ type CreateBaseCommentEntityPayload = {
 };
 
 type UserCommentAdditionalPayload = {
-  owner: CommentUser;
+  ownerId: string;
 };
 
 type SystemCommentAdditionalPayload = {

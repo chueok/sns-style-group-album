@@ -38,23 +38,28 @@ export class Code {
 
   //
 
-  public static UTIL_VALIDATION_ERROR: CodeDescription = {
-    code: 1000,
-    message: "Class validation error.",
-  };
-
   public static UTIL_PARAM_TYPE_ERROR: CodeDescription = {
-    code: 1001,
+    code: 1000,
     message: "Parameter type error.",
   };
 
-  public static UTIL_ALREADY_EXISTS_ERROR: CodeDescription = {
+  public static UTIL_VALIDATION_ERROR: CodeDescription = {
+    code: 1001,
+    message: "Class validation error.",
+  };
+
+  public static UTIL_PROCESS_ERROR: CodeDescription = {
     code: 1002,
+    message: "Process error.",
+  };
+
+  public static UTIL_ALREADY_EXISTS_ERROR: CodeDescription = {
+    code: 1100,
     message: "Already exists.",
   };
 
   public static UTIL_NOT_FOUND_ERROR: CodeDescription = {
-    code: 1003,
+    code: 1101,
     message: "Not found.",
   };
 
