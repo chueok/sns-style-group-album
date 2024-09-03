@@ -10,6 +10,7 @@ import { TypeormContent } from "../../entity/content/typeorm-content.entity";
 import { TypeormComment } from "../../entity/comment/typeorm-comment.entity";
 import { TypeormLike } from "../../entity/like/typeorm-like.entity";
 import { ContentMapper } from "./mapper/content-mapper";
+import { Logger, LoggerService, Optional } from "@nestjs/common";
 
 export class TypeormContentRepository implements IContentRepository {
   public static commentLimit = 5;
@@ -19,10 +20,14 @@ export class TypeormContentRepository implements IContentRepository {
   private readonly typeormCommentRepository: Repository<TypeormComment>;
   private readonly typeormLikeRepository: Repository<TypeormLike>;
 
-  constructor(dataSource: DataSource) {
+  private readonly logger: LoggerService;
+
+  constructor(dataSource: DataSource, @Optional() logger?: LoggerService) {
     this.typeormContentRepository = dataSource.getRepository(TypeormContent);
     this.typeormCommentRepository = dataSource.getRepository(TypeormComment);
     this.typeormLikeRepository = dataSource.getRepository(TypeormLike);
+
+    this.logger = logger || new Logger(TypeormContentRepository.name);
   }
 
   // TODO 트랜잭션 처리 필요
@@ -30,7 +35,7 @@ export class TypeormContentRepository implements IContentRepository {
   async createContent(content: Content): Promise<boolean> {
     const { results, errors } = ContentMapper.toOrmEntity([content]);
     errors.forEach((error) => {
-      // TODO log error
+      this.logger.error(error);
     });
     if (results.length === 0) {
       return false;
@@ -51,7 +56,7 @@ export class TypeormContentRepository implements IContentRepository {
   async updateContent(content: Content): Promise<boolean> {
     const { results, errors } = ContentMapper.toOrmEntity([content]);
     errors.forEach((error) => {
-      // TODO log error
+      this.logger.error(error);
     });
     if (results.length === 0) {
       return false;
@@ -96,13 +101,10 @@ export class TypeormContentRepository implements IContentRepository {
         commentList,
       },
     ]);
-    if (errors.length > 0) {
-      // TODO log error
-    }
-    if (results.length === 0) {
-      return null;
-    }
-    return results[0]!;
+    errors.forEach((error) => {
+      this.logger.error(error);
+    });
+    return results[0] || null;
   }
 
   async findContentsByGroupIdAndType(payload: {
@@ -196,7 +198,6 @@ export class TypeormContentRepository implements IContentRepository {
   private async ormEntityList2DomainEntityList(
     ormContentList: TypeormContent[],
   ): Promise<Content[]> {
-    // return Promise.all(
     const promiseList = await ormContentList.map(async (ormContent) => {
       const [likeList, numLikes, commentList, numComments] = await Promise.all([
         this.getRecentLikeList(
@@ -224,7 +225,7 @@ export class TypeormContentRepository implements IContentRepository {
     const { results, errors } = await ContentMapper.toDomainEntity(payload);
 
     errors.forEach((error) => {
-      // TODO log error
+      this.logger.error(error);
     });
     return results;
   }

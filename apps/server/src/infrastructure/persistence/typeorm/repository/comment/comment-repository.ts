@@ -7,43 +7,46 @@ import {
 import { DataSource, Repository } from "typeorm";
 import { TypeormComment } from "../../entity/comment/typeorm-comment.entity";
 import { CommentMapper } from "./mapper/comment-mapper";
+import { Logger, LoggerService, Optional } from "@nestjs/common";
 
 export class TypeormCommentRepository implements ICommentRepository {
   private readonly typeormCommentRepository: Repository<TypeormComment>;
+  private readonly logger: LoggerService;
 
-  constructor(dataSource: DataSource) {
+  constructor(dataSource: DataSource, @Optional() logger?: LoggerService) {
     this.typeormCommentRepository = dataSource.getRepository(TypeormComment);
+    this.logger = logger || new Logger(TypeormCommentRepository.name);
   }
 
   async createComment(comment: Comment): Promise<boolean> {
-    const mapResult = CommentMapper.toOrmEntity([{ comment }]);
+    const { results, errors } = CommentMapper.toOrmEntity([{ comment }]);
 
-    if (mapResult.results.length === 0) {
+    errors.forEach((error) => {
+      this.logger.error(error);
+    });
+
+    if (results.length === 0) {
       return false;
     }
 
-    mapResult.errors.forEach((error) => {
-      // TODO log error
-    });
-
     return this.typeormCommentRepository
-      .save(mapResult.results)
+      .save(results)
       .then(() => true)
       .catch(() => false);
   }
 
   async updateComment(comment: Comment): Promise<boolean> {
-    const mapResult = CommentMapper.toOrmEntity([{ comment }]);
-    if (mapResult.results.length === 0) {
+    const { results, errors } = CommentMapper.toOrmEntity([{ comment }]);
+    if (results.length === 0) {
       return false;
     }
 
-    mapResult.errors.forEach((error) => {
-      // TODO log error
+    errors.forEach((error) => {
+      this.logger.error(error);
     });
 
     return this.typeormCommentRepository
-      .save(mapResult.results)
+      .save(results)
       .then(() => true)
       .catch(() => false);
   }
@@ -59,17 +62,16 @@ export class TypeormCommentRepository implements ICommentRepository {
       return null;
     }
 
-    const mapResult = await CommentMapper.toDomainEntity([
+    const { results, errors } = await CommentMapper.toDomainEntity([
       {
         comment: ormComment,
       },
     ]);
+    errors.forEach((error) => {
+      this.logger.error(error);
+    });
 
-    if (mapResult.results.length === 0) {
-      return null;
-    }
-
-    return mapResult.results[0]!;
+    return results[0] || null;
   }
 
   async findCommentListByContentId(payload: {
@@ -86,18 +88,16 @@ export class TypeormCommentRepository implements ICommentRepository {
       .take(payload.pageSize)
       .getMany();
 
-    const firstOrmComment = ormCommentList[0];
-    if (!firstOrmComment) {
-      return [];
-    }
-
-    const mapResult = await CommentMapper.toDomainEntity(
+    const { results, errors } = await CommentMapper.toDomainEntity(
       ormCommentList.map((comment) => ({
         comment,
       })),
     );
+    errors.forEach((error) => {
+      this.logger.error(error);
+    });
 
-    return mapResult.results;
+    return results;
   }
 
   async findCommentListForFeed(payload: {
@@ -125,12 +125,16 @@ export class TypeormCommentRepository implements ICommentRepository {
     }
     const ormCommentList = await query.getMany();
 
-    const mapResult = await CommentMapper.toDomainEntity(
+    const { results, errors } = await CommentMapper.toDomainEntity(
       ormCommentList.map((comment) => ({
         comment,
       })),
     );
 
-    return mapResult.results;
+    errors.forEach((error) => {
+      this.logger.error(error);
+    });
+
+    return results;
   }
 }
