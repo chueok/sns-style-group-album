@@ -16,28 +16,28 @@ import {
 } from "../../../entity/comment/typeorm-comment.entity";
 import { TypeormUser } from "../../../entity/user/typeorm-user.entity";
 
-type OrmToDomainPayloadType = {
+type ToDomainPayloadType = {
   comment: TypeormComment;
 };
 
-type OrmToDomainReturnType = {
+type ToDomainReturnType = {
   results: Comment[];
   errors: Error[];
 };
 
-type DomainToOrmPayloadType = {
+type ToOrmPayloadType = {
   comment: Comment;
 };
 
-type DomainToOrmReturnType = {
+type ToOrmReturnType = {
   results: TypeormComment[];
   errors: Error[];
 };
 
 export class CommentMapper {
   public static async toDomainEntity(
-    payload: OrmToDomainPayloadType[],
-  ): Promise<OrmToDomainReturnType> {
+    payload: ToDomainPayloadType[],
+  ): Promise<ToDomainReturnType> {
     const results: Comment[] = [];
     const errors: Error[] = [];
 
@@ -60,9 +60,7 @@ export class CommentMapper {
     };
   }
 
-  public static toOrmEntity(
-    payload: DomainToOrmPayloadType[],
-  ): DomainToOrmReturnType {
+  public static toOrmEntity(payload: ToOrmPayloadType[]): ToOrmReturnType {
     const results: TypeormComment[] = [];
     const errors: Error[] = [];
 
@@ -83,7 +81,7 @@ export class CommentMapper {
   }
 
   private static async transferFromOrmToDomain(
-    payload: OrmToDomainPayloadType,
+    payload: ToDomainPayloadType,
   ): Promise<Comment> {
     if (isTypeormUserComment(payload.comment)) {
       const ownerId = payload.comment.ownerId;
@@ -134,7 +132,7 @@ export class CommentMapper {
   }
 
   private static transferFromDomainToOrm(
-    payload: DomainToOrmPayloadType,
+    payload: ToOrmPayloadType,
   ): TypeormComment {
     const comment = payload.comment;
     if (comment instanceof UserComment) {

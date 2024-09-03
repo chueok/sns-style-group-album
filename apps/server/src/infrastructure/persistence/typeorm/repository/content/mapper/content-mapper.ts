@@ -32,7 +32,7 @@ import { TypeormLike } from "../../../entity/like/typeorm-like.entity";
 import { TypeormComment } from "../../../entity/comment/typeorm-comment.entity";
 import { CommentMapper } from "../../comment/mapper/comment-mapper";
 
-type OrmToDomainPayloadType = {
+type ToDomainPayloadType = {
   content: TypeormContent;
   numLikes: number;
   likeList: TypeormLike[];
@@ -40,12 +40,12 @@ type OrmToDomainPayloadType = {
   commentList: TypeormComment[];
 };
 
-type OrmToDomainReturnType = {
+type ToDomainReturnType = {
   results: Content[];
   errors: Error[];
 };
 
-type DomainToOrmReturnType = {
+type ToOrmReturnType = {
   results: {
     content: TypeormContent;
     likeList: TypeormLike[];
@@ -54,8 +54,57 @@ type DomainToOrmReturnType = {
 };
 
 export class ContentMapper {
+  public static async toDomainEntity(
+    payload: ToDomainPayloadType[],
+  ): Promise<ToDomainReturnType> {
+    const results: Content[] = [];
+    const errors: Error[] = [];
+
+    const promiseList = payload.map(async (item) => {
+      return this.toDomainContent(item);
+    });
+
+    const promiseAllSettledResult = await Promise.allSettled(promiseList);
+
+    promiseAllSettledResult.forEach((result) => {
+      if (result.status === "fulfilled") {
+        results.push(result.value);
+      } else {
+        errors.push(result.reason);
+      }
+    });
+
+    return { results, errors };
+  }
+
+  public static toOrmEntity(payload: Content[]): ToOrmReturnType {
+    const results: ToOrmReturnType["results"] = [];
+    const errors: Error[] = [];
+
+    payload.forEach((item) => {
+      try {
+        const content = this.toOrmContent(item);
+        const likeList = item.likeList.map((like) => {
+          const typeormLike = new TypeormLike();
+          typeormLike.id = like.id;
+          typeormLike.contentId = item.id;
+          typeormLike.userId = like.userId;
+          typeormLike.createdDateTime = like.createdDateTime;
+          return typeormLike;
+        });
+        results.push({ content, likeList });
+      } catch (error) {
+        if (error instanceof Error) {
+          errors.push(error);
+        }
+      }
+    });
+
+    return { results, errors };
+  }
+
   private static async toDomainContent(
-    payload: OrmToDomainPayloadType,
+    payload: ToDomainPayloadType,
   ): Promise<Content> {
     const ormOwner = await payload.content.owner;
     const owner: ContentUser = new ContentUser({
@@ -217,29 +266,6 @@ export class ContentMapper {
     }
   }
 
-  public static async toDomainEntity(
-    payload: OrmToDomainPayloadType[],
-  ): Promise<OrmToDomainReturnType> {
-    const results: Content[] = [];
-    const errors: Error[] = [];
-
-    const promiseList = payload.map(async (item) => {
-      return this.toDomainContent(item);
-    });
-
-    const promiseAllSettledResult = await Promise.allSettled(promiseList);
-
-    promiseAllSettledResult.forEach((result) => {
-      if (result.status === "fulfilled") {
-        results.push(result.value);
-      } else {
-        errors.push(result.reason);
-      }
-    });
-
-    return { results, errors };
-  }
-
   private static toOrmContent(payload: Content): TypeormContent {
     let ormContent!: TypeormContent;
     if (payload.type === ContentTypeEnum.SYSTEM) {
@@ -297,31 +323,5 @@ export class ContentMapper {
     ormContent.updatedDateTime = payload.updatedDateTime;
     ormContent.deletedDateTime = payload.deletedDateTime;
     return ormContent;
-  }
-
-  public static toOrmEntity(payload: Content[]): DomainToOrmReturnType {
-    const results: DomainToOrmReturnType["results"] = [];
-    const errors: Error[] = [];
-
-    payload.forEach((item) => {
-      try {
-        const content = this.toOrmContent(item);
-        const likeList = item.likeList.map((like) => {
-          const typeormLike = new TypeormLike();
-          typeormLike.id = like.id;
-          typeormLike.contentId = item.id;
-          typeormLike.userId = like.userId;
-          typeormLike.createdDateTime = like.createdDateTime;
-          return typeormLike;
-        });
-        results.push({ content, likeList });
-      } catch (error) {
-        if (error instanceof Error) {
-          errors.push(error);
-        }
-      }
-    });
-
-    return { results, errors };
   }
 }
