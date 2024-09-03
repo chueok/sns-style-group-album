@@ -1,9 +1,8 @@
-import { IsEnum, IsOptional, IsString, IsUUID } from "class-validator";
+import { IsEnum, IsString, IsUUID } from "class-validator";
 import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
 import { CommentTypeEnum } from "../enum/comment-type-enum";
 import { CreateCommentEntityPayload } from "./type/create-comment-entity-payload";
 import { v4 } from "uuid";
-import { Nullable } from "../../../common/type/common-types";
 
 export abstract class Comment extends EntityWithCUDTime<string> {
   @IsUUID()

@@ -1,5 +1,4 @@
 import { BucketStatusEnum } from "../../enum/bucket-status";
-import { ContentUser } from "../content-user";
 import { ReferredContent } from "../referred-content";
 import { ContentLike } from "../content-like";
 import { Nullable } from "../../../../common/type/common-types";
@@ -7,7 +6,7 @@ import { Comment } from "../../../comment/entity/comment.abstract";
 
 type CreateNewBaseContentEntityPayload = {
   groupId: string;
-  owner: ContentUser;
+  ownerId: string;
   referred: ReferredContent[];
   thumbnailRelativePath: Nullable<string>;
 };

@@ -9,7 +9,6 @@ import {
 } from "class-validator";
 import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
 import { ContentTypeEnum } from "../enum/content-type-enum";
-import { ContentUser } from "./content-user";
 import { CreateContentEntityPayload } from "./type/create-content-entity-payload";
 import { v4 } from "uuid";
 import { Nullable } from "../../../common/type/common-types";
@@ -33,10 +32,10 @@ export abstract class Content extends EntityWithCUDTime<string> {
     return this._type;
   }
 
-  @IsInstance(ContentUser)
-  protected _owner: ContentUser;
-  get owner(): ContentUser {
-    return this._owner;
+  @IsString()
+  protected _ownerId: string;
+  get ownerId(): string {
+    return this._ownerId;
   }
 
   @IsArray()
@@ -97,7 +96,7 @@ export abstract class Content extends EntityWithCUDTime<string> {
     super();
 
     this._groupId = payload.groupId;
-    this._owner = payload.owner;
+    this._ownerId = payload.ownerId;
     this._referred = payload.referred;
     this._thumbnailRelativePath = payload.thumbnailRelativePath;
 

@@ -5,7 +5,6 @@ import {
   Content,
   ContentLike,
   ContentTypeEnum,
-  ContentUser,
   CreateContentEntityPayload,
   Exception,
   ImageContent,
@@ -106,12 +105,7 @@ export class ContentMapper {
   private static async toDomainContent(
     payload: ToDomainPayloadType,
   ): Promise<Content> {
-    const ormOwner = await payload.content.owner;
-    const owner: ContentUser = new ContentUser({
-      id: ormOwner.id,
-      username: ormOwner.username,
-      thumbnailRelativePath: ormOwner.thumbnailRelativePath,
-    });
+    const ownerId = payload.content.ownerId;
     const referred: ReferredContent[] = (await payload.content.referred).map(
       (item) => {
         return new ReferredContent({
@@ -143,7 +137,7 @@ export class ContentMapper {
     if (isTypeormSystemContent(payload.content)) {
       const contentPayload: CreateContentEntityPayload<"system", "existing"> = {
         groupId: payload.content.groupId,
-        owner,
+        ownerId,
         referred,
         thumbnailRelativePath: payload.content.thumbnailRelativePath,
 
@@ -167,7 +161,7 @@ export class ContentMapper {
         "existing"
       > = {
         groupId: payload.content.groupId,
-        owner,
+        ownerId,
         referred,
         thumbnailRelativePath: payload.content.thumbnailRelativePath,
 
@@ -195,7 +189,7 @@ export class ContentMapper {
     } else if (isTypeormPostContent(payload.content)) {
       const contentPayload: CreateContentEntityPayload<"post", "existing"> = {
         groupId: payload.content.groupId,
-        owner,
+        ownerId,
         referred,
         thumbnailRelativePath: payload.content.thumbnailRelativePath,
 
@@ -216,7 +210,7 @@ export class ContentMapper {
     } else if (isTypeormBucketContent(payload.content)) {
       const contentPayload: CreateContentEntityPayload<"bucket", "existing"> = {
         groupId: payload.content.groupId,
-        owner,
+        ownerId,
         referred,
         thumbnailRelativePath: payload.content.thumbnailRelativePath,
 
@@ -238,7 +232,7 @@ export class ContentMapper {
       const contentPayload: CreateContentEntityPayload<"schedule", "existing"> =
         {
           groupId: payload.content.groupId,
-          owner,
+          ownerId,
           referred,
           thumbnailRelativePath: payload.content.thumbnailRelativePath,
 
@@ -316,7 +310,7 @@ export class ContentMapper {
     }
     ormContent.id = payload.id;
     ormContent.groupId = payload.groupId;
-    ormContent.ownerId = payload.owner.id;
+    ormContent.ownerId = payload.ownerId;
     ormContent.thumbnailRelativePath = payload.thumbnailRelativePath;
     ormContent.contentType = payload.type;
     ormContent.createdDateTime = payload.createdDateTime;
