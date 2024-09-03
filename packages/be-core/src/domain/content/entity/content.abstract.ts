@@ -15,10 +15,11 @@ import { Nullable } from "../../../common/type/common-types";
 import { ReferredContent } from "./referred-content";
 import { ContentLike } from "./content-like";
 import { Comment } from "../../comment/entity/comment.abstract";
+import { ContentId } from "./type/content-id";
 
-export abstract class Content extends EntityWithCUDTime<string> {
+export abstract class Content extends EntityWithCUDTime<ContentId> {
   @IsUUID()
-  protected override readonly _id: string;
+  protected override readonly _id: ContentId;
 
   @IsUUID()
   readonly groupId: string;
@@ -98,7 +99,7 @@ export abstract class Content extends EntityWithCUDTime<string> {
       this._numComments = payload.numComments;
       this.commentList = payload.commentList;
     } else {
-      this._id = v4();
+      this._id = v4() as ContentId;
       this._createdDateTime = new Date();
       this._updatedDateTime = null;
       this._deletedDateTime = null;

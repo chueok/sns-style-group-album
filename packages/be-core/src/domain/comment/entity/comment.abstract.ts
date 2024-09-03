@@ -3,10 +3,12 @@ import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
 import { CommentTypeEnum } from "../enum/comment-type-enum";
 import { CreateCommentEntityPayload } from "./type/create-comment-entity-payload";
 import { v4 } from "uuid";
+import { CommentId } from "./type/comment-id";
+import { UserId } from "../../user/entity/type/user-id";
 
-export abstract class Comment extends EntityWithCUDTime<string> {
+export abstract class Comment extends EntityWithCUDTime<CommentId> {
   @IsUUID()
-  protected override _id!: string;
+  protected override _id!: CommentId;
 
   @IsEnum(CommentTypeEnum)
   protected _type!: CommentTypeEnum;
@@ -21,8 +23,8 @@ export abstract class Comment extends EntityWithCUDTime<string> {
   }
 
   @IsUUID("all", { each: true })
-  protected _userTags: string[];
-  get userTags(): string[] {
+  protected _userTags: UserId[];
+  get userTags(): UserId[] {
     return this._userTags;
   }
 
@@ -39,7 +41,7 @@ export abstract class Comment extends EntityWithCUDTime<string> {
     await this.validate();
   }
 
-  private extractUserTags(text: string): string[] {
+  private extractUserTags(text: string): UserId[] {
     // TODO extract user tags from text
     return [];
   }
@@ -55,7 +57,7 @@ export abstract class Comment extends EntityWithCUDTime<string> {
       this._updatedDateTime = payload.updatedDateTime || null;
       this._deletedDateTime = payload.deletedDateTime || null;
     } else {
-      this._id = v4();
+      this._id = v4() as CommentId;
       this._createdDateTime = new Date();
       this._updatedDateTime = null;
       this._deletedDateTime = null;

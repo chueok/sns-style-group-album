@@ -3,17 +3,20 @@ import { ReferredContent } from "../referred-content";
 import { ContentLike } from "../content-like";
 import { Nullable } from "../../../../common/type/common-types";
 import { Comment } from "../../../comment/entity/comment.abstract";
+import { GroupId } from "../../../group/entity/type/group-id";
+import { UserId } from "../../../user/entity/type/user-id";
+import { ContentId } from "./content-id";
 
 type CreateNewBaseContentEntityPayload = {
-  groupId: string;
-  ownerId: string;
+  groupId: GroupId;
+  ownerId: UserId;
   referred: ReferredContent[];
   thumbnailRelativePath: Nullable<string>;
 };
 
 type CreateExistingBaseContentEntityPayload =
   CreateNewBaseContentEntityPayload & {
-    id: string;
+    id: ContentId;
     createdDateTime: Date;
     updatedDateTime: Nullable<Date>;
     deletedDateTime: Nullable<Date>;

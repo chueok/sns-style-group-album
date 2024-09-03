@@ -6,10 +6,11 @@ import { IPasswordEncryptionService } from "../../encryption/password-encryption
 import { Exception } from "../../../common/exception/exception";
 import { Code } from "../../../common/exception/code";
 import { Nullable } from "../../../common/type/common-types";
+import { UserId } from "./type/user-id";
 
-export class User extends EntityWithCUDTime<string> {
+export class User extends EntityWithCUDTime<UserId> {
   @IsUUID()
-  protected override _id: string;
+  protected override _id: UserId;
 
   @IsString()
   private _username: string;
@@ -70,7 +71,7 @@ export class User extends EntityWithCUDTime<string> {
       this._updatedDateTime = payload.updatedDateTime;
       this._deletedDateTime = payload.deletedDateTime;
     } else {
-      this._id = v4();
+      this._id = v4() as UserId;
       this._createdDateTime = new Date();
       this._updatedDateTime = null;
       this._deletedDateTime = null;

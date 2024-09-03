@@ -1,14 +1,17 @@
 import { Nullable } from "../../../../common/type/common-types";
+import { ContentId } from "../../../content/entity/type/content-id";
+import { UserId } from "../../../user/entity/type/user-id";
+import { CommentId } from "./comment-id";
 
 type CreateNewBaseCommentEntityPayload = {
   text: string;
-  contentId: string;
+  contentId: ContentId;
 };
 
 type CreateExistingBaseCommentEntityPayload =
   CreateNewBaseCommentEntityPayload & {
-    id: string;
-    userTags: string[];
+    id: CommentId;
+    userTags: UserId[];
     createdDateTime: Date;
     updatedDateTime: Nullable<Date>;
     deletedDateTime: Nullable<Date>;
@@ -23,7 +26,7 @@ type CreateBaseCommentEntityPayload = {
 };
 
 type UserCommentAdditionalPayload = {
-  ownerId: string;
+  ownerId: UserId;
 };
 
 type SystemCommentAdditionalPayload = {

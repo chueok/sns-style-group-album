@@ -1,5 +1,6 @@
 import { Nullable } from "../../../../common/type/common-types";
 import { IPasswordEncryptionService } from "../../../encryption/password-encryption-service.interface";
+import { UserId } from "./user-id";
 
 type CommonCreateUserPayload = {
   username: string;
@@ -20,7 +21,7 @@ type CreateExistingUserPayload = {
   hashedPassword: string;
   thumbnailRelativePath: Nullable<string>;
 
-  id: string;
+  id: UserId;
   createdDateTime: Date;
   updatedDateTime: Nullable<Date>;
   deletedDateTime: Nullable<Date>;
