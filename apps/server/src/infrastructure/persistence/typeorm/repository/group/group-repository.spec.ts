@@ -17,7 +17,6 @@ describe("GroupRepository", () => {
   let dataSource: DataSource;
   let testDatabaseHandler: DummyDatabaseHandler;
   let groupRepository: TypeormGroupRepository;
-  let targetOrmGroup: TypeormGroup;
 
   beforeAll(async () => {
     dataSource = new DataSource({
@@ -34,8 +33,6 @@ describe("GroupRepository", () => {
     groupRepository = new TypeormGroupRepository(dataSource);
 
     await testDatabaseHandler.load(parameters.dummyDbPath);
-
-    targetOrmGroup = testDatabaseHandler.getDbCacheList(TypeormGroup).at(-1)!;
   });
 
   afterAll(async () => {
@@ -46,10 +43,15 @@ describe("GroupRepository", () => {
     expect(dataSource).toBeDefined();
     expect(testDatabaseHandler).toBeDefined();
     expect(groupRepository).toBeDefined();
-    expect(targetOrmGroup).toBeDefined();
   });
 
   describe("findGroupById", () => {
+    let targetOrmGroup: TypeormGroup;
+
+    beforeAll(async () => {
+      targetOrmGroup = testDatabaseHandler.getDbCacheList(TypeormGroup).at(-1)!;
+    });
+
     it("should find a group by id", async () => {
       const group = await groupRepository.findGroupById(targetOrmGroup.id);
       expect(group).not.toBeNull();
@@ -115,9 +117,15 @@ describe("GroupRepository", () => {
 
   describe("createGroup", () => {
     it("should create a group", async () => {
-      const dummyOrmGroup = testDatabaseHandler.makeDummyGroup();
-      const dummyDomainGroup =
-        (await GroupMapper.toDomainEntity(dummyOrmGroup))!;
+      const dummyOrmGroup = testDatabaseHandler
+        .getDbCacheList(TypeormGroup)
+        .at(-1)!;
+
+      const members = (await dummyOrmGroup.members).map((member) => member.id);
+      const mapResult = await GroupMapper.toDomainEntity([
+        { group: dummyOrmGroup, members },
+      ]);
+      const dummyDomainGroup = mapResult.results[0]!;
       expect(dummyDomainGroup).toBeInstanceOf(Group);
 
       const result = await groupRepository.createGroup(dummyDomainGroup);
@@ -125,9 +133,14 @@ describe("GroupRepository", () => {
     });
 
     it("should not create a group when an error occurs", async () => {
-      const dummyOrmGroup = testDatabaseHandler.makeDummyGroup();
-      const dummyDomainGroup =
-        (await GroupMapper.toDomainEntity(dummyOrmGroup))!;
+      const dummyOrmGroup = testDatabaseHandler
+        .getDbCacheList(TypeormGroup)
+        .at(-1)!;
+      const members = (await dummyOrmGroup.members).map((member) => member.id);
+      const mapResult = await GroupMapper.toDomainEntity([
+        { group: dummyOrmGroup, members },
+      ]);
+      const dummyDomainGroup = mapResult.results[0]!;
 
       (dummyDomainGroup as any)._createdDateTime = null;
 
@@ -138,10 +151,15 @@ describe("GroupRepository", () => {
 
   describe("updateGroup", () => {
     it("should update a group", async () => {
-      const targetDomainGroup =
-        (await GroupMapper.toDomainEntity(targetOrmGroup))!;
+      const targetOrmGroup = testDatabaseHandler
+        .getDbCacheList(TypeormGroup)
+        .at(-1)!;
+      const members = (await targetOrmGroup.members).map((member) => member.id);
+      const mapResult = (await GroupMapper.toDomainEntity([
+        { group: targetOrmGroup, members },
+      ]))!;
+      const targetDomainGroup = mapResult.results[0]!;
       await targetDomainGroup.changeName("updated name");
-
       const result = await groupRepository.updateGroup(targetDomainGroup);
       expect(result).toBeTruthy();
 

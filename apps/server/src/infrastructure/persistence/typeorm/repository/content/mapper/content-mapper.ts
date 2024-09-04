@@ -12,6 +12,7 @@ import {
   ReferredContent,
   ScheduleContent,
   SystemContent,
+  UserId,
   VideoContent,
 } from "@repo/be-core";
 import {
@@ -87,7 +88,7 @@ export class ContentMapper {
           const typeormLike = new TypeormLike();
           typeormLike.id = like.id;
           typeormLike.contentId = item.id;
-          typeormLike.userId = like.userId;
+          typeormLike.userId = like.userId as UserId;
           typeormLike.createdDateTime = like.createdDateTime;
           return typeormLike;
         });

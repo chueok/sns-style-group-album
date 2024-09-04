@@ -23,8 +23,8 @@ export class Group extends EntityWithCUDTime<GroupId> {
 
   @IsUUID("all", { each: true })
   private _members: Set<UserId>; // User ID의 집합으로 저장
-  get members(): Set<UserId> {
-    return this._members;
+  get members(): UserId[] {
+    return Array.from(this._members);
   }
 
   public async changeName(name: string): Promise<void> {

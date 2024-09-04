@@ -39,15 +39,21 @@ describe("GroupMapper", () => {
   });
 
   describe("toDomainEntity", () => {
-    it("[single] should convert orm entity to domain entity", async () => {
-      const ormGroup = testDatabaseHandler.getDbCacheList(TypeormGroup)[0]!;
-      const domainGroup = await GroupMapper.toDomainEntity(ormGroup);
-      expect(domainGroup).toBeInstanceOf(Group);
-    });
     it("[array] should convert orm entity to domain entity", async () => {
       const ormGroupList = testDatabaseHandler.getDbCacheList(TypeormGroup);
-      const domainGroupList = await GroupMapper.toDomainEntity(ormGroupList);
-      expect(ormGroupList.length).toEqual(domainGroupList.length);
+
+      const payload = await Promise.all(
+        ormGroupList.map(async (ormGroup) => {
+          const members = (await ormGroup.members).map((member) => member.id);
+          return {
+            group: ormGroup,
+            members,
+          };
+        }),
+      );
+
+      const domainGroupList = await GroupMapper.toDomainEntity(payload);
+      expect(ormGroupList.length).toEqual(domainGroupList.results.length);
     });
   });
 
@@ -55,15 +61,18 @@ describe("GroupMapper", () => {
     let domainGroupList: Group[];
     beforeAll(async () => {
       const ormGroupList = testDatabaseHandler.getDbCacheList(TypeormGroup);
-      domainGroupList = await GroupMapper.toDomainEntity(ormGroupList);
+      const payload = await Promise.all(
+        ormGroupList.map(async (ormGroup) => {
+          const members = (await ormGroup.members).map((member) => member.id);
+          return {
+            group: ormGroup,
+            members,
+          };
+        }),
+      );
+      const mapResult = await GroupMapper.toDomainEntity(payload);
+      domainGroupList = mapResult.results;
     });
-
-    it("[single] should convert domain entity to orm entity", () => {
-      const domainGroup = domainGroupList[0]!;
-      const ormGroup = GroupMapper.toOrmEntity(domainGroup);
-      expect(ormGroup).toBeInstanceOf(TypeormGroup);
-    });
-
     it("[array] should convert domain entity to orm entity", () => {
       const ormGroupList = GroupMapper.toOrmEntity(domainGroupList);
       expect(ormGroupList).toBeInstanceOf(Array);

@@ -8,43 +8,64 @@ import {
 import { DataSource, Repository } from "typeorm";
 import { TypeormGroup } from "../../entity/group/typeorm-group.entity";
 import { GroupMapper } from "./mapper/group-mapper";
+import { Logger, LoggerService, Optional } from "@nestjs/common";
 
 export class TypeormGroupRepository implements IGroupRepository {
   private typeormGroupRepository: Repository<TypeormGroup>;
-  constructor(dataSource: DataSource) {
+
+  private readonly logger: LoggerService;
+
+  constructor(dataSource: DataSource, @Optional() logger?: LoggerService) {
     this.typeormGroupRepository = dataSource.getRepository(TypeormGroup);
+    this.logger = logger || new Logger(TypeormGroupRepository.name);
   }
 
   async createGroup(group: Group): Promise<boolean> {
-    const ormEntity = GroupMapper.toOrmEntity(group);
+    const ormEntity = GroupMapper.toOrmEntity([group]);
 
     return this.typeormGroupRepository
       .save(ormEntity)
       .then(() => {
         return true;
       })
-      .catch(() => {
+      .catch((error) => {
+        this.logger.error(error);
         return false;
       });
   }
 
-  // NOTE : update 시점에는 nullable check가 안됨
+  // NOTE join table 있을 경우 update 안됨. lazy loading을 처리하지 못하는 것으로 보임
   async updateGroup(group: Group): Promise<boolean> {
+    const ormEntity = GroupMapper.toOrmEntity([group])[0];
+    if (!ormEntity) return false;
     return this.typeormGroupRepository
-      .update(group.id, GroupMapper.toOrmEntity(group))
+      .save(ormEntity)
       .then(() => true)
-      .catch(() => false);
+      .catch((error) => {
+        this.logger.error(error);
+        return false;
+      });
   }
 
   async findGroupById(groupId: GroupId): Promise<Nullable<Group>> {
     const ormGroup = await this.typeormGroupRepository.findOneBy({
       id: groupId,
     });
-
     if (!ormGroup) {
+      this.logger.error(`Group not found. id: ${groupId}`);
       return null;
     }
-    return GroupMapper.toDomainEntity(ormGroup);
+    const members = await ormGroup.members;
+    const memberIdList = members.map((member) => member.id);
+    const mapResult = await GroupMapper.toDomainEntity([
+      { group: ormGroup, members: memberIdList },
+    ]);
+
+    mapResult.errors.forEach((error) => {
+      this.logger.error(error);
+    });
+
+    return mapResult.results[0] || null;
   }
 
   async findGroupListByOwnerId(ownerId: UserId): Promise<Group[]> {
@@ -53,7 +74,23 @@ export class TypeormGroupRepository implements IGroupRepository {
       .innerJoinAndSelect("group.owner", "owner")
       .where("owner.id = :ownerId", { ownerId })
       .getMany();
-    return GroupMapper.toDomainEntity(ormGroups);
+
+    const payload = await Promise.all(
+      ormGroups.map(async (group) => {
+        const members = await group.members;
+        return {
+          group,
+          members: members.map((member) => member.id),
+        };
+      }),
+    );
+
+    const mapResult = await GroupMapper.toDomainEntity(payload);
+    mapResult.errors.forEach((error) => {
+      this.logger.error(error);
+    });
+
+    return mapResult.results;
   }
 
   async findGroupListByUserId(userId: UserId): Promise<Group[]> {
@@ -63,6 +100,21 @@ export class TypeormGroupRepository implements IGroupRepository {
       .where("member.id = :userId", { userId })
       .getMany();
 
-    return GroupMapper.toDomainEntity(ormGroups);
+    const payload = await Promise.all(
+      ormGroups.map(async (group) => {
+        const members = await group.members;
+        return {
+          group,
+          members: members.map((member) => member.id),
+        };
+      }),
+    );
+
+    const mapResult = await GroupMapper.toDomainEntity(payload);
+    mapResult.errors.forEach((error) => {
+      this.logger.error(error);
+    });
+
+    return mapResult.results;
   }
 }
