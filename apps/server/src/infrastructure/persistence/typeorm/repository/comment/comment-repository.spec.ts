@@ -1,4 +1,4 @@
-import { join } from "path";
+import { join, basename } from "path";
 import { DataSource } from "typeorm";
 import { typeormSqliteOptions } from "../../config/typeorm-config";
 import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
@@ -10,7 +10,7 @@ import { Comment, CommentId } from "@repo/be-core";
 import { TypeormUser } from "../../entity/user/typeorm-user.entity";
 
 const parameters = {
-  testDbPath: join("db", `${__filename}.sqlite`),
+  testDbPath: join("db", `${basename(__filename)}.sqlite`),
   dummyDbPath: join("db", "dummy.sqlite"),
 };
 
@@ -91,7 +91,7 @@ describe("CommentRepository", () => {
       const commentList = await commentRepository.findCommentListForFeed({
         groupId,
         pagination: {
-          cursor: targetOrmComment.createdDateTime,
+          cursor: targetOrmComment.createdDateTime, // TODO: cursor 값에 따라, 결과가 빈 배열 일 수 있음.
           by: "createdDateTime",
           direction: "desc",
           limit: 3,

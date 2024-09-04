@@ -2,7 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { DataSource, Repository } from "typeorm";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { typeormSqliteOptions } from "../../config/typeorm-config";
-import { join } from "path";
+import { join, basename } from "path";
 import {
   TypeormBucket,
   TypeormContent,
@@ -17,7 +17,7 @@ import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-han
 import { TypeormLike } from "../like/typeorm-like.entity";
 
 const parameters = {
-  testDbPath: join("db", `${__filename}.sqlite`),
+  testDbPath: join("db", `${basename(__filename)}.sqlite`),
   dummyDbPath: join("db", "dummy.sqlite"),
 };
 

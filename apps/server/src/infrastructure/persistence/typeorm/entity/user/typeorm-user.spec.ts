@@ -3,12 +3,12 @@ import { DataSource, Repository } from "typeorm";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { TypeormUser } from "./typeorm-user.entity";
-import { join } from "path";
+import { join, basename } from "path";
 import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
 import { typeormSqliteOptions } from "../../config/typeorm-config";
 
 const parameters = {
-  testDbPath: join("db", `${__filename}.sqlite`),
+  testDbPath: join("db", `${basename(__filename)}.sqlite`),
   dummyDbPath: join("db", "dummy.sqlite"),
 };
 

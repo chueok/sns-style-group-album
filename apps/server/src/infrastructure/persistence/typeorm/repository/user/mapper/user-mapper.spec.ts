@@ -1,5 +1,5 @@
 import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
-import { join } from "path";
+import { join, basename } from "path";
 import { DataSource } from "typeorm";
 import { typeormSqliteOptions } from "../../../config/typeorm-config";
 import { TypeormUser } from "../../../entity/user/typeorm-user.entity";
@@ -7,7 +7,7 @@ import { UserMapper } from "./user-mapper";
 import { User } from "@repo/be-core";
 
 const parameters = {
-  testDbPath: join("db", `${__filename}.sqlite`),
+  testDbPath: join("db", `${basename(__filename)}.sqlite`),
   dummyDbPath: join("db", "dummy.sqlite"),
 };
 

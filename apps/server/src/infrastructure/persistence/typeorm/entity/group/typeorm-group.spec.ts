@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { join } from "path";
+import { basename, join } from "path";
 import { DataSource, Repository } from "typeorm";
 import { TypeormGroup } from "./typeorm-group.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -9,7 +9,7 @@ import { TypeormUser } from "../user/typeorm-user.entity";
 import { TypeormContent } from "../content/typeorm-content.entity";
 
 const parameters = {
-  testDbPath: join("db", `${__filename}.sqlite`),
+  testDbPath: join("db", `${basename(__filename)}.sqlite`),
   dummyDbPath: join("db", "dummy.sqlite"),
 };
 

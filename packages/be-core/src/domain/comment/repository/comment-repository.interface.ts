@@ -1,6 +1,7 @@
 import { Nullable } from "../../../common/type/common-types";
 import { Comment } from "../entity/comment.abstract";
 
+// TODO : cursor는 optional로 변경해야함.
 export type CommentPagenationType = {
   cursor: Date;
   by: "createdDateTime";

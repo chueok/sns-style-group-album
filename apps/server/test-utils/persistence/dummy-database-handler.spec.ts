@@ -7,11 +7,11 @@ import { TypeormUser } from "../../src/infrastructure/persistence/typeorm/entity
 import { TypeormGroup } from "../../src/infrastructure/persistence/typeorm/entity/group/typeorm-group.entity";
 import { TypeormContent } from "../../src/infrastructure/persistence/typeorm/entity/content/typeorm-content.entity";
 import { TypeormComment } from "../../src/infrastructure/persistence/typeorm/entity/comment/typeorm-comment.entity";
-import { join } from "path";
+import { join, basename } from "path";
 import { TypeormLike } from "../../src/infrastructure/persistence/typeorm/entity/like/typeorm-like.entity";
 
 const parameters = {
-  testDbPath: join("db", `${__filename}.sqlite`),
+  testDbPath: join("db", `${basename(__filename)}.sqlite`),
   dummyDbPath: join("db", "dummy.sqlite"),
 };
 
