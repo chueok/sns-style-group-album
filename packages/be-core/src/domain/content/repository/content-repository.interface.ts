@@ -3,7 +3,7 @@ import { Content } from "../entity/content.abstract";
 import { ContentTypeEnum } from "../enum/content-type-enum";
 
 export type ContentPagenationType = {
-  cursor: Date;
+  cursor?: Date;
   by: "createdDateTime";
   direction: "asc" | "desc";
   limit: number;

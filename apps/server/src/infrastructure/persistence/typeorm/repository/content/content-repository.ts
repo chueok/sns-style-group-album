@@ -126,14 +126,16 @@ export class TypeormContentRepository implements IContentRepository {
       )
       .limit(payload.pagination.limit);
 
-    if (payload.pagination.direction === "desc") {
-      query.andWhere(`content.${payload.pagination.by} < :cursor`, {
-        cursor: payload.pagination.cursor,
-      });
-    } else {
-      query.andWhere(`content.${payload.pagination.by} > :cursor`, {
-        cursor: payload.pagination.cursor,
-      });
+    if (payload.pagination.cursor) {
+      if (payload.pagination.direction === "desc") {
+        query.andWhere(`content.${payload.pagination.by} < :cursor`, {
+          cursor: payload.pagination.cursor,
+        });
+      } else {
+        query.andWhere(`content.${payload.pagination.by} > :cursor`, {
+          cursor: payload.pagination.cursor,
+        });
+      }
     }
 
     const ormContentList = await query.getMany();
