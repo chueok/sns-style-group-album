@@ -115,14 +115,16 @@ export class TypeormCommentRepository implements ICommentRepository {
       )
       .limit(payload.pagination.limit);
 
-    if (payload.pagination.direction === "desc") {
-      query.andWhere(`comment.${payload.pagination.by} < :cursor`, {
-        cursor: payload.pagination.cursor,
-      });
-    } else {
-      query.andWhere(`comment.${payload.pagination.by} > :cursor`, {
-        cursor: payload.pagination.cursor,
-      });
+    if (payload.pagination.cursor) {
+      if (payload.pagination.direction === "desc") {
+        query.andWhere(`comment.${payload.pagination.by} < :cursor`, {
+          cursor: payload.pagination.cursor,
+        });
+      } else {
+        query.andWhere(`comment.${payload.pagination.by} > :cursor`, {
+          cursor: payload.pagination.cursor,
+        });
+      }
     }
     const ormCommentList = await query.getMany();
 

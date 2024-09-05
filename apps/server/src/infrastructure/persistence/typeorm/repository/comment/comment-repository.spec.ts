@@ -6,7 +6,7 @@ import { TypeormCommentRepository } from "./comment-repository";
 import { TypeormComment } from "../../entity/comment/typeorm-comment.entity";
 import { CommentMapper } from "./mapper/comment-mapper";
 import { TypeormContent } from "../../entity/content/typeorm-content.entity";
-import { Comment, CommentId } from "@repo/be-core";
+import { Comment, CommentId, GroupId } from "@repo/be-core";
 import { TypeormUser } from "../../entity/user/typeorm-user.entity";
 
 const parameters = {
@@ -85,13 +85,37 @@ describe("CommentRepository", () => {
   });
 
   describe("findCommentListForFeed", () => {
-    it("[desc] should find a comment list for feed", async () => {
+    let groupId: GroupId;
+    let cursor: Date;
+    beforeAll(async () => {
       const content = await targetOrmComment.content;
-      const groupId = content.groupId;
+      groupId = content.groupId;
+      const commentListOfGroup = await commentRepository.findCommentListForFeed(
+        {
+          groupId,
+          pagination: {
+            by: "createdDateTime",
+            direction: "asc",
+            limit: 5,
+          },
+        },
+      );
+
+      cursor = commentListOfGroup.at(
+        Math.floor(commentListOfGroup.length / 2),
+      )!.createdDateTime;
+    });
+
+    it("should be defined", () => {
+      expect(groupId).toBeDefined();
+      expect(cursor).toBeDefined();
+    });
+
+    it("[desc] should find a comment list for feed", async () => {
       const commentList = await commentRepository.findCommentListForFeed({
         groupId,
         pagination: {
-          cursor: targetOrmComment.createdDateTime, // TODO: cursor 값에 따라, 결과가 빈 배열 일 수 있음.
+          cursor,
           by: "createdDateTime",
           direction: "desc",
           limit: 3,
@@ -108,12 +132,10 @@ describe("CommentRepository", () => {
     });
 
     it("[asc] should find a comment list for feed", async () => {
-      const content = await targetOrmComment.content;
-      const groupId = content.groupId;
       const commentList = await commentRepository.findCommentListForFeed({
         groupId,
         pagination: {
-          cursor: targetOrmComment.createdDateTime,
+          cursor,
           by: "createdDateTime",
           direction: "asc",
           limit: 5,
