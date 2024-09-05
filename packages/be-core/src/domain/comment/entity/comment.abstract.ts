@@ -8,6 +8,13 @@ import { UserId } from "../../user/entity/type/user-id";
 import { ContentId } from "../../content/entity/type/content-id";
 
 export abstract class Comment extends EntityWithCUDTime<CommentId> {
+  public static readonly TAG_PREFIX = "@#{" as const;
+  public static readonly TAG_SUFFIX = "}" as const;
+  public static readonly tagRegex = new RegExp(
+    `@#\\{([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\\}`,
+    "g",
+  );
+
   @IsUUID()
   protected override _id!: CommentId;
 
@@ -43,8 +50,16 @@ export abstract class Comment extends EntityWithCUDTime<CommentId> {
   }
 
   private extractUserTags(text: string): UserId[] {
-    // TODO extract user tags from text
-    return [];
+    const extractedSet: Set<UserId> = new Set();
+
+    let match: RegExpExecArray | null;
+    while ((match = Comment.tagRegex.exec(text)) !== null) {
+      if (match[1]) {
+        extractedSet.add(match[1] as UserId);
+      }
+    }
+
+    return Array.from(extractedSet);
   }
 
   constructor(payload: CreateCommentEntityPayload<"base", "all">) {
