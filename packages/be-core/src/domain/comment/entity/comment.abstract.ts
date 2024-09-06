@@ -10,8 +10,9 @@ import { ContentId } from "../../content/entity/type/content-id";
 export abstract class Comment extends EntityWithCUDTime<CommentId> {
   public static readonly TAG_PREFIX = "@#{" as const;
   public static readonly TAG_SUFFIX = "}" as const;
+  // TODO : isUserId 같은 util 함수를 만들어, 검사하는 로직 만들 것
   public static readonly tagRegex = new RegExp(
-    `@#\\{([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\\}`,
+    `${this.TAG_PREFIX}([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})${this.TAG_SUFFIX}`,
     "g",
   );
 
