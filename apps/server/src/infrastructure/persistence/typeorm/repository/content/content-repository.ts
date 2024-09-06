@@ -159,8 +159,7 @@ export class TypeormContentRepository implements IContentRepository {
   private async getNumLikes(contentId: string): Promise<number> {
     return this.typeormLikeRepository
       .createQueryBuilder("like")
-      .innerJoinAndSelect("like.content", "content")
-      .where("content.id = :contentId", { contentId })
+      .where("like.contentId = :contentId", { contentId })
       .getCount();
   }
 
@@ -170,8 +169,7 @@ export class TypeormContentRepository implements IContentRepository {
   ): Promise<TypeormLike[]> {
     return this.typeormLikeRepository
       .createQueryBuilder("like")
-      .innerJoinAndSelect("like.content", "content")
-      .where("content.id = :contentId", { contentId })
+      .where("like.contentId = :contentId", { contentId })
       .orderBy("like.createdDateTime", "DESC")
       .limit(limit)
       .getMany();
@@ -180,8 +178,7 @@ export class TypeormContentRepository implements IContentRepository {
   private async getNumComments(contentId: string): Promise<number> {
     return this.typeormCommentRepository
       .createQueryBuilder("comment")
-      .innerJoinAndSelect("comment.content", "content")
-      .where("content.id = :contentId", { contentId })
+      .where("comment.contentId = :contentId", { contentId })
       .getCount();
   }
 
@@ -191,8 +188,7 @@ export class TypeormContentRepository implements IContentRepository {
   ): Promise<TypeormComment[]> {
     return this.typeormCommentRepository
       .createQueryBuilder("comment")
-      .innerJoinAndSelect("comment.content", "content")
-      .where("content.id = :contentId", { contentId })
+      .where("comment.contentId = :contentId", { contentId })
       .orderBy("comment.createdDateTime", "DESC")
       .limit(limit)
       .getMany();

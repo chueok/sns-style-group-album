@@ -82,8 +82,7 @@ export class TypeormCommentRepository implements ICommentRepository {
   }): Promise<Comment[]> {
     const ormCommentList = await this.typeormCommentRepository
       .createQueryBuilder("comment")
-      .innerJoinAndSelect("comment.content", "content")
-      .where("content.id = :contentId", { contentId: payload.contentId })
+      .where("comment.contentId = :contentId", { contentId: payload.contentId })
       .orderBy("comment.createdDateTime", "DESC")
       .skip((payload.page - 1) * payload.pageSize)
       .take(payload.pageSize)

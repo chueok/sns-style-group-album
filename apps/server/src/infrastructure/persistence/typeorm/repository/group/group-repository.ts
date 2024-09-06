@@ -71,8 +71,7 @@ export class TypeormGroupRepository implements IGroupRepository {
   async findGroupListByOwnerId(ownerId: UserId): Promise<Group[]> {
     const ormGroups = await this.typeormGroupRepository
       .createQueryBuilder("group")
-      .innerJoinAndSelect("group.owner", "owner")
-      .where("owner.id = :ownerId", { ownerId })
+      .where("group.ownerId = :ownerId", { ownerId })
       .getMany();
 
     const payload = await Promise.all(
