@@ -2,16 +2,21 @@ import { IUserRepository, Nullable, User, UserId } from "@repo/be-core";
 import { DataSource, Repository } from "typeorm";
 import { TypeormUser } from "../../entity/user/typeorm-user.entity";
 import { UserMapper } from "./mapper/user-mapper";
+import { Logger, LoggerService, Optional } from "@nestjs/common";
 
 export class TypeormUserRepository implements IUserRepository {
   private typeormUserRepository: Repository<TypeormUser>;
+  private readonly logger: LoggerService;
 
-  constructor(dataSource: DataSource) {
+  constructor(dataSource: DataSource, @Optional() logger?: LoggerService) {
     this.typeormUserRepository = dataSource.getRepository(TypeormUser);
+
+    this.logger = logger || new Logger(TypeormUserRepository.name);
   }
 
   async createUser(user: User): Promise<boolean> {
-    const ormEntity = UserMapper.toOrmEntity(user);
+    const ormEntity = UserMapper.toOrmEntity([user]);
+
     return this.typeormUserRepository
       .save(ormEntity)
       .then(() => {
@@ -23,8 +28,11 @@ export class TypeormUserRepository implements IUserRepository {
   }
 
   async updateUser(user: User): Promise<boolean> {
+    const ormEntity = UserMapper.toOrmEntity([user])[0];
+    if (!ormEntity) return false;
+
     return this.typeormUserRepository
-      .update(user.id, UserMapper.toOrmEntity(user))
+      .update(user.id, ormEntity)
       .then(() => true)
       .catch(() => false);
   }
@@ -34,7 +42,11 @@ export class TypeormUserRepository implements IUserRepository {
     if (!ormUser) {
       return null;
     }
-    return UserMapper.toDomainEntity(ormUser);
+    const { results, errors } = await UserMapper.toDomainEntity([ormUser]);
+    errors.forEach((error) => {
+      this.logger.error(error);
+    });
+    return results[0] || null;
   }
 
   async findUserByUsernameOfGroup(payload: {
@@ -50,7 +62,11 @@ export class TypeormUserRepository implements IUserRepository {
     if (!ormUser) {
       return null;
     }
-    return UserMapper.toDomainEntity(ormUser);
+    const { results, errors } = await UserMapper.toDomainEntity([ormUser]);
+    errors.forEach((error) => {
+      this.logger.error(error);
+    });
+    return results[0] || null;
   }
 
   async findUserListByGroupId(groupId: string): Promise<User[]> {
@@ -60,6 +76,11 @@ export class TypeormUserRepository implements IUserRepository {
       .where("group.id = :groupId", { groupId })
       .getMany();
 
-    return UserMapper.toDomainEntity(ormUsers);
+    const { results, errors } = await UserMapper.toDomainEntity(ormUsers);
+    errors.forEach((error) => {
+      this.logger.error(error);
+    });
+
+    return results;
   }
 }

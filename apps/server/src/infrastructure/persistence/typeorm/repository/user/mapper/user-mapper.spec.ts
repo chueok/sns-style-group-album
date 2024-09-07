@@ -39,15 +39,10 @@ describe("UserMapper", () => {
   });
 
   describe("toDomainEntity", () => {
-    it("[single] should convert orm entity to domain entity", async () => {
-      const ormUser = testDatabaseHandler.getDbCacheList(TypeormUser)[0]!;
-      const domainUser = await UserMapper.toDomainEntity(ormUser);
-      expect(domainUser).toBeInstanceOf(User);
-    });
     it("[array] should convert orm entity to domain entity", async () => {
       const ormUserList = testDatabaseHandler.getDbCacheList(TypeormUser);
-      const domainUserList = await UserMapper.toDomainEntity(ormUserList);
-      expect(ormUserList.length).toEqual(domainUserList.length);
+      const { results, errors } = await UserMapper.toDomainEntity(ormUserList);
+      expect(ormUserList.length).toEqual(results.length);
     });
   });
 
@@ -55,13 +50,8 @@ describe("UserMapper", () => {
     let domainUserList: User[];
     beforeAll(async () => {
       const ormUserList = testDatabaseHandler.getDbCacheList(TypeormUser);
-      domainUserList = await UserMapper.toDomainEntity(ormUserList);
-    });
-
-    it("[single] should convert domain entity to orm entity", async () => {
-      const domainUser = domainUserList[0]!;
-      const ormUser = UserMapper.toOrmEntity(domainUser);
-      expect(ormUser).toBeInstanceOf(TypeormUser);
+      const { results, errors } = await UserMapper.toDomainEntity(ormUserList);
+      domainUserList = results;
     });
     it("[array] should convert domain entity to orm entity", async () => {
       const ormUserList = UserMapper.toOrmEntity(domainUserList);

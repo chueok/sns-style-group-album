@@ -107,7 +107,11 @@ describe("UserRepository", () => {
   describe("createUser", () => {
     it("should create a user", async () => {
       const dummyOrmUser = testDatabaseHandler.makeDummyUser();
-      const dummyDomainUser = (await UserMapper.toDomainEntity(dummyOrmUser))!;
+      const { results, errors } = (await UserMapper.toDomainEntity([
+        dummyOrmUser,
+      ]))!;
+      const dummyDomainUser = results[0]!;
+      expect(dummyDomainUser).toBeInstanceOf(User);
 
       const result = await userRepository.createUser(dummyDomainUser);
       expect(result).toBeTruthy();
@@ -119,7 +123,10 @@ describe("UserRepository", () => {
 
     it("should not create a user when an error occurs", async () => {
       const dummyOrmUser = testDatabaseHandler.makeDummyUser();
-      const dummyDomainUser = (await UserMapper.toDomainEntity(dummyOrmUser))!;
+      const { results, errors } = (await UserMapper.toDomainEntity([
+        dummyOrmUser,
+      ]))!;
+      const dummyDomainUser = results[0]!;
       (dummyDomainUser as any)._username = undefined;
 
       const result = await userRepository.createUser(dummyDomainUser);
@@ -129,7 +136,10 @@ describe("UserRepository", () => {
 
   describe("updateUser", () => {
     it("should update a user", async () => {
-      const domainUser = (await UserMapper.toDomainEntity(targetOrmUser))!;
+      const { results, errors } = (await UserMapper.toDomainEntity([
+        targetOrmUser,
+      ]))!;
+      const domainUser = results[0]!;
       await domainUser.changeUsername("new-username");
       const result = await userRepository.updateUser(domainUser);
       expect(result).toBeTruthy();

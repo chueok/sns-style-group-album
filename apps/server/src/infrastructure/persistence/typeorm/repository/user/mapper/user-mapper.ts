@@ -1,15 +1,19 @@
-import { CreateUserEntityPayload, Nullable, User } from "@repo/be-core";
+import { CreateUserEntityPayload, User } from "@repo/be-core";
 import { TypeormUser } from "../../../entity/user/typeorm-user.entity";
 
-export class UserMapper {
-  public static toDomainEntity(payload: TypeormUser): Promise<Nullable<User>>;
-  public static toDomainEntity(payload: TypeormUser[]): Promise<User[]>;
-  public static async toDomainEntity(
-    payload: TypeormUser | TypeormUser[],
-  ): Promise<Nullable<User> | User[]> {
-    const payloadList = Array.isArray(payload) ? payload : [payload];
+type ToDomainReturnType = {
+  results: User[];
+  errors: Error[];
+};
 
-    const promises = payloadList.map(async (item) => {
+export class UserMapper {
+  public static async toDomainEntity(
+    payload: TypeormUser[],
+  ): Promise<ToDomainReturnType> {
+    const results: User[] = [];
+    const errors: Error[] = [];
+
+    const promiseList = payload.map(async (item) => {
       const userPayload: CreateUserEntityPayload<"existing"> = {
         username: item.username,
         hashedPassword: item.hashedPassword,
@@ -20,30 +24,23 @@ export class UserMapper {
         updatedDateTime: item.updatedDateTime,
         deletedDateTime: item.deletedDateTime,
       };
-      return User.new(userPayload).catch((error) => {
-        console.log(error.data.errors);
-        return null;
+      return User.new(userPayload);
+    });
+
+    await Promise.allSettled(promiseList).then((promiseResults) => {
+      promiseResults.forEach((result) => {
+        if (result.status === "fulfilled") {
+          results.push(result.value);
+        } else {
+          errors.push(result.reason);
+        }
       });
     });
-    const domainEntities = (await Promise.all(promises)).filter(
-      (item) => item !== null,
-    );
-
-    if (Array.isArray(payload)) {
-      return domainEntities;
-    } else {
-      return domainEntities[0] || null;
-    }
+    return { results, errors };
   }
 
-  public static toOrmEntity(payload: User): TypeormUser;
-  public static toOrmEntity(payload: User[]): TypeormUser[];
-  public static toOrmEntity(
-    payload: User | User[],
-  ): TypeormUser | TypeormUser[] {
-    const payloadList = Array.isArray(payload) ? payload : [payload];
-
-    const userList = payloadList.map((item) => {
+  public static toOrmEntity(payload: User[]): TypeormUser[] {
+    const userList = payload.map((item) => {
       const typeormUser = new TypeormUser();
       typeormUser.id = item.id;
       typeormUser.username = item.username;
@@ -56,10 +53,6 @@ export class UserMapper {
       return typeormUser;
     });
 
-    if (Array.isArray(payload)) {
-      return userList;
-    } else {
-      return userList[0]!;
-    }
+    return userList;
   }
 }
