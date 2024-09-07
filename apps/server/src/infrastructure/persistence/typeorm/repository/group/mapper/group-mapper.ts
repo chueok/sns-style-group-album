@@ -3,8 +3,10 @@ import { TypeormGroup } from "../../../entity/group/typeorm-group.entity";
 import { TypeormUser } from "../../../entity/user/typeorm-user.entity";
 
 type ToDomainPayloadType = {
-  group: TypeormGroup;
-  members: UserId[];
+  elements: {
+    group: TypeormGroup;
+    members: UserId[];
+  }[];
 };
 
 type ToDomainReturnType = {
@@ -14,12 +16,13 @@ type ToDomainReturnType = {
 
 export class GroupMapper {
   public static async toDomainEntity(
-    payload: ToDomainPayloadType[],
+    payload: ToDomainPayloadType,
   ): Promise<ToDomainReturnType> {
+    const { elements } = payload;
     const results: Group[] = [];
     const errors: Error[] = [];
 
-    const promiseList = payload.map(async (item) => {
+    const promiseList = elements.map(async (item) => {
       const groupPayload: CreateGroupEntityPayload<"existing"> = {
         ownerId: item.group.ownerId,
         name: item.group.name,

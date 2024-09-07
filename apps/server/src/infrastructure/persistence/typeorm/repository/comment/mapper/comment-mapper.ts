@@ -91,7 +91,7 @@ export class CommentMapper {
     if (isTypeormUserComment(comment)) {
       const ownerId = comment.ownerId;
 
-      // db 직접 호출 중.
+      //TODO db 직접 호출 중.
       const typeormTags = await comment.tags;
       const userTags: UserId[] = typeormTags.map((item) => {
         return item.id;

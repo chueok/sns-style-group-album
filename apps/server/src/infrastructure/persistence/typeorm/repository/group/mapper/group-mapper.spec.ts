@@ -42,7 +42,7 @@ describe("GroupMapper", () => {
     it("[array] should convert orm entity to domain entity", async () => {
       const ormGroupList = testDatabaseHandler.getDbCacheList(TypeormGroup);
 
-      const payload = await Promise.all(
+      const groupElements = await Promise.all(
         ormGroupList.map(async (ormGroup) => {
           const members = (await ormGroup.members).map((member) => member.id);
           return {
@@ -52,7 +52,9 @@ describe("GroupMapper", () => {
         }),
       );
 
-      const domainGroupList = await GroupMapper.toDomainEntity(payload);
+      const domainGroupList = await GroupMapper.toDomainEntity({
+        elements: groupElements,
+      });
       expect(ormGroupList.length).toEqual(domainGroupList.results.length);
     });
   });
@@ -61,7 +63,7 @@ describe("GroupMapper", () => {
     let domainGroupList: Group[];
     beforeAll(async () => {
       const ormGroupList = testDatabaseHandler.getDbCacheList(TypeormGroup);
-      const payload = await Promise.all(
+      const groupElements = await Promise.all(
         ormGroupList.map(async (ormGroup) => {
           const members = (await ormGroup.members).map((member) => member.id);
           return {
@@ -70,7 +72,9 @@ describe("GroupMapper", () => {
           };
         }),
       );
-      const mapResult = await GroupMapper.toDomainEntity(payload);
+      const mapResult = await GroupMapper.toDomainEntity({
+        elements: groupElements,
+      });
       domainGroupList = mapResult.results;
     });
     it("[array] should convert domain entity to orm entity", () => {

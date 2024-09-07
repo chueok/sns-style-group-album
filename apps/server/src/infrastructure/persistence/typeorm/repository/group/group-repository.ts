@@ -57,9 +57,9 @@ export class TypeormGroupRepository implements IGroupRepository {
     }
     const members = await ormGroup.members;
     const memberIdList = members.map((member) => member.id);
-    const mapResult = await GroupMapper.toDomainEntity([
-      { group: ormGroup, members: memberIdList },
-    ]);
+    const mapResult = await GroupMapper.toDomainEntity({
+      elements: [{ group: ormGroup, members: memberIdList }],
+    });
 
     mapResult.errors.forEach((error) => {
       this.logger.error(error);
@@ -74,7 +74,7 @@ export class TypeormGroupRepository implements IGroupRepository {
       .where("group.ownerId = :ownerId", { ownerId })
       .getMany();
 
-    const payload = await Promise.all(
+    const groupElements = await Promise.all(
       ormGroups.map(async (group) => {
         const members = await group.members;
         return {
@@ -84,7 +84,9 @@ export class TypeormGroupRepository implements IGroupRepository {
       }),
     );
 
-    const mapResult = await GroupMapper.toDomainEntity(payload);
+    const mapResult = await GroupMapper.toDomainEntity({
+      elements: groupElements,
+    });
     mapResult.errors.forEach((error) => {
       this.logger.error(error);
     });
@@ -99,7 +101,7 @@ export class TypeormGroupRepository implements IGroupRepository {
       .where("member.id = :userId", { userId })
       .getMany();
 
-    const payload = await Promise.all(
+    const groupElements = await Promise.all(
       ormGroups.map(async (group) => {
         const members = await group.members;
         return {
@@ -109,7 +111,9 @@ export class TypeormGroupRepository implements IGroupRepository {
       }),
     );
 
-    const mapResult = await GroupMapper.toDomainEntity(payload);
+    const mapResult = await GroupMapper.toDomainEntity({
+      elements: groupElements,
+    });
     mapResult.errors.forEach((error) => {
       this.logger.error(error);
     });

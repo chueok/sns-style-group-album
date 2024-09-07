@@ -122,9 +122,9 @@ describe("GroupRepository", () => {
         .at(-1)!;
 
       const members = (await dummyOrmGroup.members).map((member) => member.id);
-      const mapResult = await GroupMapper.toDomainEntity([
-        { group: dummyOrmGroup, members },
-      ]);
+      const mapResult = await GroupMapper.toDomainEntity({
+        elements: [{ group: dummyOrmGroup, members }],
+      });
       const dummyDomainGroup = mapResult.results[0]!;
       expect(dummyDomainGroup).toBeInstanceOf(Group);
 
@@ -137,9 +137,9 @@ describe("GroupRepository", () => {
         .getDbCacheList(TypeormGroup)
         .at(-1)!;
       const members = (await dummyOrmGroup.members).map((member) => member.id);
-      const mapResult = await GroupMapper.toDomainEntity([
-        { group: dummyOrmGroup, members },
-      ]);
+      const mapResult = await GroupMapper.toDomainEntity({
+        elements: [{ group: dummyOrmGroup, members }],
+      });
       const dummyDomainGroup = mapResult.results[0]!;
 
       (dummyDomainGroup as any)._createdDateTime = null;
@@ -155,9 +155,9 @@ describe("GroupRepository", () => {
         .getDbCacheList(TypeormGroup)
         .at(-1)!;
       const members = (await targetOrmGroup.members).map((member) => member.id);
-      const mapResult = (await GroupMapper.toDomainEntity([
-        { group: targetOrmGroup, members },
-      ]))!;
+      const mapResult = (await GroupMapper.toDomainEntity({
+        elements: [{ group: targetOrmGroup, members }],
+      }))!;
       const targetDomainGroup = mapResult.results[0]!;
       await targetDomainGroup.changeName("updated name");
       const result = await groupRepository.updateGroup(targetDomainGroup);
