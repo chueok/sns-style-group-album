@@ -43,13 +43,9 @@ describe("CommentMapper", () => {
       const ormCommentList = testDatabaseHandler.getDbCacheList(TypeormComment);
       expect(ormCommentList.length).toBeGreaterThan(0);
 
-      const mapResult = await CommentMapper.toDomainEntity(
-        ormCommentList.map((comment) => {
-          return {
-            comment,
-          };
-        }),
-      );
+      const mapResult = await CommentMapper.toDomainEntity({
+        elements: ormCommentList,
+      });
 
       const domainCommentList = mapResult.results;
 
@@ -66,21 +62,17 @@ describe("CommentMapper", () => {
     beforeAll(async () => {
       const ormCommentList = testDatabaseHandler.getDbCacheList(TypeormComment);
 
-      const mapResult = await CommentMapper.toDomainEntity(
-        ormCommentList.map((comment) => {
-          return {
-            comment,
-          };
-        }),
-      );
+      const mapResult = await CommentMapper.toDomainEntity({
+        elements: ormCommentList,
+      });
 
       domainCommentList = mapResult.results;
     });
 
     it("[array] should convert domain entity to orm entity", () => {
-      const mapResult = CommentMapper.toOrmEntity(
-        domainCommentList.map((comment) => ({ comment })),
-      );
+      const mapResult = CommentMapper.toOrmEntity({
+        elements: domainCommentList,
+      });
 
       const ormCommentList = mapResult.results;
 

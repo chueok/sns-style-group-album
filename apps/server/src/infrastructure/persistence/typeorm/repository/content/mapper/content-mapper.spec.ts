@@ -56,7 +56,9 @@ describe("ContentMapper", () => {
         }),
       );
 
-      const mapResult = await ContentMapper.toDomainEntity(inputList);
+      const mapResult = await ContentMapper.toDomainEntity({
+        elements: inputList,
+      });
 
       const domainContentList = mapResult.results;
 
@@ -72,26 +74,30 @@ describe("ContentMapper", () => {
     let domainContentList: Content[];
     beforeAll(async () => {
       const ormContentList = testDatabaseHandler.getDbCacheList(TypeormContent);
-
-      const mapResult = await ContentMapper.toDomainEntity(
-        await Promise.all(
-          ormContentList.map(async (content) => {
-            const likeList = await content.likes;
-            const commentList = await content.comments;
-            return {
-              content,
-              numLikes: likeList.length,
-              likeList,
-              numComments: commentList.length,
-              commentList,
-            };
-          }),
-        ),
+      const elements = await Promise.all(
+        ormContentList.map(async (content) => {
+          const likeList = await content.likes;
+          const commentList = await content.comments;
+          return {
+            content,
+            numLikes: likeList.length,
+            likeList,
+            numComments: commentList.length,
+            commentList,
+          };
+        }),
       );
+
+      const mapResult = await ContentMapper.toDomainEntity({
+        elements,
+      });
+
       domainContentList = mapResult.results;
     });
     it("[array] should convert domain entity to orm entity", async () => {
-      const mapResult = ContentMapper.toOrmEntity(domainContentList);
+      const mapResult = ContentMapper.toOrmEntity({
+        elements: domainContentList,
+      });
       const ormContentList = mapResult.results;
       expect(ormContentList).toBeInstanceOf(Array);
       expect(ormContentList.length).toEqual(domainContentList.length);

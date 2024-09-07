@@ -177,11 +177,9 @@ describe("CommentRepository", () => {
         .findOneBy({ id: ormDummyComment.contentId }))!;
       expect(content).not.toBeNull();
 
-      const mapResult = await CommentMapper.toDomainEntity([
-        {
-          comment: ormDummyComment,
-        },
-      ]);
+      const mapResult = await CommentMapper.toDomainEntity({
+        elements: [ormDummyComment],
+      });
 
       const domainDummyComment = mapResult.results[0]!;
 
@@ -201,11 +199,9 @@ describe("CommentRepository", () => {
         .findOneBy({ id: ormDummyComment.contentId }))!;
       expect(content).not.toBeNull();
 
-      const mapResult = (await CommentMapper.toDomainEntity([
-        {
-          comment: ormDummyComment,
-        },
-      ]))!;
+      const mapResult = (await CommentMapper.toDomainEntity({
+        elements: [ormDummyComment],
+      }))!;
 
       if (mapResult.errors.length > 0) {
         console.log(mapResult.errors);
@@ -224,11 +220,9 @@ describe("CommentRepository", () => {
     let targetDomainComment: Comment;
 
     beforeAll(async () => {
-      const mapResult = await CommentMapper.toDomainEntity([
-        {
-          comment: targetOrmComment,
-        },
-      ]);
+      const mapResult = await CommentMapper.toDomainEntity({
+        elements: [targetOrmComment],
+      });
 
       targetDomainComment = mapResult.results[0]!;
     });

@@ -20,7 +20,9 @@ export class TypeormCommentRepository implements ICommentRepository {
   }
 
   async createComment(comment: Comment): Promise<boolean> {
-    const { results, errors } = CommentMapper.toOrmEntity([{ comment }]);
+    const { results, errors } = CommentMapper.toOrmEntity({
+      elements: [comment],
+    });
 
     errors.forEach((error) => {
       this.logger.error(error);
@@ -37,7 +39,9 @@ export class TypeormCommentRepository implements ICommentRepository {
   }
 
   async updateComment(comment: Comment): Promise<boolean> {
-    const { results, errors } = CommentMapper.toOrmEntity([{ comment }]);
+    const { results, errors } = CommentMapper.toOrmEntity({
+      elements: [comment],
+    });
     if (results.length === 0) {
       return false;
     }
@@ -63,11 +67,9 @@ export class TypeormCommentRepository implements ICommentRepository {
       return null;
     }
 
-    const { results, errors } = await CommentMapper.toDomainEntity([
-      {
-        comment: ormComment,
-      },
-    ]);
+    const { results, errors } = await CommentMapper.toDomainEntity({
+      elements: [ormComment],
+    });
     errors.forEach((error) => {
       this.logger.error(error);
     });
@@ -88,11 +90,9 @@ export class TypeormCommentRepository implements ICommentRepository {
       .take(payload.pageSize)
       .getMany();
 
-    const { results, errors } = await CommentMapper.toDomainEntity(
-      ormCommentList.map((comment) => ({
-        comment,
-      })),
-    );
+    const { results, errors } = await CommentMapper.toDomainEntity({
+      elements: ormCommentList,
+    });
     errors.forEach((error) => {
       this.logger.error(error);
     });
@@ -127,11 +127,9 @@ export class TypeormCommentRepository implements ICommentRepository {
     }
     const ormCommentList = await query.getMany();
 
-    const { results, errors } = await CommentMapper.toDomainEntity(
-      ormCommentList.map((comment) => ({
-        comment,
-      })),
-    );
+    const { results, errors } = await CommentMapper.toDomainEntity({
+      elements: ormCommentList,
+    });
 
     errors.forEach((error) => {
       this.logger.error(error);

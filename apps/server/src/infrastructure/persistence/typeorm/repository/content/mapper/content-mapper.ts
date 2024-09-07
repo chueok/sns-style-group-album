@@ -33,16 +33,22 @@ import { TypeormComment } from "../../../entity/comment/typeorm-comment.entity";
 import { CommentMapper } from "../../comment/mapper/comment-mapper";
 
 type ToDomainPayloadType = {
-  content: TypeormContent;
-  numLikes: number;
-  likeList: TypeormLike[];
-  numComments: number;
-  commentList: TypeormComment[];
+  elements: {
+    content: TypeormContent;
+    numLikes: number;
+    likeList: TypeormLike[];
+    numComments: number;
+    commentList: TypeormComment[];
+  }[];
 };
 
 type ToDomainReturnType = {
   results: Content[];
   errors: Error[];
+};
+
+type ToOrmPayloadType = {
+  elements: Content[];
 };
 
 type ToOrmReturnType = {
@@ -55,12 +61,14 @@ type ToOrmReturnType = {
 
 export class ContentMapper {
   public static async toDomainEntity(
-    payload: ToDomainPayloadType[],
+    payload: ToDomainPayloadType,
   ): Promise<ToDomainReturnType> {
+    const { elements } = payload;
+
     const results: Content[] = [];
     const errors: Error[] = [];
 
-    const promiseList = payload.map(async (item) => {
+    const promiseList = elements.map(async (item) => {
       return this.toDomainContent(item);
     });
 
@@ -77,11 +85,13 @@ export class ContentMapper {
     return { results, errors };
   }
 
-  public static toOrmEntity(payload: Content[]): ToOrmReturnType {
+  public static toOrmEntity(payload: ToOrmPayloadType): ToOrmReturnType {
+    const { elements } = payload;
+
     const results: ToOrmReturnType["results"] = [];
     const errors: Error[] = [];
 
-    payload.forEach((item) => {
+    elements.forEach((item) => {
       try {
         const content = this.toOrmContent(item);
         const likeList = item.likeList.map((like) => {
@@ -104,9 +114,11 @@ export class ContentMapper {
   }
 
   private static async toDomainContent(
-    payload: ToDomainPayloadType,
+    payload: ToDomainPayloadType["elements"][0],
   ): Promise<Content> {
-    const ownerId = payload.content.ownerId;
+    const { content, numLikes, likeList, numComments, commentList } = payload;
+
+    const ownerId = content.ownerId;
     const referred: ReferredContent[] = (await payload.content.referred).map(
       (item) => {
         return new ReferredContent({
@@ -117,8 +129,8 @@ export class ContentMapper {
       },
     );
 
-    const likeList = await Promise.all(
-      payload.likeList.map(async (item) => {
+    const likeDomainEntityList = await Promise.all(
+      likeList.map(async (item) => {
         return new ContentLike({
           id: item.id,
           userId: item.userId,
@@ -127,129 +139,127 @@ export class ContentMapper {
       }),
     );
 
-    const commentMapResult = await CommentMapper.toDomainEntity(
-      payload.commentList.map((comment) => ({
-        comment,
-      })),
-    );
-    const commentList: Comment[] = commentMapResult.results;
+    const commentMapResult = await CommentMapper.toDomainEntity({
+      elements: commentList,
+    });
+    const commentDomainEntityList: Comment[] = commentMapResult.results;
 
-    if (isTypeormSystemContent(payload.content)) {
+    if (isTypeormSystemContent(content)) {
       const contentPayload: CreateContentEntityPayload<"system", "existing"> = {
-        groupId: payload.content.groupId,
+        groupId: content.groupId,
         ownerId,
         referred,
-        thumbnailRelativePath: payload.content.thumbnailRelativePath,
+        thumbnailRelativePath: content.thumbnailRelativePath,
 
-        id: payload.content.id,
-        createdDateTime: payload.content.createdDateTime,
-        updatedDateTime: payload.content.updatedDateTime,
-        deletedDateTime: payload.content.deletedDateTime,
+        id: content.id,
+        createdDateTime: content.createdDateTime,
+        updatedDateTime: content.updatedDateTime,
+        deletedDateTime: content.deletedDateTime,
 
-        numLikes: payload.numLikes,
-        likeList,
-        numComments: payload.numComments,
-        commentList,
+        numLikes: numLikes,
+        likeList: likeDomainEntityList,
+        numComments: numComments,
+        commentList: commentDomainEntityList,
 
-        text: payload.content.text,
-        subText: payload.content.subText,
+        text: content.text,
+        subText: content.subText,
       };
       return SystemContent.new(contentPayload);
-    } else if (isTypeormMediaContent(payload.content)) {
+    } else if (isTypeormMediaContent(content)) {
       const contentPayload: CreateContentEntityPayload<
         "image" | "video",
         "existing"
       > = {
-        groupId: payload.content.groupId,
+        groupId: content.groupId,
         ownerId,
         referred,
-        thumbnailRelativePath: payload.content.thumbnailRelativePath,
+        thumbnailRelativePath: content.thumbnailRelativePath,
 
-        id: payload.content.id,
-        createdDateTime: payload.content.createdDateTime,
-        updatedDateTime: payload.content.updatedDateTime,
-        deletedDateTime: payload.content.deletedDateTime,
+        id: content.id,
+        createdDateTime: content.createdDateTime,
+        updatedDateTime: content.updatedDateTime,
+        deletedDateTime: content.deletedDateTime,
 
-        numLikes: payload.numLikes,
-        likeList,
-        numComments: payload.numComments,
-        commentList,
+        numLikes: numLikes,
+        likeList: likeDomainEntityList,
+        numComments: numComments,
+        commentList: commentDomainEntityList,
 
-        largeRelativePath: payload.content.largeRelativePath,
-        originalRelativePath: payload.content.originalRelativePath,
-        size: payload.content.size,
-        ext: payload.content.ext,
-        mimeType: payload.content.mimetype,
+        largeRelativePath: content.largeRelativePath,
+        originalRelativePath: content.originalRelativePath,
+        size: content.size,
+        ext: content.ext,
+        mimeType: content.mimetype,
       };
-      if (payload.content.contentType === ContentTypeEnum.IMAGE) {
+      if (content.contentType === ContentTypeEnum.IMAGE) {
         return ImageContent.new(contentPayload);
       } else {
         return VideoContent.new(contentPayload);
       }
-    } else if (isTypeormPostContent(payload.content)) {
+    } else if (isTypeormPostContent(content)) {
       const contentPayload: CreateContentEntityPayload<"post", "existing"> = {
-        groupId: payload.content.groupId,
+        groupId: content.groupId,
         ownerId,
         referred,
-        thumbnailRelativePath: payload.content.thumbnailRelativePath,
+        thumbnailRelativePath: content.thumbnailRelativePath,
 
-        id: payload.content.id,
-        createdDateTime: payload.content.createdDateTime,
-        updatedDateTime: payload.content.updatedDateTime,
-        deletedDateTime: payload.content.deletedDateTime,
+        id: content.id,
+        createdDateTime: content.createdDateTime,
+        updatedDateTime: content.updatedDateTime,
+        deletedDateTime: content.deletedDateTime,
 
-        numLikes: payload.numLikes,
-        likeList,
-        numComments: payload.numComments,
-        commentList,
+        numLikes: numLikes,
+        likeList: likeDomainEntityList,
+        numComments: numComments,
+        commentList: commentDomainEntityList,
 
-        title: payload.content.title,
-        text: payload.content.text,
+        title: content.title,
+        text: content.text,
       };
       return PostContent.new(contentPayload);
-    } else if (isTypeormBucketContent(payload.content)) {
+    } else if (isTypeormBucketContent(content)) {
       const contentPayload: CreateContentEntityPayload<"bucket", "existing"> = {
-        groupId: payload.content.groupId,
+        groupId: content.groupId,
         ownerId,
         referred,
-        thumbnailRelativePath: payload.content.thumbnailRelativePath,
+        thumbnailRelativePath: content.thumbnailRelativePath,
 
-        id: payload.content.id,
-        createdDateTime: payload.content.createdDateTime,
-        updatedDateTime: payload.content.updatedDateTime,
-        deletedDateTime: payload.content.deletedDateTime,
+        id: content.id,
+        createdDateTime: content.createdDateTime,
+        updatedDateTime: content.updatedDateTime,
+        deletedDateTime: content.deletedDateTime,
 
-        numLikes: payload.numLikes,
-        likeList,
-        numComments: payload.numComments,
-        commentList,
+        numLikes: numLikes,
+        likeList: likeDomainEntityList,
+        numComments: numComments,
+        commentList: commentDomainEntityList,
 
-        title: (payload.content as TypeormBucket).title,
-        status: (payload.content as TypeormBucket).status,
+        title: (content as TypeormBucket).title,
+        status: (content as TypeormBucket).status,
       };
       return BucketContent.new(contentPayload);
-    } else if (isTypeormScheduleContent(payload.content)) {
+    } else if (isTypeormScheduleContent(content)) {
       const contentPayload: CreateContentEntityPayload<"schedule", "existing"> =
         {
-          groupId: payload.content.groupId,
+          groupId: content.groupId,
           ownerId,
           referred,
-          thumbnailRelativePath: payload.content.thumbnailRelativePath,
+          thumbnailRelativePath: content.thumbnailRelativePath,
 
-          id: payload.content.id,
-          createdDateTime: payload.content.createdDateTime,
-          updatedDateTime: payload.content.updatedDateTime,
-          deletedDateTime: payload.content.deletedDateTime,
+          id: content.id,
+          createdDateTime: content.createdDateTime,
+          updatedDateTime: content.updatedDateTime,
+          deletedDateTime: content.deletedDateTime,
 
-          numLikes: payload.numLikes,
-          likeList,
-          numComments: payload.numComments,
-          commentList,
+          numLikes: numLikes,
+          likeList: likeDomainEntityList,
+          numComments: numComments,
+          commentList: commentDomainEntityList,
 
-          title: (payload.content as TypeormSchedule).title,
-          startDateTime: (payload.content as TypeormSchedule).startDateTime,
-          endDateTime: (payload.content as TypeormSchedule).endDateTime,
-          isAllDay: (payload.content as TypeormSchedule).isAllDay,
+          title: (content as TypeormSchedule).title,
+          startDateTime: (content as TypeormSchedule).startDateTime,
+          endDateTime: (content as TypeormSchedule).endDateTime,
+          isAllDay: (content as TypeormSchedule).isAllDay,
         };
       return ScheduleContent.new(contentPayload);
     } else {

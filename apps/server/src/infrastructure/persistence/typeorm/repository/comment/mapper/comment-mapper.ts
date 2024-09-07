@@ -18,7 +18,7 @@ import {
 import { TypeormUser } from "../../../entity/user/typeorm-user.entity";
 
 type ToDomainPayloadType = {
-  comment: TypeormComment;
+  elements: TypeormComment[];
 };
 
 type ToDomainReturnType = {
@@ -27,7 +27,7 @@ type ToDomainReturnType = {
 };
 
 type ToOrmPayloadType = {
-  comment: Comment;
+  elements: Comment[];
 };
 
 type ToOrmReturnType = {
@@ -37,12 +37,14 @@ type ToOrmReturnType = {
 
 export class CommentMapper {
   public static async toDomainEntity(
-    payload: ToDomainPayloadType[],
+    payload: ToDomainPayloadType,
   ): Promise<ToDomainReturnType> {
     const results: Comment[] = [];
     const errors: Error[] = [];
 
-    const promiseList: Promise<Comment>[] = payload.map(async (item) => {
+    const { elements } = payload;
+
+    const promiseList: Promise<Comment>[] = elements.map(async (item) => {
       return CommentMapper.transferFromOrmToDomain(item);
     });
 
@@ -61,11 +63,13 @@ export class CommentMapper {
     };
   }
 
-  public static toOrmEntity(payload: ToOrmPayloadType[]): ToOrmReturnType {
+  public static toOrmEntity(payload: ToOrmPayloadType): ToOrmReturnType {
     const results: TypeormComment[] = [];
     const errors: Error[] = [];
 
-    payload.forEach((item) => {
+    const { elements } = payload;
+
+    elements.forEach((item) => {
       try {
         results.push(CommentMapper.transferFromDomainToOrm(item));
       } catch (error) {
@@ -82,46 +86,48 @@ export class CommentMapper {
   }
 
   private static async transferFromOrmToDomain(
-    payload: ToDomainPayloadType,
+    comment: TypeormComment,
   ): Promise<Comment> {
-    if (isTypeormUserComment(payload.comment)) {
-      const ownerId = payload.comment.ownerId;
+    if (isTypeormUserComment(comment)) {
+      const ownerId = comment.ownerId;
 
-      const typeormTags = await payload.comment.tags;
+      // db 직접 호출 중.
+      const typeormTags = await comment.tags;
       const userTags: UserId[] = typeormTags.map((item) => {
         return item.id;
       });
 
       const commentPayload: CreateCommentEntityPayload<"user", "existing"> = {
-        text: payload.comment.text,
-        contentId: payload.comment.contentId,
+        text: comment.text,
+        contentId: comment.contentId,
 
-        id: payload.comment.id,
+        id: comment.id,
         userTags: userTags,
-        createdDateTime: payload.comment.createdDateTime,
-        updatedDateTime: payload.comment.updatedDateTime,
-        deletedDateTime: payload.comment.deletedDateTime,
+        createdDateTime: comment.createdDateTime,
+        updatedDateTime: comment.updatedDateTime,
+        deletedDateTime: comment.deletedDateTime,
 
         ownerId,
       };
 
       return UserComment.new(commentPayload);
-    } else if (isTypeormSystemComment(payload.comment)) {
-      const typeormTags = await payload.comment.tags;
+    } else if (isTypeormSystemComment(comment)) {
+      // db 직접 호출 중
+      const typeormTags = await comment.tags;
       const userTags: UserId[] = typeormTags.map((item) => {
         return item.id;
       });
       const commentPayload: CreateCommentEntityPayload<"system", "existing"> = {
-        text: payload.comment.text,
-        contentId: payload.comment.contentId,
+        text: comment.text,
+        contentId: comment.contentId,
 
-        id: payload.comment.id,
+        id: comment.id,
         userTags: userTags,
-        createdDateTime: payload.comment.createdDateTime,
-        updatedDateTime: payload.comment.updatedDateTime,
-        deletedDateTime: payload.comment.deletedDateTime,
+        createdDateTime: comment.createdDateTime,
+        updatedDateTime: comment.updatedDateTime,
+        deletedDateTime: comment.deletedDateTime,
 
-        subText: (payload.comment as TypeormSystemComment).subText,
+        subText: (comment as TypeormSystemComment).subText,
       };
       return SystemComment.new(commentPayload);
     } else {
@@ -132,10 +138,7 @@ export class CommentMapper {
     }
   }
 
-  private static transferFromDomainToOrm(
-    payload: ToOrmPayloadType,
-  ): TypeormComment {
-    const comment = payload.comment;
+  private static transferFromDomainToOrm(comment: Comment): TypeormComment {
     if (comment instanceof UserComment) {
       const typeormUserComment = new TypeormUserComment();
       typeormUserComment.id = comment.id;
