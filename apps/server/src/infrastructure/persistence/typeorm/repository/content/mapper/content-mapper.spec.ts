@@ -46,12 +46,14 @@ describe("ContentMapper", () => {
         ormContentList.map(async (content) => {
           const likeList = await content.likes;
           const commentList = await content.comments;
+          const referred = await content.referred;
           return {
             content,
             numLikes: likeList.length,
             likeList,
             numComments: commentList.length,
             commentList,
+            referred,
           };
         }),
       );
@@ -78,12 +80,14 @@ describe("ContentMapper", () => {
         ormContentList.map(async (content) => {
           const likeList = await content.likes;
           const commentList = await content.comments;
+          const referred = await content.referred;
           return {
             content,
             numLikes: likeList.length,
             likeList,
             numComments: commentList.length,
             commentList,
+            referred,
           };
         }),
       );

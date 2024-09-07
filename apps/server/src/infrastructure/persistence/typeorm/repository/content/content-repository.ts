@@ -84,6 +84,7 @@ export class TypeormContentRepository implements IContentRepository {
       await Promise.all([
         this.typeormContentRepository.findOne({
           where: { id: contentId },
+          relations: { referred: true },
         }),
         this.getRecentLikeList(contentId, TypeormContentRepository.likeLimit),
         this.getNumLikes(contentId),
@@ -96,6 +97,7 @@ export class TypeormContentRepository implements IContentRepository {
     if (!content) {
       return null;
     }
+    const referred = await content.referred;
 
     const { results, errors } = await ContentMapper.toDomainEntity({
       elements: [
@@ -105,6 +107,7 @@ export class TypeormContentRepository implements IContentRepository {
           likeList,
           numComments,
           commentList,
+          referred,
         },
       ],
     });
@@ -203,7 +206,9 @@ export class TypeormContentRepository implements IContentRepository {
   private async ormEntityList2DomainEntityList(
     ormContentList: TypeormContent[],
   ): Promise<Content[]> {
-    const promiseList = await ormContentList.map(async (ormContent) => {
+    const promiseList = ormContentList.map(async (ormContent) => {
+      // TODO : query build 시 relation 같이 가져오는 방법 확인
+      const referred = await ormContent.referred;
       const [likeList, numLikes, commentList, numComments] = await Promise.all([
         this.getRecentLikeList(
           ormContent.id,
@@ -223,6 +228,7 @@ export class TypeormContentRepository implements IContentRepository {
         likeList,
         numComments,
         commentList,
+        referred,
       };
     });
     const payload = await Promise.all(promiseList);

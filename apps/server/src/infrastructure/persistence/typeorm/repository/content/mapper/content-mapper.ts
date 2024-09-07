@@ -39,6 +39,7 @@ type ToDomainPayloadType = {
     likeList: TypeormLike[];
     numComments: number;
     commentList: TypeormComment[];
+    referred: TypeormContent[];
   }[];
 };
 
@@ -69,7 +70,7 @@ export class ContentMapper {
     const errors: Error[] = [];
 
     const promiseList = elements.map(async (item) => {
-      return this.toDomainContent(item);
+      return this.mapToDomainContentForUtil(item);
     });
 
     const promiseAllSettledResult = await Promise.allSettled(promiseList);
@@ -93,7 +94,7 @@ export class ContentMapper {
 
     elements.forEach((item) => {
       try {
-        const content = this.toOrmContent(item);
+        const content = this.mapToOrmContentForUtil(item);
         const likeList = item.likeList.map((like) => {
           const typeormLike = new TypeormLike();
           typeormLike.id = like.id;
@@ -113,21 +114,20 @@ export class ContentMapper {
     return { results, errors };
   }
 
-  private static async toDomainContent(
+  private static async mapToDomainContentForUtil(
     payload: ToDomainPayloadType["elements"][0],
   ): Promise<Content> {
-    const { content, numLikes, likeList, numComments, commentList } = payload;
+    const { content, numLikes, likeList, numComments, commentList, referred } =
+      payload;
 
     const ownerId = content.ownerId;
-    const referred: ReferredContent[] = (await payload.content.referred).map(
-      (item) => {
-        return new ReferredContent({
-          id: item.id,
-          type: item.contentType,
-          thumbnailRelativePath: item.thumbnailRelativePath,
-        });
-      },
-    );
+    const domainReferred: ReferredContent[] = referred.map((item) => {
+      return new ReferredContent({
+        id: item.id,
+        type: item.contentType,
+        thumbnailRelativePath: item.thumbnailRelativePath,
+      });
+    });
 
     const likeDomainEntityList = await Promise.all(
       likeList.map(async (item) => {
@@ -148,7 +148,7 @@ export class ContentMapper {
       const contentPayload: CreateContentEntityPayload<"system", "existing"> = {
         groupId: content.groupId,
         ownerId,
-        referred,
+        referred: domainReferred,
         thumbnailRelativePath: content.thumbnailRelativePath,
 
         id: content.id,
@@ -172,7 +172,7 @@ export class ContentMapper {
       > = {
         groupId: content.groupId,
         ownerId,
-        referred,
+        referred: domainReferred,
         thumbnailRelativePath: content.thumbnailRelativePath,
 
         id: content.id,
@@ -200,7 +200,7 @@ export class ContentMapper {
       const contentPayload: CreateContentEntityPayload<"post", "existing"> = {
         groupId: content.groupId,
         ownerId,
-        referred,
+        referred: domainReferred,
         thumbnailRelativePath: content.thumbnailRelativePath,
 
         id: content.id,
@@ -221,7 +221,7 @@ export class ContentMapper {
       const contentPayload: CreateContentEntityPayload<"bucket", "existing"> = {
         groupId: content.groupId,
         ownerId,
-        referred,
+        referred: domainReferred,
         thumbnailRelativePath: content.thumbnailRelativePath,
 
         id: content.id,
@@ -243,7 +243,7 @@ export class ContentMapper {
         {
           groupId: content.groupId,
           ownerId,
-          referred,
+          referred: domainReferred,
           thumbnailRelativePath: content.thumbnailRelativePath,
 
           id: content.id,
@@ -270,7 +270,7 @@ export class ContentMapper {
     }
   }
 
-  private static toOrmContent(payload: Content): TypeormContent {
+  private static mapToOrmContentForUtil(payload: Content): TypeormContent {
     let ormContent!: TypeormContent;
     if (payload.type === ContentTypeEnum.SYSTEM) {
       ormContent = new TypeormSystemContent();
