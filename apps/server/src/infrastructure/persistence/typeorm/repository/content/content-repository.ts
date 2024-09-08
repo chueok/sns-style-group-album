@@ -154,7 +154,15 @@ export class TypeormContentRepository implements IContentRepository {
     const ormContentList = await query
       .leftJoinAndSelect("content.referred", "referred")
       .getMany();
-    return this.ormEntityList2DomainEntityList(ormContentList);
+
+    const mapperPayload = await Promise.all(
+      ormContentList.map(async (content) => ({
+        content,
+        referred: await content.referred,
+      })),
+    );
+
+    return this.ormEntityList2DomainEntityList({ elements: mapperPayload });
   }
 
   async findContentsByGroupMember(payload: {
@@ -163,11 +171,18 @@ export class TypeormContentRepository implements IContentRepository {
   }): Promise<Content[]> {
     const ormContentList = await this.typeormContentRepository
       .createQueryBuilder("content")
+      .leftJoinAndSelect("content.referred", "referred")
       .where("content.ownerId = :userId", { userId: payload.userId })
       .andWhere("content.groupId = :groupId", { groupId: payload.groupId })
       .getMany();
 
-    return this.ormEntityList2DomainEntityList(ormContentList);
+    const mapperPayload = await Promise.all(
+      ormContentList.map(async (content) => ({
+        content,
+        referred: await content.referred,
+      })),
+    );
+    return this.ormEntityList2DomainEntityList({ elements: mapperPayload });
   }
 
   private async getNumLikes(contentId: string): Promise<number> {
@@ -208,27 +223,23 @@ export class TypeormContentRepository implements IContentRepository {
       .getMany();
   }
 
-  private async ormEntityList2DomainEntityList(
-    ormContentList: TypeormContent[],
-  ): Promise<Content[]> {
-    const promiseList = ormContentList.map(async (ormContent) => {
-      // TODO : query build 시 relation 같이 가져오는 방법 확인
-      const referred = await ormContent.referred;
+  private async ormEntityList2DomainEntityList(payload: {
+    elements: { content: TypeormContent; referred: TypeormContent[] }[];
+  }): Promise<Content[]> {
+    const { elements } = payload;
+    const promiseList = elements.map(async ({ content, referred }) => {
       const [likeList, numLikes, commentList, numComments] = await Promise.all([
-        this.getRecentLikeList(
-          ormContent.id,
-          TypeormContentRepository.likeLimit,
-        ),
-        this.getNumLikes(ormContent.id),
+        this.getRecentLikeList(content.id, TypeormContentRepository.likeLimit),
+        this.getNumLikes(content.id),
         this.getRecentCommentList(
-          ormContent.id,
+          content.id,
           TypeormContentRepository.commentLimit,
         ),
-        this.getNumComments(ormContent.id),
+        this.getNumComments(content.id),
       ]);
 
       return {
-        content: ormContent,
+        content: content,
         numLikes,
         likeList,
         numComments,
@@ -236,10 +247,10 @@ export class TypeormContentRepository implements IContentRepository {
         referred,
       };
     });
-    const payload = await Promise.all(promiseList);
+    const mapperPayload = await Promise.all(promiseList);
 
     const { results, errors } = await ContentMapper.toDomainEntity({
-      elements: payload,
+      elements: mapperPayload,
     });
 
     errors.forEach((error) => {
