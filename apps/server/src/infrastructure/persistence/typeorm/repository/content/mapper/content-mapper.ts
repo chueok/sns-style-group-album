@@ -29,8 +29,10 @@ import {
   TypeormSystemContent,
 } from "../../../entity/content/typeorm-content.entity";
 import { TypeormLike } from "../../../entity/like/typeorm-like.entity";
-import { TypeormComment } from "../../../entity/comment/typeorm-comment.entity";
-import { CommentMapper } from "../../comment/mapper/comment-mapper";
+import {
+  CommentMapper,
+  CommentMapperToDomainPayloadType,
+} from "../../comment/mapper/comment-mapper";
 
 type ToDomainPayloadType = {
   elements: {
@@ -38,8 +40,8 @@ type ToDomainPayloadType = {
     numLikes: number;
     likeList: TypeormLike[];
     numComments: number;
-    commentList: TypeormComment[];
     referred: TypeormContent[];
+    commentElement?: CommentMapperToDomainPayloadType["elements"][0];
   }[];
 };
 
@@ -117,8 +119,14 @@ export class ContentMapper {
   private static async mapToDomainContentForUtil(
     payload: ToDomainPayloadType["elements"][0],
   ): Promise<Content> {
-    const { content, numLikes, likeList, numComments, commentList, referred } =
-      payload;
+    const {
+      content,
+      numLikes,
+      likeList,
+      numComments,
+      commentElement,
+      referred,
+    } = payload;
 
     const ownerId = content.ownerId;
     const domainReferred: ReferredContent[] = referred.map((item) => {
@@ -139,10 +147,15 @@ export class ContentMapper {
       }),
     );
 
-    const commentMapResult = await CommentMapper.toDomainEntity({
-      elements: commentList,
-    });
-    const commentDomainEntityList: Comment[] = commentMapResult.results;
+    let commentDomainEntityList: Comment[] = [];
+    if (commentElement) {
+      const commentMapResult = await CommentMapper.toDomainEntity({
+        elements: [
+          { comment: commentElement.comment, tags: commentElement.tags },
+        ],
+      });
+      commentDomainEntityList = commentMapResult.results;
+    }
 
     if (isTypeormSystemContent(content)) {
       const contentPayload: CreateContentEntityPayload<"system", "existing"> = {

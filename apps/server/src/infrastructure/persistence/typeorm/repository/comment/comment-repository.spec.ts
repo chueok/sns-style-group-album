@@ -178,7 +178,12 @@ describe("CommentRepository", () => {
       expect(content).not.toBeNull();
 
       const mapResult = await CommentMapper.toDomainEntity({
-        elements: [ormDummyComment],
+        elements: [
+          {
+            comment: ormDummyComment,
+            tags: (await ormDummyComment.tags).map((user) => user.id),
+          },
+        ],
       });
 
       const domainDummyComment = mapResult.results[0]!;
@@ -200,7 +205,12 @@ describe("CommentRepository", () => {
       expect(content).not.toBeNull();
 
       const mapResult = (await CommentMapper.toDomainEntity({
-        elements: [ormDummyComment],
+        elements: [
+          {
+            comment: ormDummyComment,
+            tags: (await ormDummyComment.tags).map((user) => user.id),
+          },
+        ],
       }))!;
 
       if (mapResult.errors.length > 0) {
@@ -221,7 +231,12 @@ describe("CommentRepository", () => {
 
     beforeAll(async () => {
       const mapResult = await CommentMapper.toDomainEntity({
-        elements: [targetOrmComment],
+        elements: [
+          {
+            comment: targetOrmComment,
+            tags: (await targetOrmComment.tags).map((user) => user.id),
+          },
+        ],
       });
 
       targetDomainComment = mapResult.results[0]!;

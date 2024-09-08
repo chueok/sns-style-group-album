@@ -4,6 +4,7 @@ import {
   CommentPagenationType,
   ICommentRepository,
   Nullable,
+  UserId,
 } from "@repo/be-core";
 import { DataSource, Repository } from "typeorm";
 import { TypeormComment } from "../../entity/comment/typeorm-comment.entity";
@@ -61,14 +62,16 @@ export class TypeormCommentRepository implements ICommentRepository {
       where: { id: commentId },
       relations: {
         content: true,
+        tags: true,
       },
     });
     if (!ormComment) {
       return null;
     }
 
+    const tags: UserId[] = (await ormComment.tags).map((user) => user.id);
     const { results, errors } = await CommentMapper.toDomainEntity({
-      elements: [ormComment],
+      elements: [{ comment: ormComment, tags }],
     });
     errors.forEach((error) => {
       this.logger.error(error);
@@ -88,10 +91,20 @@ export class TypeormCommentRepository implements ICommentRepository {
       .orderBy("comment.createdDateTime", "DESC")
       .skip((payload.page - 1) * payload.pageSize)
       .take(payload.pageSize)
+      .leftJoinAndSelect("comment.tags", "tags")
       .getMany();
 
+    const elements = await Promise.all(
+      ormCommentList.map(async (ormComment) => {
+        return {
+          comment: ormComment,
+          tags: (await ormComment.tags).map((user) => user.id),
+        };
+      }),
+    );
+
     const { results, errors } = await CommentMapper.toDomainEntity({
-      elements: ormCommentList,
+      elements,
     });
     errors.forEach((error) => {
       this.logger.error(error);
@@ -107,6 +120,7 @@ export class TypeormCommentRepository implements ICommentRepository {
     const query = this.typeormCommentRepository
       .createQueryBuilder("comment")
       .innerJoinAndSelect("comment.content", "content")
+      .leftJoinAndSelect("comment.tags", "tags")
       .where("content.groupId = :groupId", { groupId: payload.groupId })
       .orderBy(
         `comment.${payload.pagination.by}`,
@@ -127,8 +141,17 @@ export class TypeormCommentRepository implements ICommentRepository {
     }
     const ormCommentList = await query.getMany();
 
+    const elements = await Promise.all(
+      ormCommentList.map(async (ormComment) => {
+        return {
+          comment: ormComment,
+          tags: (await ormComment.tags).map((user) => user.id),
+        };
+      }),
+    );
+
     const { results, errors } = await CommentMapper.toDomainEntity({
-      elements: ormCommentList,
+      elements,
     });
 
     errors.forEach((error) => {

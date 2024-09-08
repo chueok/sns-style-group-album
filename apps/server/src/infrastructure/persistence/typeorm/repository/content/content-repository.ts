@@ -99,6 +99,15 @@ export class TypeormContentRepository implements IContentRepository {
     }
     const referred = await content.referred;
 
+    const commentElement = await Promise.all(
+      commentList.map(async (comment) => {
+        return {
+          comment,
+          tags: (await comment.tags).map((user) => user.id),
+        };
+      }),
+    );
+
     const { results, errors } = await ContentMapper.toDomainEntity({
       elements: [
         {
@@ -106,7 +115,7 @@ export class TypeormContentRepository implements IContentRepository {
           numLikes,
           likeList,
           numComments,
-          commentList,
+          commentElement: commentElement.at(0),
           referred,
         },
       ],
@@ -220,6 +229,7 @@ export class TypeormContentRepository implements IContentRepository {
       .where("comment.contentId = :contentId", { contentId })
       .orderBy("comment.createdDateTime", "DESC")
       .limit(limit)
+      .leftJoinAndSelect("comment.tags", "tags")
       .getMany();
   }
 

@@ -17,8 +17,8 @@ import {
 } from "../../../entity/comment/typeorm-comment.entity";
 import { TypeormUser } from "../../../entity/user/typeorm-user.entity";
 
-type ToDomainPayloadType = {
-  elements: TypeormComment[];
+export type CommentMapperToDomainPayloadType = {
+  elements: { comment: TypeormComment; tags: UserId[] }[];
 };
 
 type ToDomainReturnType = {
@@ -37,15 +37,15 @@ type ToOrmReturnType = {
 
 export class CommentMapper {
   public static async toDomainEntity(
-    payload: ToDomainPayloadType,
+    payload: CommentMapperToDomainPayloadType,
   ): Promise<ToDomainReturnType> {
+    const { elements } = payload;
+
     const results: Comment[] = [];
     const errors: Error[] = [];
 
-    const { elements } = payload;
-
     const promiseList: Promise<Comment>[] = elements.map(async (item) => {
-      return CommentMapper.transferFromOrmToDomain(item);
+      return CommentMapper.mapToDomainCommentForUtil(item);
     });
 
     const promiseAllSettledResult = await Promise.allSettled(promiseList);
@@ -71,7 +71,7 @@ export class CommentMapper {
 
     elements.forEach((item) => {
       try {
-        results.push(CommentMapper.transferFromDomainToOrm(item));
+        results.push(CommentMapper.mapToOrmCommentForUtil(item));
       } catch (error) {
         if (error instanceof Error) {
           errors.push(error);
@@ -85,24 +85,19 @@ export class CommentMapper {
     };
   }
 
-  private static async transferFromOrmToDomain(
-    comment: TypeormComment,
-  ): Promise<Comment> {
+  private static async mapToDomainCommentForUtil({
+    comment,
+    tags,
+  }: CommentMapperToDomainPayloadType["elements"][0]): Promise<Comment> {
     if (isTypeormUserComment(comment)) {
       const ownerId = comment.ownerId;
-
-      //TODO db 직접 호출 중.
-      const typeormTags = await comment.tags;
-      const userTags: UserId[] = typeormTags.map((item) => {
-        return item.id;
-      });
 
       const commentPayload: CreateCommentEntityPayload<"user", "existing"> = {
         text: comment.text,
         contentId: comment.contentId,
 
         id: comment.id,
-        userTags: userTags,
+        userTags: tags,
         createdDateTime: comment.createdDateTime,
         updatedDateTime: comment.updatedDateTime,
         deletedDateTime: comment.deletedDateTime,
@@ -112,17 +107,12 @@ export class CommentMapper {
 
       return UserComment.new(commentPayload);
     } else if (isTypeormSystemComment(comment)) {
-      // db 직접 호출 중
-      const typeormTags = await comment.tags;
-      const userTags: UserId[] = typeormTags.map((item) => {
-        return item.id;
-      });
       const commentPayload: CreateCommentEntityPayload<"system", "existing"> = {
         text: comment.text,
         contentId: comment.contentId,
 
         id: comment.id,
-        userTags: userTags,
+        userTags: tags,
         createdDateTime: comment.createdDateTime,
         updatedDateTime: comment.updatedDateTime,
         deletedDateTime: comment.deletedDateTime,
@@ -138,7 +128,7 @@ export class CommentMapper {
     }
   }
 
-  private static transferFromDomainToOrm(comment: Comment): TypeormComment {
+  private static mapToOrmCommentForUtil(comment: Comment): TypeormComment {
     if (comment instanceof UserComment) {
       const typeormUserComment = new TypeormUserComment();
       typeormUserComment.id = comment.id;

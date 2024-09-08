@@ -43,8 +43,17 @@ describe("CommentMapper", () => {
       const ormCommentList = testDatabaseHandler.getDbCacheList(TypeormComment);
       expect(ormCommentList.length).toBeGreaterThan(0);
 
+      const elements = await Promise.all(
+        ormCommentList.map(async (comment) => {
+          return {
+            comment: comment,
+            tags: (await comment.tags).map((user) => user.id),
+          };
+        }),
+      );
+
       const mapResult = await CommentMapper.toDomainEntity({
-        elements: ormCommentList,
+        elements,
       });
 
       const domainCommentList = mapResult.results;
@@ -61,9 +70,17 @@ describe("CommentMapper", () => {
     let domainCommentList: Comment[];
     beforeAll(async () => {
       const ormCommentList = testDatabaseHandler.getDbCacheList(TypeormComment);
+      const elements = await Promise.all(
+        ormCommentList.map(async (comment) => {
+          return {
+            comment: comment,
+            tags: (await comment.tags).map((user) => user.id),
+          };
+        }),
+      );
 
       const mapResult = await CommentMapper.toDomainEntity({
-        elements: ormCommentList,
+        elements,
       });
 
       domainCommentList = mapResult.results;
