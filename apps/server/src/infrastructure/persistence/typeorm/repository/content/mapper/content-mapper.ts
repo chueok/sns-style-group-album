@@ -16,11 +16,6 @@ import {
   VideoContent,
 } from "@repo/be-core";
 import {
-  isTypeormBucketContent,
-  isTypeormMediaContent,
-  isTypeormPostContent,
-  isTypeormScheduleContent,
-  isTypeormSystemContent,
   TypeormBucket,
   TypeormContent,
   TypeormMedia,
@@ -157,7 +152,7 @@ export class ContentMapper {
       commentDomainEntityList = commentMapResult.results;
     }
 
-    if (isTypeormSystemContent(content)) {
+    if (content instanceof TypeormSystemContent) {
       const contentPayload: CreateContentEntityPayload<"system", "existing"> = {
         groupId: content.groupId,
         ownerId,
@@ -178,7 +173,7 @@ export class ContentMapper {
         subText: content.subText,
       };
       return SystemContent.new(contentPayload);
-    } else if (isTypeormMediaContent(content)) {
+    } else if (content instanceof TypeormMedia) {
       const contentPayload: CreateContentEntityPayload<
         "image" | "video",
         "existing"
@@ -209,7 +204,7 @@ export class ContentMapper {
       } else {
         return VideoContent.new(contentPayload);
       }
-    } else if (isTypeormPostContent(content)) {
+    } else if (content instanceof TypeormPost) {
       const contentPayload: CreateContentEntityPayload<"post", "existing"> = {
         groupId: content.groupId,
         ownerId,
@@ -230,7 +225,7 @@ export class ContentMapper {
         text: content.text,
       };
       return PostContent.new(contentPayload);
-    } else if (isTypeormBucketContent(content)) {
+    } else if (content instanceof TypeormBucket) {
       const contentPayload: CreateContentEntityPayload<"bucket", "existing"> = {
         groupId: content.groupId,
         ownerId,
@@ -247,11 +242,11 @@ export class ContentMapper {
         numComments: numComments,
         commentList: commentDomainEntityList,
 
-        title: (content as TypeormBucket).title,
-        status: (content as TypeormBucket).status,
+        title: content.title,
+        status: content.status,
       };
       return BucketContent.new(contentPayload);
-    } else if (isTypeormScheduleContent(content)) {
+    } else if (content instanceof TypeormSchedule) {
       const contentPayload: CreateContentEntityPayload<"schedule", "existing"> =
         {
           groupId: content.groupId,
@@ -269,10 +264,10 @@ export class ContentMapper {
           numComments: numComments,
           commentList: commentDomainEntityList,
 
-          title: (content as TypeormSchedule).title,
-          startDateTime: (content as TypeormSchedule).startDateTime,
-          endDateTime: (content as TypeormSchedule).endDateTime,
-          isAllDay: (content as TypeormSchedule).isAllDay,
+          title: content.title,
+          startDateTime: content.startDateTime,
+          endDateTime: content.endDateTime,
+          isAllDay: content.isAllDay,
         };
       return ScheduleContent.new(contentPayload);
     } else {
@@ -285,46 +280,39 @@ export class ContentMapper {
 
   private static mapToOrmContentForUtil(payload: Content): TypeormContent {
     let ormContent!: TypeormContent;
-    if (payload.type === ContentTypeEnum.SYSTEM) {
+    if (payload instanceof SystemContent) {
       ormContent = new TypeormSystemContent();
-      (ormContent as TypeormSystemContent).text = (
-        payload as SystemContent
-      ).text;
-      (ormContent as TypeormSystemContent).subText = (
-        payload as SystemContent
-      ).subText;
-    } else if (payload.type === ContentTypeEnum.BUCKET) {
+      (ormContent as TypeormSystemContent).text = payload.text;
+      (ormContent as TypeormSystemContent).subText = payload.subText;
+    } else if (payload instanceof BucketContent) {
       ormContent = new TypeormBucket();
       (ormContent as TypeormBucket).title = (payload as BucketContent).title;
       (ormContent as TypeormBucket).status = (payload as BucketContent).status;
-    } else if (
-      payload.type === ContentTypeEnum.IMAGE ||
-      payload.type === ContentTypeEnum.VIDEO
-    ) {
+    } else if (payload instanceof ImageContent) {
       ormContent = new TypeormMedia();
-      (ormContent as TypeormMedia).largeRelativePath = (
-        payload as ImageContent
-      ).largeRelativePath;
-      (ormContent as TypeormMedia).originalRelativePath = (
-        payload as ImageContent
-      ).originalRelativePath;
-      (ormContent as TypeormMedia).size = (payload as ImageContent).size;
-      (ormContent as TypeormMedia).ext = (payload as ImageContent).ext;
-      (ormContent as TypeormMedia).mimetype = (
-        payload as ImageContent
-      ).mimetype;
-    } else if (payload.type === ContentTypeEnum.POST) {
+      (ormContent as TypeormMedia).largeRelativePath =
+        payload.largeRelativePath;
+      (ormContent as TypeormMedia).originalRelativePath =
+        payload.originalRelativePath;
+      (ormContent as TypeormMedia).size = payload.size;
+      (ormContent as TypeormMedia).ext = payload.ext;
+      (ormContent as TypeormMedia).mimetype = payload.mimetype;
+    } else if (payload instanceof VideoContent) {
+      ormContent = new TypeormMedia();
+      (ormContent as TypeormMedia).largeRelativePath = null;
+      (ormContent as TypeormMedia).originalRelativePath =
+        payload.originalRelativePath;
+      (ormContent as TypeormMedia).size = payload.size;
+      (ormContent as TypeormMedia).ext = payload.ext;
+      (ormContent as TypeormMedia).mimetype = payload.mimetype;
+    } else if (payload instanceof PostContent) {
       ormContent = new TypeormPost();
-      (ormContent as TypeormPost).title = (payload as PostContent).title;
-      (ormContent as TypeormPost).text = (payload as PostContent).text;
-    } else if (payload.type === ContentTypeEnum.SCHEDULE) {
+      (ormContent as TypeormPost).title = payload.title;
+      (ormContent as TypeormPost).text = payload.text;
+    } else if (payload instanceof ScheduleContent) {
       ormContent = new TypeormSchedule();
-      (ormContent as TypeormSchedule).title = (
-        payload as ScheduleContent
-      ).title;
-      (ormContent as TypeormSchedule).endDateTime = (
-        payload as ScheduleContent
-      ).endDateTime;
+      (ormContent as TypeormSchedule).title = payload.title;
+      (ormContent as TypeormSchedule).endDateTime = payload.endDateTime;
     } else {
       throw Exception.new({
         code: Code.UTIL_PROCESS_ERROR,

@@ -9,8 +9,6 @@ import {
   UserId,
 } from "@repo/be-core";
 import {
-  isTypeormSystemComment,
-  isTypeormUserComment,
   TypeormComment,
   TypeormSystemComment,
   TypeormUserComment,
@@ -89,7 +87,7 @@ export class CommentMapper {
     comment,
     tags,
   }: CommentMapperToDomainPayloadType["elements"][0]): Promise<Comment> {
-    if (isTypeormUserComment(comment)) {
+    if (comment instanceof TypeormUserComment) {
       const ownerId = comment.ownerId;
 
       const commentPayload: CreateCommentEntityPayload<"user", "existing"> = {
@@ -106,7 +104,7 @@ export class CommentMapper {
       };
 
       return UserComment.new(commentPayload);
-    } else if (isTypeormSystemComment(comment)) {
+    } else if (comment instanceof TypeormSystemComment) {
       const commentPayload: CreateCommentEntityPayload<"system", "existing"> = {
         text: comment.text,
         contentId: comment.contentId,
