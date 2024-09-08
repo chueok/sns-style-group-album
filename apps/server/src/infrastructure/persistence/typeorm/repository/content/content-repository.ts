@@ -133,7 +133,11 @@ export class TypeormContentRepository implements IContentRepository {
         `content.${payload.pagination.by}`,
         payload.pagination.direction === "asc" ? "ASC" : "DESC",
       )
-      .limit(payload.pagination.limit);
+      /**
+       * https://orkhan.gitbook.io/typeorm/docs/select-query-builder
+       * take and skip may look like we are using limit and offset, but they aren't.
+       */
+      .take(payload.pagination.limit);
 
     if (payload.pagination.cursor) {
       if (payload.pagination.direction === "desc") {
@@ -147,8 +151,9 @@ export class TypeormContentRepository implements IContentRepository {
       }
     }
 
-    const ormContentList = await query.getMany();
-
+    const ormContentList = await query
+      .leftJoinAndSelect("content.referred", "referred")
+      .getMany();
     return this.ormEntityList2DomainEntityList(ormContentList);
   }
 

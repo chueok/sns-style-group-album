@@ -143,19 +143,19 @@ describe("ContentRepository", () => {
         },
       });
 
-      const numContents = testDatabaseHandler
+      const filterFromCache = testDatabaseHandler
         .getDbCacheList(TypeormContent)
         .filter(
           (content) =>
             content.groupId === targetOrmGroup.id &&
             content.contentType === ContentTypeEnum.POST &&
             content.createdDateTime.getTime() < cursor.getTime(),
-        ).length;
+        );
 
       expect(contentList).not.toBeNull();
       expect(contentList).toBeInstanceOf(Array);
       expect(contentList.length).toBeLessThanOrEqual(10);
-      expect(contentList.length).toEqual(numContents);
+      expect(contentList.length).toEqual(filterFromCache.length);
     });
   });
 
