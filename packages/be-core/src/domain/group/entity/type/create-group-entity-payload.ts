@@ -1,16 +1,18 @@
-import { GroupMember } from "../group-member";
+import { Nullable } from "../../../../common/type/common-types";
+import { UserId } from "../../../user/entity/type/user-id";
+import { GroupId } from "./group-id";
 
 type CreateNewGroupEntityPayload = {
-  ownerId: string;
+  ownerId: UserId;
   name: string;
 };
 
 type CreateExistingGroupEntityPayload = CreateNewGroupEntityPayload & {
-  id: string;
+  id: GroupId;
   createdDateTime: Date;
-  members: GroupMember[];
-  updatedDateTime?: Date;
-  deletedDateTime?: Date;
+  members: UserId[];
+  updatedDateTime: Nullable<Date>;
+  deletedDateTime: Nullable<Date>;
 };
 
 type CreateGroupEntityPayloadMap = {

@@ -3,15 +3,15 @@ import { DummyDatabaseHandler } from "./dummy-database-handler";
 import { Test, TestingModule } from "@nestjs/testing";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { typeormSqliteOptions } from "../../src/infrastructure/persistence/typeorm/config/typeorm-config";
-import { TypeormUser } from "../../src/infrastructure/persistence/typeorm/user/typeorm-user.entity";
-import { TypeormGroup } from "../../src/infrastructure/persistence/typeorm/group/typeorm-group.entity";
-import { TypeormContent } from "../../src/infrastructure/persistence/typeorm/content/typeorm-content.entity";
-import { TypeormComment } from "../../src/infrastructure/persistence/typeorm/comment/typeorm-comment.entity";
-import { join } from "path";
-import { TypeormLike } from "../../src/infrastructure/persistence/typeorm/like/typeorm-like.entity";
+import { TypeormUser } from "../../src/infrastructure/persistence/typeorm/entity/user/typeorm-user.entity";
+import { TypeormGroup } from "../../src/infrastructure/persistence/typeorm/entity/group/typeorm-group.entity";
+import { TypeormContent } from "../../src/infrastructure/persistence/typeorm/entity/content/typeorm-content.entity";
+import { TypeormComment } from "../../src/infrastructure/persistence/typeorm/entity/comment/typeorm-comment.entity";
+import { join, basename } from "path";
+import { TypeormLike } from "../../src/infrastructure/persistence/typeorm/entity/like/typeorm-like.entity";
 
 const parameters = {
-  testDbPath: join("db", "TestDatabaseHandler.sqlite"),
+  testDbPath: join("db", `${basename(__filename)}.sqlite`),
   dummyDbPath: join("db", "dummy.sqlite"),
 };
 

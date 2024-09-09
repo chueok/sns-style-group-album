@@ -9,20 +9,22 @@ import {
 } from "class-validator";
 import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
 import { ContentTypeEnum } from "../enum/content-type-enum";
-import { ContentUser } from "./content-user";
 import { CreateContentEntityPayload } from "./type/create-content-entity-payload";
 import { v4 } from "uuid";
-import { Optional } from "../../../common/type/common-types";
+import { Nullable } from "../../../common/type/common-types";
+import { ReferredContent } from "./referred-content";
+import { ContentLike } from "./content-like";
+import { Comment } from "../../comment/entity/comment.abstract";
+import { ContentId } from "./type/content-id";
+import { GroupId } from "../../group/entity/type/group-id";
+import { UserId } from "../../user/entity/type/user-id";
 
-export abstract class Content extends EntityWithCUDTime<string> {
+export abstract class Content extends EntityWithCUDTime<ContentId> {
   @IsUUID()
-  protected override _id: string;
+  protected override readonly _id: ContentId;
 
   @IsUUID()
-  protected _groupId: string;
-  get groupId(): string {
-    return this._groupId;
-  }
+  readonly groupId: GroupId;
 
   @IsEnum(ContentTypeEnum)
   protected _type!: ContentTypeEnum;
@@ -30,55 +32,62 @@ export abstract class Content extends EntityWithCUDTime<string> {
     return this._type;
   }
 
-  @IsInstance(ContentUser)
-  protected _owner: ContentUser;
-  get owner(): ContentUser {
-    return this._owner;
-  }
+  @IsUUID("all")
+  readonly ownerId: UserId;
 
   @IsArray()
-  protected _referred: Content[];
-  get referred(): Content[] {
+  protected _referred: ReferredContent[];
+  get referred(): ReferredContent[] {
     return this._referred;
   }
 
   @IsOptional()
   @IsString()
-  protected _thumbnailRelativePath?: string;
-  get thumbnailRelativePath(): Optional<string> {
+  protected _thumbnailRelativePath: Nullable<string>;
+  get thumbnailRelativePath(): Nullable<string> {
     return this._thumbnailRelativePath;
   }
 
+  // like
   @IsNumber()
   protected _numLikes: number;
   get numLikes(): number {
     return this._numLikes;
   }
 
-  @IsInstance(ContentUser, { each: true })
-  protected _recentlyLikedMembers: Set<ContentUser>;
-  get recentlyLikedMembers(): Set<ContentUser> {
-    return this._recentlyLikedMembers;
+  @IsInstance(ContentLike, { each: true })
+  protected _likeList: ContentLike[];
+  get likeList(): ContentLike[] {
+    return this._likeList;
   }
 
+  // comment
   @IsNumber()
   protected _numComments: number;
   get numComments(): number {
     return this._numComments;
   }
 
-  @IsInstance(ContentUser, { each: true })
-  protected _recentlyCommentedMembers: Set<ContentUser>;
-  get recentlyCommentedMembers(): Set<ContentUser> {
-    return this._recentlyCommentedMembers;
+  @IsArray()
+  readonly commentList: Comment[];
+
+  public async addLike(userId: string): Promise<void> {
+    const newLike = new ContentLike({
+      id: v4(),
+      userId: userId,
+      createdDateTime: new Date(),
+    });
+    this._likeList.push(newLike);
+    this._numLikes++;
+    await this.validate();
   }
 
   constructor(payload: CreateContentEntityPayload<"base", "all">) {
     super();
 
-    this._groupId = payload.groupId;
-    this._owner = payload.owner;
-    this._referred = payload.refered;
+    this.groupId = payload.groupId;
+    this.ownerId = payload.ownerId;
+    this._referred = payload.referred;
     this._thumbnailRelativePath = payload.thumbnailRelativePath;
 
     if ("id" in payload) {
@@ -88,19 +97,19 @@ export abstract class Content extends EntityWithCUDTime<string> {
       this._deletedDateTime = payload.deletedDateTime || null;
 
       this._numLikes = payload.numLikes;
-      this._recentlyLikedMembers = payload.recentlyLikedMembers;
+      this._likeList = payload.likeList;
       this._numComments = payload.numComments;
-      this._recentlyCommentedMembers = payload.recentlyCommentedMembers;
+      this.commentList = payload.commentList;
     } else {
-      this._id = v4();
+      this._id = v4() as ContentId;
       this._createdDateTime = new Date();
       this._updatedDateTime = null;
       this._deletedDateTime = null;
 
       this._numLikes = 0;
-      this._recentlyLikedMembers = new Set();
+      this._likeList = [];
       this._numComments = 0;
-      this._recentlyCommentedMembers = new Set();
+      this.commentList = [];
     }
   }
 }

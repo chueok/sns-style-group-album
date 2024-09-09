@@ -1,16 +1,17 @@
-import { IsInstance, IsString, IsUUID } from "class-validator";
+import { IsString, IsUUID } from "class-validator";
 import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
 import { CreateGroupEntityPayload } from "./type/create-group-entity-payload";
 import { v4 } from "uuid";
-import { GroupMember } from "./group-member";
+import { GroupId } from "./type/group-id";
+import { UserId } from "../../user/entity/type/user-id";
 
-export class Group extends EntityWithCUDTime<string> {
+export class Group extends EntityWithCUDTime<GroupId> {
   @IsUUID()
-  protected override _id: string;
+  protected override _id: GroupId;
 
   @IsUUID()
-  private _ownerId: string; //user id
-  get ownerId(): string {
+  private _ownerId: UserId; //user id
+  get ownerId(): UserId {
     return this._ownerId;
   }
 
@@ -20,10 +21,10 @@ export class Group extends EntityWithCUDTime<string> {
     return this._name;
   }
 
-  @IsInstance(GroupMember, { each: true })
-  private _members: Set<GroupMember>; // User ID의 집합으로 저장
-  get members(): Set<GroupMember> {
-    return this._members;
+  @IsUUID("all", { each: true })
+  private _members: Set<UserId>; // User ID의 집합으로 저장
+  get members(): UserId[] {
+    return Array.from(this._members);
   }
 
   public async changeName(name: string): Promise<void> {
@@ -31,32 +32,32 @@ export class Group extends EntityWithCUDTime<string> {
     return this.validate();
   }
 
-  public async changeOwner(owner: GroupMember): Promise<boolean> {
-    if (!this._members.has(owner)) {
+  public async changeOwner(ownerId: UserId): Promise<boolean> {
+    if (!this._members.has(ownerId)) {
       return false;
     }
-    this._ownerId = owner.id;
+    this._ownerId = ownerId;
     await this.validate();
     return true;
   }
 
-  public async addMember(user: GroupMember): Promise<boolean> {
-    if (this._members.has(user)) {
+  public async addMember(userId: UserId): Promise<boolean> {
+    if (this._members.has(userId)) {
       return false;
     }
-    this._members.add(user);
+    this._members.add(userId);
     await this.validate();
     return true;
   }
 
-  public async removeMember(user: GroupMember): Promise<boolean> {
-    const ret = this._members.delete(user);
+  public async removeMember(userId: UserId): Promise<boolean> {
+    const ret = this._members.delete(userId);
     await this.validate();
     return ret;
   }
 
-  public hasMember(user: GroupMember): boolean {
-    return this._members.has(user);
+  public hasMember(userId: UserId): boolean {
+    return this._members.has(userId);
   }
 
   constructor(payload: CreateGroupEntityPayload<"all">) {
@@ -72,7 +73,7 @@ export class Group extends EntityWithCUDTime<string> {
       this._updatedDateTime = payload.updatedDateTime || null;
       this._deletedDateTime = payload.deletedDateTime || null;
     } else {
-      this._id = v4();
+      this._id = v4() as GroupId;
       this._members = new Set();
 
       this._createdDateTime = new Date();

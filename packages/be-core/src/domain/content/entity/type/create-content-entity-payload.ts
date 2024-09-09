@@ -1,25 +1,30 @@
-import { BucketStatus } from "../../enum/bucket-status";
-import { Content } from "../content.abstract";
-import { ContentUser } from "../content-user";
+import { BucketStatusEnum } from "../../enum/bucket-status";
+import { ReferredContent } from "../referred-content";
+import { ContentLike } from "../content-like";
+import { Nullable } from "../../../../common/type/common-types";
+import { Comment } from "../../../comment/entity/comment.abstract";
+import { GroupId } from "../../../group/entity/type/group-id";
+import { UserId } from "../../../user/entity/type/user-id";
+import { ContentId } from "./content-id";
 
 type CreateNewBaseContentEntityPayload = {
-  groupId: string;
-  owner: ContentUser;
-  refered: Content[];
-  thumbnailRelativePath?: string;
+  groupId: GroupId;
+  ownerId: UserId;
+  referred: ReferredContent[];
+  thumbnailRelativePath: Nullable<string>;
 };
 
 type CreateExistingBaseContentEntityPayload =
   CreateNewBaseContentEntityPayload & {
-    id: string;
+    id: ContentId;
     createdDateTime: Date;
-    updatedDateTime?: Date;
-    deletedDateTime?: Date;
+    updatedDateTime: Nullable<Date>;
+    deletedDateTime: Nullable<Date>;
 
     numLikes: number;
-    recentlyLikedMembers: Set<ContentUser>;
+    likeList: ContentLike[];
     numComments: number;
-    recentlyCommentedMembers: Set<ContentUser>;
+    commentList: Comment[];
   };
 
 type CreateBaseContentEntityPayload = {
@@ -32,12 +37,11 @@ type CreateBaseContentEntityPayload = {
 
 type SystemContentAdditionalPayload = {
   text: string;
-  subText?: string;
+  subText: Nullable<string>;
 };
 
 type ImageContentAdditionalPayload = {
-  thumbnailRelativePath: string;
-  largeRelativePath: string;
+  largeRelativePath: Nullable<string>;
   originalRelativePath: string;
   size: number;
   ext: string;
@@ -45,7 +49,6 @@ type ImageContentAdditionalPayload = {
 };
 
 type VideoContentAdditionalPayload = {
-  thumbnailRelativePath: string;
   originalRelativePath: string;
   size: number;
   ext: string;
@@ -59,13 +62,13 @@ type PostContentAdditionalPayload = {
 
 type BucketContentAdditionalPayload = {
   title: string;
-  status: BucketStatus;
+  status: BucketStatusEnum;
 };
 
 type ScheduleContentAdditionalPayload = {
   title: string;
-  startDateTime: Date;
   endDateTime: Date;
+  startDateTime: Nullable<Date>;
   isAllDay: boolean;
 };
 

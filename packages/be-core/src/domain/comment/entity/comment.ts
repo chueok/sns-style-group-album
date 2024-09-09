@@ -1,27 +1,21 @@
-import { Optional } from "../../../common/type/common-types";
-import { CommentOwner } from "./comment-owner";
+import { Nullable } from "../../../common/type/common-types";
 import { CreateCommentEntityPayload } from "./type/create-comment-entity-payload";
 import { Comment } from "./comment.abstract";
-import { IsInstance, IsOptional } from "class-validator";
+import { IsOptional, IsString, IsUUID } from "class-validator";
+import { CommentTypeEnum } from "../enum/comment-type-enum";
+import { UserId } from "../../user/entity/type/user-id";
 
 export class UserComment extends Comment {
-  @IsInstance(CommentOwner)
-  protected _owner: CommentOwner;
-  get owner(): CommentOwner {
-    return this._owner;
-  }
-
-  @IsOptional()
-  @IsInstance(CommentOwner, { each: true })
-  protected _tags: Optional<CommentOwner[]>;
-  get tags(): Optional<CommentOwner[]> {
-    return this._tags;
+  @IsUUID("all")
+  protected _ownerId: UserId;
+  get ownerId(): UserId {
+    return this._ownerId;
   }
 
   constructor(payload: CreateCommentEntityPayload<"user", "all">) {
     super(payload);
-    this._owner = payload.owner;
-    this._tags = payload.tags;
+    this._type = CommentTypeEnum.USER_COMMENT;
+    this._ownerId = payload.ownerId;
   }
 
   static async new(
@@ -34,13 +28,16 @@ export class UserComment extends Comment {
 }
 
 export class SystemComment extends Comment {
-  protected _subText: Optional<string>;
-  get subText(): Optional<string> {
+  @IsOptional()
+  @IsString()
+  protected _subText: Nullable<string>;
+  get subText(): Nullable<string> {
     return this._subText;
   }
 
   constructor(payload: CreateCommentEntityPayload<"system", "all">) {
     super(payload);
+    this._type = CommentTypeEnum.SYSTEM_COMMENT;
     this._subText = payload.subText;
   }
 

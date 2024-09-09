@@ -1,17 +1,21 @@
 import {
   BucketStatusEnum,
+  CommentId,
   CommentTypeEnum,
+  ContentId,
   ContentTypeEnum,
   CustomAssert,
+  GroupId,
+  UserId,
 } from "@repo/be-core";
 import { DataSource } from "typeorm";
 import {
   TypeormComment,
   TypeormSystemComment,
   TypeormUserComment,
-} from "../../src/infrastructure/persistence/typeorm/comment/typeorm-comment.entity";
-import { TypeormUser } from "../../src/infrastructure/persistence/typeorm/user/typeorm-user.entity";
-import { TypeormGroup } from "../../src/infrastructure/persistence/typeorm/group/typeorm-group.entity";
+} from "../../src/infrastructure/persistence/typeorm/entity/comment/typeorm-comment.entity";
+import { TypeormUser } from "../../src/infrastructure/persistence/typeorm/entity/user/typeorm-user.entity";
+import { TypeormGroup } from "../../src/infrastructure/persistence/typeorm/entity/group/typeorm-group.entity";
 import { faker } from "@faker-js/faker";
 import {
   TypeormBucket,
@@ -20,11 +24,11 @@ import {
   TypeormPost,
   TypeormSchedule,
   TypeormSystemContent,
-} from "../../src/infrastructure/persistence/typeorm/content/typeorm-content.entity";
+} from "../../src/infrastructure/persistence/typeorm/entity/content/typeorm-content.entity";
 
 import { add } from "date-fns";
 import { copyFile } from "fs/promises";
-import { TypeormLike } from "../../src/infrastructure/persistence/typeorm/like/typeorm-like.entity";
+import { TypeormLike } from "../../src/infrastructure/persistence/typeorm/entity/like/typeorm-like.entity";
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 
@@ -126,7 +130,7 @@ export class DummyDatabaseHandler {
 
   makeDummyUser(): TypeormUser {
     const typeormEntity = new TypeormUser();
-    typeormEntity.id = faker.string.uuid();
+    typeormEntity.id = faker.string.uuid() as UserId;
     typeormEntity.username = faker.internet.userName();
     typeormEntity.hashedPassword = faker.internet.password();
     typeormEntity.groups = Promise.resolve([]);
@@ -149,7 +153,7 @@ export class DummyDatabaseHandler {
     CustomAssert.isTrue(userList.length > 0, new Error("User is empty"));
 
     const typeormEntity = new TypeormGroup();
-    typeormEntity.id = faker.string.uuid();
+    typeormEntity.id = faker.string.uuid() as GroupId;
     typeormEntity.name = faker.internet.userName();
 
     const owner = getRandomElement(userList);
@@ -204,10 +208,10 @@ export class DummyDatabaseHandler {
         instance = new TypeormSystemContent();
         break;
     }
-    instance.id = faker.string.uuid();
+    instance.id = faker.string.uuid() as ContentId;
     instance.group = Promise.resolve(group);
     instance.owner = Promise.resolve(getRandomElement(memberList));
-    instance.type = contentType;
+    instance.contentType = contentType;
     instance.referred = Promise.resolve([]);
     if (groupContentList.length > 0) {
       const num = Math.random() * groupContentList.length;
@@ -239,6 +243,7 @@ export class DummyDatabaseHandler {
           faker.system.filePath();
         (instance as TypeormMedia).size = faker.number.int();
         (instance as TypeormMedia).ext = faker.system.commonFileExt();
+        (instance as TypeormMedia).mimetype = faker.system.mimeType();
         break;
       case ContentTypeEnum.VIDEO:
         (instance as TypeormMedia).referred = Promise.resolve([]);
@@ -249,6 +254,7 @@ export class DummyDatabaseHandler {
           faker.system.filePath();
         (instance as TypeormMedia).size = faker.number.int();
         (instance as TypeormMedia).ext = faker.system.commonFileExt();
+        (instance as TypeormMedia).mimetype = faker.system.mimeType();
         break;
       case ContentTypeEnum.POST:
         (instance as TypeormPost).title = faker.lorem.sentence();
@@ -261,11 +267,11 @@ export class DummyDatabaseHandler {
           to: add(new Date(), { years: 1 }),
           count: 2,
         });
-        (instance as TypeormSchedule).startDateTime = dates[0] as Date;
-        (instance as TypeormSchedule).endDateTime = getRandomElement([
+        (instance as TypeormSchedule).startDateTime = getRandomElement([
           null,
-          dates[1]!,
+          dates[0]!,
         ]);
+        (instance as TypeormSchedule).endDateTime = dates[1]!;
         (instance as TypeormSchedule).isAllDay = getRandomElement([
           false,
           true,
@@ -335,8 +341,8 @@ export class DummyDatabaseHandler {
         break;
     }
 
-    instance.id = faker.string.uuid();
-    instance.type = commentType;
+    instance.id = faker.string.uuid() as CommentId;
+    instance.commentType = commentType;
     instance.text = faker.lorem.sentence();
     instance.contentId = getRandomElement(contentList).id;
 
@@ -346,11 +352,12 @@ export class DummyDatabaseHandler {
 
     let itterNum: number;
     let tags: Set<TypeormUser>;
+    let randomUser: TypeormUser;
     switch (commentType) {
       case CommentTypeEnum.USER_COMMENT:
-        (instance as TypeormUserComment).owner = Promise.resolve(
-          getRandomElement(userList),
-        );
+        randomUser = getRandomElement(userList);
+        (instance as TypeormUserComment).owner = Promise.resolve(randomUser);
+        (instance as TypeormUserComment).ownerId = randomUser.id;
         itterNum = Math.random() * userList.length;
         tags = new Set();
         for (let i = 0; i < itterNum; i++) {
