@@ -281,38 +281,41 @@ export class ContentMapper {
   private static mapToOrmContentForUtil(payload: Content): TypeormContent {
     let ormContent!: TypeormContent;
     if (payload instanceof SystemContent) {
-      ormContent = new TypeormSystemContent();
-      (ormContent as TypeormSystemContent).text = payload.text;
-      (ormContent as TypeormSystemContent).subText = payload.subText;
+      const systemContent = new TypeormSystemContent();
+      systemContent.text = payload.text;
+      systemContent.subText = payload.subText;
+      ormContent = systemContent;
     } else if (payload instanceof BucketContent) {
-      ormContent = new TypeormBucket();
-      (ormContent as TypeormBucket).title = (payload as BucketContent).title;
-      (ormContent as TypeormBucket).status = (payload as BucketContent).status;
+      const bucketContent = new TypeormBucket();
+      bucketContent.title = payload.title;
+      bucketContent.status = payload.status;
+      ormContent = bucketContent;
     } else if (payload instanceof ImageContent) {
-      ormContent = new TypeormMedia();
-      (ormContent as TypeormMedia).largeRelativePath =
-        payload.largeRelativePath;
-      (ormContent as TypeormMedia).originalRelativePath =
-        payload.originalRelativePath;
-      (ormContent as TypeormMedia).size = payload.size;
-      (ormContent as TypeormMedia).ext = payload.ext;
-      (ormContent as TypeormMedia).mimetype = payload.mimetype;
+      const mediaContent = new TypeormMedia();
+      mediaContent.largeRelativePath = payload.largeRelativePath;
+      mediaContent.originalRelativePath = payload.originalRelativePath;
+      mediaContent.size = payload.size;
+      mediaContent.ext = payload.ext;
+      mediaContent.mimetype = payload.mimetype;
+      ormContent = mediaContent;
     } else if (payload instanceof VideoContent) {
-      ormContent = new TypeormMedia();
-      (ormContent as TypeormMedia).largeRelativePath = null;
-      (ormContent as TypeormMedia).originalRelativePath =
-        payload.originalRelativePath;
-      (ormContent as TypeormMedia).size = payload.size;
-      (ormContent as TypeormMedia).ext = payload.ext;
-      (ormContent as TypeormMedia).mimetype = payload.mimetype;
+      const mediaContent = new TypeormMedia();
+      mediaContent.largeRelativePath = null;
+      mediaContent.originalRelativePath = payload.originalRelativePath;
+      mediaContent.size = payload.size;
+      mediaContent.ext = payload.ext;
+      mediaContent.mimetype = payload.mimetype;
+      ormContent = mediaContent;
     } else if (payload instanceof PostContent) {
-      ormContent = new TypeormPost();
-      (ormContent as TypeormPost).title = payload.title;
-      (ormContent as TypeormPost).text = payload.text;
+      const postContent = new TypeormPost();
+      postContent.title = payload.title;
+      postContent.text = payload.text;
+      ormContent = postContent;
     } else if (payload instanceof ScheduleContent) {
-      ormContent = new TypeormSchedule();
-      (ormContent as TypeormSchedule).title = payload.title;
-      (ormContent as TypeormSchedule).endDateTime = payload.endDateTime;
+      const scheduleContent = new TypeormSchedule();
+      scheduleContent.title = payload.title;
+      scheduleContent.endDateTime = payload.endDateTime;
+      ormContent = scheduleContent;
     } else {
       throw Exception.new({
         code: Code.UTIL_PROCESS_ERROR,

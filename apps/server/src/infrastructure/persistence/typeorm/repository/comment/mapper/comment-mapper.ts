@@ -115,7 +115,7 @@ export class CommentMapper {
         updatedDateTime: comment.updatedDateTime,
         deletedDateTime: comment.deletedDateTime,
 
-        subText: (comment as TypeormSystemComment).subText,
+        subText: comment.subText,
       };
       return SystemComment.new(commentPayload);
     } else {
