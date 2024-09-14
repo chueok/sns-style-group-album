@@ -1,15 +1,15 @@
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { join } from "path";
-import { DatabaseConfig } from "../../../config/DatabaseConfig";
+import { ServerConfig } from "../../../../config/server-config";
 
 const entitiesPath = join(__dirname, "..", "**", "*.entity.{ts,js}");
-const databasePath = join("db", DatabaseConfig.DB_FILE);
+const databasePath = join("db", ServerConfig.DB_FILE);
 
 export const typeormSqliteOptions = {
   type: "sqlite",
   database: databasePath,
   autoLoadEntities: true,
-  logging: DatabaseConfig.DB_LOG_ENABLE,
+  logging: ServerConfig.DB_LOG_ENABLE,
   entities: [entitiesPath],
 
   // 개발용
