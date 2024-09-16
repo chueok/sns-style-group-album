@@ -4,4 +4,5 @@ export enum TableAlias {
   CONTENT = "Content",
   COMMENT = "Comment",
   LIKE = "Like",
+  OAUTH = "Oauth",
 }

@@ -1,13 +1,17 @@
-import { Controller, Get, Post, Req, Res, UseGuards } from "@nestjs/common";
+import { Controller, Get, Post, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
-import { ApiExcludeEndpoint, ApiTags } from "@nestjs/swagger";
+import { ApiBody, ApiExcludeEndpoint, ApiTags } from "@nestjs/swagger";
 import { AuthProviderEnum } from "../auth/auth-provider-enum";
 import { HttpUser } from "../auth/decorator/http-user";
-import { HttpOauthUserPayloadValidator } from "../auth/type/http-oauth-user";
 import { ServerConfig } from "../../config/server-config";
 import assert from "assert";
 import { HttpAuthService } from "../auth/http-auth-service";
 import { HttpUserPayload } from "../auth/type/http-user";
+import {
+  HttpOauthUserPayload,
+  isHttpOauthUserPayload,
+} from "../auth/type/http-oauth-user";
+import { RestAuthSignupBody } from "./documentation/auth/rest-auth-signup-body";
 
 const AUTH_PATH_NAME = "auth";
 const googleCallbackPath = validateCallbackPath();
@@ -26,21 +30,19 @@ export class AuthController {
   @Get(googleCallbackPath)
   @UseGuards(AuthGuard(AuthProviderEnum.GOOGLE))
   @ApiExcludeEndpoint()
-  googleAuthCallback(
-    @HttpUser() user: HttpUserPayload | HttpOauthUserPayloadValidator,
-  ) {
-    if (user instanceof HttpOauthUserPayloadValidator) {
-      console.log("oauth", user);
-      return this.authService.signup(user);
+  googleAuthCallback(@HttpUser() user: HttpUserPayload | HttpOauthUserPayload) {
+    if (isHttpOauthUserPayload(user)) {
+      return this.authService.getSignupToken(user);
     } else {
-      console.log("user", user);
-      return this.authService.login(user);
+      return this.authService.getLoginToken(user);
     }
   }
 
   @Post("signup")
-  signUp() {
-    // sign up
+  @UseGuards(AuthGuard(AuthProviderEnum.JWT_SIGNUP))
+  @ApiBody({ type: RestAuthSignupBody })
+  signUp(@HttpUser() user: HttpUserPayload) {
+    return this.authService.getLoginToken(user);
   }
 }
 

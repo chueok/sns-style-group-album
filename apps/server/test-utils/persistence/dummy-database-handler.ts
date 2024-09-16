@@ -132,7 +132,7 @@ export class DummyDatabaseHandler {
     const typeormEntity = new TypeormUser();
     typeormEntity.id = faker.string.uuid() as UserId;
     typeormEntity.username = faker.internet.userName();
-    typeormEntity.hashedPassword = faker.internet.password();
+    typeormEntity.email = faker.internet.email();
     typeormEntity.groups = Promise.resolve([]);
     typeormEntity.thumbnailRelativePath = getRandomElement([
       null,

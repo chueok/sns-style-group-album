@@ -2,9 +2,6 @@ import { IsOptional, IsString, IsUUID } from "class-validator";
 import { CreateUserEntityPayload } from "./type/create-user-entity-payload";
 import { v4 } from "uuid";
 import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
-import { IPasswordEncryptionService } from "../../encryption/password-encryption-service.interface";
-import { Exception } from "../../../common/exception/exception";
-import { Code } from "../../../common/exception/code";
 import { Nullable } from "../../../common/type/common-types";
 import { UserId } from "./type/user-id";
 
@@ -18,10 +15,11 @@ export class User extends EntityWithCUDTime<UserId> {
     return this._username;
   }
 
+  @IsOptional()
   @IsString()
-  private _hashedPassword: string;
-  get hashedPassword(): string {
-    return this._hashedPassword;
+  private _email: Nullable<string>;
+  get email(): Nullable<string> {
+    return this._email;
   }
 
   @IsOptional()
@@ -42,28 +40,10 @@ export class User extends EntityWithCUDTime<UserId> {
     await this.validate();
   }
 
-  async changePassword(
-    oldPassword: string,
-    newPassword: string,
-    passwordEncryptionService: IPasswordEncryptionService,
-  ): Promise<void> {
-    const compareResult = await passwordEncryptionService.comparePassword(
-      oldPassword,
-      this._hashedPassword,
-    );
-    if (!compareResult) {
-      throw Exception.new({ code: Code.CORE_BAD_PASSWORD_ERROR });
-    }
-
-    this._hashedPassword = await passwordEncryptionService.hash(newPassword);
-    this._updatedDateTime = new Date();
-    await this.validate();
-  }
-
-  constructor(payload: CreateUserEntityPayload<"constructor">) {
+  constructor(payload: CreateUserEntityPayload<"all">) {
     super();
     this._username = payload.username;
-    this._hashedPassword = payload.hashedPassword;
+    this._email = payload.email;
     this._thumbnailRelativePath = payload.thumbnailRelativePath;
     if ("id" in payload) {
       this._id = payload.id;
@@ -79,19 +59,7 @@ export class User extends EntityWithCUDTime<UserId> {
   }
 
   static async new(payload: CreateUserEntityPayload<"all">) {
-    // constructor 에서는 비동기 함수 호출이 불가하므로
-    // 이곳에서 passwordEncryptionService 를 사용하여 password를 hasing 한다.
-
-    // constructorPayload 에서는 hashedPassword를 가지도록 type 설계
-    const constructorPayload =
-      payload as CreateUserEntityPayload<"constructor">;
-    if ("password" in constructorPayload && "password" in payload) {
-      constructorPayload.hashedPassword =
-        await payload.passwordEncryptionService.hash(
-          constructorPayload.password,
-        );
-    }
-    const entity = new User(constructorPayload);
+    const entity = new User(payload);
     await entity.validate();
     return entity;
   }

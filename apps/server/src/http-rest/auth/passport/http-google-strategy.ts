@@ -4,10 +4,10 @@ import { Profile, Strategy, VerifyCallback } from "passport-google-oauth20";
 import { ServerConfig } from "../../../config/server-config";
 import { AuthProviderEnum } from "../auth-provider-enum";
 import { HttpAuthService } from "../http-auth-service";
-import { HttpOauthUserPayloadValidator } from "../type/http-oauth-user";
-import { validateSync } from "class-validator";
 import { HttpUserPayload } from "../type/http-user";
-import { Optional } from "@repo/be-core";
+import { Code, Exception, Optional } from "@repo/be-core";
+import { HttpOauthUser, HttpOauthUserPayload } from "../type/http-oauth-user";
+import { validateSync } from "class-validator";
 
 @Injectable()
 export class HttpGoogleStrategy extends PassportStrategy(
@@ -28,31 +28,25 @@ export class HttpGoogleStrategy extends PassportStrategy(
     refreshToken: string,
     profile: Profile,
     done: VerifyCallback,
-  ): Promise<Optional<HttpOauthUserPayloadValidator | HttpUserPayload>> {
+  ): Promise<Optional<HttpOauthUserPayload | HttpUserPayload>> {
     try {
       const { provider, id, profileUrl, displayName, name, emails } = profile;
 
       const user = await this.authService.getOauthUser(provider, id);
+      // 신규 유저
       if (!user) {
-        // create temporary user
-        const oauthUser = new HttpOauthUserPayloadValidator({
-          provider,
-          providerId: id,
-
-          displayName,
-          familyName: name?.familyName,
-          givenName: name?.givenName,
-          middleName: name?.middleName,
-
-          profileUrl,
-          email: emails?.at(0)?.value || "",
-        });
-
+        const oauthUser = new HttpOauthUser();
+        oauthUser.provider = provider;
+        oauthUser.providerId = id;
+        oauthUser.profileUrl = profileUrl;
+        oauthUser.email = emails?.at(0)?.value || "";
         const errors = validateSync(oauthUser);
+
         if (errors.length > 0) {
-          throw new Error(errors.toString());
+          throw Exception.new({ code: Code.BAD_REQUEST_ERROR });
         }
-        return oauthUser;
+
+        return oauthUser.toObject();
       }
 
       return user;

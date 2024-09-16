@@ -1,27 +1,18 @@
 import { IsEmail, IsOptional, IsString, IsUrl } from "class-validator";
 
-export class HttpOauthUserPayloadValidator {
+export type HttpOauthUserPayload = {
+  provider: string;
+  providerId: string;
+  profileUrl?: string;
+  email?: string;
+};
+
+export class HttpOauthUser {
   @IsString()
   provider!: string;
 
   @IsString()
   providerId!: string;
-
-  @IsOptional()
-  @IsString()
-  displayName?: string;
-
-  @IsOptional()
-  @IsString()
-  familyName?: string;
-
-  @IsOptional()
-  @IsString()
-  givenName?: string;
-
-  @IsOptional()
-  @IsString()
-  middleName?: string;
 
   @IsOptional()
   @IsUrl()
@@ -31,11 +22,22 @@ export class HttpOauthUserPayloadValidator {
   @IsEmail()
   email?: string;
 
-  constructor(payload: HttpOauthUserPayloadValidator) {
-    Object.assign(this, payload);
+  toObject(): HttpOauthUserPayload {
+    return {
+      provider: this.provider,
+      providerId: this.providerId,
+      profileUrl: this.profileUrl,
+      email: this.email,
+    };
   }
 }
 
+export function isHttpOauthUserPayload(
+  payload: object,
+): payload is HttpOauthUserPayload {
+  return "provider" in payload && "providerId" in payload;
+}
+
 export type HttpRequestWithOauthUser = Request & {
-  oauthUser: HttpOauthUserPayloadValidator;
+  oauthUser: HttpOauthUserPayload;
 };

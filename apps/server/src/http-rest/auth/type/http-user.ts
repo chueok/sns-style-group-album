@@ -1,9 +1,9 @@
+import { Nullable } from "@repo/be-core";
+
 export type HttpUserPayload = {
   id: string;
-
   username: string;
-
-  thumbnailRelativePath?: string;
+  thumbnailRelativePath: Nullable<string>;
 };
 
 export type HttpRequestWithUser = Request & {

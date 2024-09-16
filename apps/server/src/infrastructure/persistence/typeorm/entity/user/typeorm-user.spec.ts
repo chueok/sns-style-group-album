@@ -60,7 +60,6 @@ describe("TypeormUser", () => {
 async function expectEqualUser(lhs: TypeormUser, rhs: TypeormUser) {
   expect(lhs.id).toEqual(rhs.id);
   expect(lhs.username).toEqual(rhs.username);
-  expect(lhs.hashedPassword).toEqual(rhs.hashedPassword);
   expect(lhs.thumbnailRelativePath).toEqual(rhs.thumbnailRelativePath);
 
   expect(await lhs.groups).toStrictEqual(await rhs.groups);

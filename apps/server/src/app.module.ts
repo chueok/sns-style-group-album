@@ -10,19 +10,21 @@ import { HttpAuthService } from "./http-rest/auth/http-auth-service";
 import { TypeormUserRepository } from "./infrastructure/persistence/typeorm/repository/user/user-repository";
 import { JwtModule } from "@nestjs/jwt";
 import { ServerConfig } from "./config/server-config";
+import { HttpJwtSignupStrategy } from "./http-rest/auth/passport/http-jwt-signup-strategy";
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(typeormSqliteOptions),
     JwtModule.register({
       secret: ServerConfig.JWT_SECRET,
-      signOptions: { expiresIn: "60s" },
+      signOptions: { expiresIn: "30m" },
     }),
   ],
   controllers: [AppController, AuthController, CommentController],
   providers: [
     AppService,
     HttpGoogleStrategy,
+    HttpJwtSignupStrategy,
     HttpAuthService,
     TypeormUserRepository,
   ],

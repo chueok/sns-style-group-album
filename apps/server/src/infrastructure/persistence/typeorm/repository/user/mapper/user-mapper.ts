@@ -16,7 +16,7 @@ export class UserMapper {
     const promiseList = payload.map(async (item) => {
       const userPayload: CreateUserEntityPayload<"existing"> = {
         username: item.username,
-        hashedPassword: item.hashedPassword,
+        email: item.email,
         thumbnailRelativePath: item.thumbnailRelativePath,
 
         id: item.id,
@@ -44,7 +44,6 @@ export class UserMapper {
       const typeormUser = new TypeormUser();
       typeormUser.id = item.id;
       typeormUser.username = item.username;
-      typeormUser.hashedPassword = item.hashedPassword;
       typeormUser.thumbnailRelativePath = item.thumbnailRelativePath;
 
       typeormUser.createdDateTime = item.createdDateTime;
