@@ -10,10 +10,18 @@ export class ServerConfig {
   public static readonly OAUTH_GOOGLE_ID: string = get("OAUTH_GOOGLE_ID")
     .required()
     .asString();
-  public static readonly OAUTH_GOOGLE_SECRET: string = get("OAUTH_GOOGLE_ID")
+  public static readonly OAUTH_GOOGLE_SECRET: string = get(
+    "OAUTH_GOOGLE_SECRET",
+  )
     .required()
     .asString();
-  public static readonly OAUTH_GOOGLE_REDIRECT: string = get("OAUTH_GOOGLE_ID")
+  public static readonly OAUTH_GOOGLE_REDIRECT: string = get(
+    "OAUTH_GOOGLE_REDIRECT",
+  )
+    .required()
+    .asString();
+
+  public static readonly JWT_SECRET: string = get("JWT_SECRET")
     .required()
     .asString();
 }

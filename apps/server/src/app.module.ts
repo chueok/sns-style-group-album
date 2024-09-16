@@ -4,10 +4,27 @@ import { AppService } from "./app.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { typeormSqliteOptions } from "./infrastructure/persistence/typeorm/config/typeorm-config";
 import { CommentController } from "./http-rest/controller/comment-controller";
+import { AuthController } from "./http-rest/controller/auth-controller";
+import { HttpGoogleStrategy } from "./http-rest/auth/passport/http-google-strategy";
+import { HttpAuthService } from "./http-rest/auth/http-auth-service";
+import { TypeormUserRepository } from "./infrastructure/persistence/typeorm/repository/user/user-repository";
+import { JwtModule } from "@nestjs/jwt";
+import { ServerConfig } from "./config/server-config";
 
 @Module({
-  imports: [TypeOrmModule.forRoot(typeormSqliteOptions)],
-  controllers: [AppController, CommentController],
-  providers: [AppService],
+  imports: [
+    TypeOrmModule.forRoot(typeormSqliteOptions),
+    JwtModule.register({
+      secret: ServerConfig.JWT_SECRET,
+      signOptions: { expiresIn: "60s" },
+    }),
+  ],
+  controllers: [AppController, AuthController, CommentController],
+  providers: [
+    AppService,
+    HttpGoogleStrategy,
+    HttpAuthService,
+    TypeormUserRepository,
+  ],
 })
 export class AppModule {}
