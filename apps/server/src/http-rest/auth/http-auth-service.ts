@@ -1,18 +1,25 @@
 import {
+  Inject,
   Injectable,
   Logger,
   LoggerService,
   Optional as OptionalInject,
 } from "@nestjs/common";
 import { HttpUserPayload } from "./type/http-user";
-import { CreateUserEntityPayload, Nullable, User, UserId } from "@repo/be-core";
-import { TypeormUserRepository } from "../../infrastructure/persistence/typeorm/repository/user/user-repository";
+import {
+  CreateUserEntityPayload,
+  IUserRepository,
+  Nullable,
+  User,
+  UserId,
+} from "@repo/be-core";
 import { JwtService } from "@nestjs/jwt";
 import { DataSource, Repository } from "typeorm";
 import { TypeormOauth } from "../../infrastructure/persistence/typeorm/entity/oauth/typeorm-oauth.entity";
 import { HttpOauthUserPayload } from "./type/http-oauth-user";
 import { RestResponseJwt } from "../controller/documentation/auth/rest-response-jwt";
 import { RestResponseSignupJwt } from "../controller/documentation/auth/rest-response-signup-jwt";
+import { DiTokens } from "../../di/di-tokens";
 
 @Injectable()
 export class HttpAuthService {
@@ -21,7 +28,8 @@ export class HttpAuthService {
   private readonly logger: LoggerService;
 
   constructor(
-    private readonly userRepository: TypeormUserRepository,
+    @Inject(DiTokens.UserRepository)
+    private readonly userRepository: IUserRepository,
     private readonly jwtService: JwtService,
     readonly dataSource: DataSource,
     @OptionalInject() logger?: LoggerService,

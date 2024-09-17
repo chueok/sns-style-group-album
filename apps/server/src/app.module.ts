@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, Provider } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -11,6 +11,29 @@ import { TypeormUserRepository } from "./infrastructure/persistence/typeorm/repo
 import { JwtModule } from "@nestjs/jwt";
 import { ServerConfig } from "./config/server-config";
 import { HttpJwtSignupStrategy } from "./http-rest/auth/passport/http-jwt-signup-strategy";
+import { DiTokens } from "./di/di-tokens";
+import { TypeormGroupRepository } from "./infrastructure/persistence/typeorm/repository/group/group-repository";
+import { TypeormContentRepository } from "./infrastructure/persistence/typeorm/repository/content/content-repository";
+import { TypeormCommentRepository } from "./infrastructure/persistence/typeorm/repository/comment/comment-repository";
+
+const persistenceProviders: Provider[] = [
+  {
+    provide: DiTokens.UserRepository,
+    useClass: TypeormUserRepository,
+  },
+  {
+    provide: DiTokens.GroupRepository,
+    useClass: TypeormGroupRepository,
+  },
+  {
+    provide: DiTokens.ContentRepository,
+    useClass: TypeormContentRepository,
+  },
+  {
+    provide: DiTokens.CommentRepository,
+    useClass: TypeormCommentRepository,
+  },
+];
 
 @Module({
   imports: [
@@ -26,7 +49,7 @@ import { HttpJwtSignupStrategy } from "./http-rest/auth/passport/http-jwt-signup
     HttpGoogleStrategy,
     HttpJwtSignupStrategy,
     HttpAuthService,
-    TypeormUserRepository,
+    ...persistenceProviders,
   ],
 })
 export class AppModule {}
