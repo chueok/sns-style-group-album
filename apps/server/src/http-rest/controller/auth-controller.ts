@@ -1,6 +1,6 @@
 import { Controller, Get, Post, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
-import { ApiBody, ApiExcludeEndpoint, ApiTags } from "@nestjs/swagger";
+import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthProviderEnum } from "../auth/auth-provider-enum";
 import { HttpUser } from "../auth/decorator/http-user";
 import { ServerConfig } from "../../config/server-config";
@@ -12,6 +12,11 @@ import {
   isHttpOauthUserPayload,
 } from "../auth/type/http-oauth-user";
 import { RestAuthSignupBody } from "./documentation/auth/rest-auth-signup-body";
+import { ApiResponseGeneric } from "./documentation/common/decorator/api-response-generic";
+import { RestResponseSignupJwt } from "./documentation/auth/rest-response-signup-jwt";
+import { RestResponseJwt } from "./documentation/auth/rest-response-jwt";
+import { Code } from "@repo/be-core";
+import { RestResponse } from "./documentation/common/rest-response";
 
 const AUTH_PATH_NAME = "auth";
 const googleCallbackPath = validateCallbackPath();
@@ -29,20 +34,47 @@ export class AuthController {
 
   @Get(googleCallbackPath)
   @UseGuards(AuthGuard(AuthProviderEnum.GOOGLE))
-  @ApiExcludeEndpoint()
-  googleAuthCallback(@HttpUser() user: HttpUserPayload | HttpOauthUserPayload) {
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestResponseJwt })
+  @ApiResponseGeneric({
+    code: Code.WRONG_CREDENTIALS_ERROR,
+    data: RestResponseSignupJwt,
+  })
+  @ApiResponse({
+    status: Code.UNAUTHORIZED_ERROR.code,
+    description: Code.UNAUTHORIZED_ERROR.message,
+  })
+  async googleAuthCallback(
+    @HttpUser() user: HttpUserPayload | HttpOauthUserPayload,
+  ) {
     if (isHttpOauthUserPayload(user)) {
-      return this.authService.getSignupToken(user);
+      const token: RestResponseSignupJwt =
+        await this.authService.getSignupToken(user);
+      return RestResponse.error(
+        Code.WRONG_CREDENTIALS_ERROR.code,
+        Code.WRONG_CREDENTIALS_ERROR.message,
+        token,
+      );
     } else {
-      return this.authService.getLoginToken(user);
+      const token: RestResponseJwt = await this.authService.getLoginToken(user);
+      return RestResponse.success(token);
     }
   }
 
   @Post("signup")
   @UseGuards(AuthGuard(AuthProviderEnum.JWT_SIGNUP))
   @ApiBody({ type: RestAuthSignupBody })
-  signUp(@HttpUser() user: HttpUserPayload) {
-    return this.authService.getLoginToken(user);
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestResponseJwt })
+  @ApiResponse({
+    status: Code.UNAUTHORIZED_ERROR.code,
+    description: Code.UNAUTHORIZED_ERROR.message,
+  })
+  @ApiResponse({
+    status: Code.BAD_REQUEST_ERROR.code,
+    description: Code.BAD_REQUEST_ERROR.message,
+  })
+  async signUp(@HttpUser() user: HttpUserPayload) {
+    const token: RestResponseJwt = await this.authService.getLoginToken(user);
+    return RestResponse.success(token);
   }
 }
 

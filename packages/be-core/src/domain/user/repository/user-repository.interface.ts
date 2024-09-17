@@ -15,5 +15,10 @@ export interface IUserRepository {
     groupId: string;
   }): Promise<Nullable<User>>;
 
+  findUserByOauth(payload: {
+    provider: string;
+    providerId: string;
+  }): Promise<Nullable<User>>;
+
   // delete is not supported
 }

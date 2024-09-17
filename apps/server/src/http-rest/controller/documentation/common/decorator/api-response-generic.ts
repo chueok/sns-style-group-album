@@ -1,14 +1,15 @@
 import { applyDecorators } from "@nestjs/common";
-import { ApiExtraModels, ApiOkResponse, getSchemaPath } from "@nestjs/swagger";
+import { ApiExtraModels, ApiResponse, getSchemaPath } from "@nestjs/swagger";
 import { RestResponse } from "../rest-response";
-import { Code, Constructor } from "@repo/be-core";
+import { CodeDescription, Constructor } from "@repo/be-core";
 
-export const ApiResponseOkGeneric = <
+export const ApiResponseGeneric = <
   GenericType extends Constructor<unknown> | null,
 >(payload: {
+  code: CodeDescription;
   data: GenericType;
 }) => {
-  const { data } = payload;
+  const { code, data } = payload;
   const models: any[] = [RestResponse];
   if (data) {
     models.push(data);
@@ -16,7 +17,8 @@ export const ApiResponseOkGeneric = <
 
   return applyDecorators(
     ApiExtraModels(...models),
-    ApiOkResponse({
+    ApiResponse({
+      status: code.code,
       schema: {
         allOf: [
           { $ref: getSchemaPath(RestResponse) },
@@ -30,7 +32,7 @@ export const ApiResponseOkGeneric = <
                     default: null,
                   },
               code: {
-                default: Code.SUCCESS.code,
+                default: code.code,
               },
             },
           },

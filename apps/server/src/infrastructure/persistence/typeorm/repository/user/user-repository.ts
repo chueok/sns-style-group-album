@@ -83,4 +83,29 @@ export class TypeormUserRepository implements IUserRepository {
 
     return results;
   }
+
+  async findUserByOauth(payload: {
+    provider: string;
+    providerId: string;
+  }): Promise<Nullable<User>> {
+    const ormUser = await this.typeormUserRepository
+      .createQueryBuilder("user")
+      .innerJoinAndSelect("user.oauths", "oauth")
+      .where("oauth.provider = :provider", { provider: payload.provider })
+      .andWhere("oauth.providerId = :providerId", {
+        providerId: payload.providerId,
+      })
+      .getOne();
+
+    if (!ormUser) {
+      return null;
+    }
+
+    const { results, errors } = await UserMapper.toDomainEntity([ormUser]);
+    errors.forEach((error) => {
+      this.logger.error(error);
+    });
+
+    return results[0] || null;
+  }
 }
