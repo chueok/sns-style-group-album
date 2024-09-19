@@ -11,6 +11,11 @@ export class Code {
     message: "Success.",
   };
 
+  public static CREATED: CodeDescription = {
+    code: 201,
+    message: "Created.",
+  };
+
   public static BAD_REQUEST_ERROR: CodeDescription = {
     code: 400,
     message: "Bad request.",

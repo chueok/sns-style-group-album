@@ -8,8 +8,9 @@ export const ApiResponseGeneric = <
 >(payload: {
   code: CodeDescription;
   data: GenericType;
+  description?: string;
 }) => {
-  const { code, data } = payload;
+  const { code, data, description } = payload;
   const models: any[] = [RestResponse];
   if (data) {
     models.push(data);
@@ -19,6 +20,7 @@ export const ApiResponseGeneric = <
     ApiExtraModels(...models),
     ApiResponse({
       status: code.code,
+      description,
       schema: {
         allOf: [
           { $ref: getSchemaPath(RestResponse) },
@@ -33,6 +35,12 @@ export const ApiResponseGeneric = <
                   },
               code: {
                 default: code.code,
+              },
+              message: {
+                default: code.message,
+              },
+              timestamp: {
+                default: Date.now(),
               },
             },
           },

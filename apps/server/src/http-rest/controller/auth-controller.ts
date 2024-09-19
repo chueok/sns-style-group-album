@@ -1,6 +1,6 @@
 import { Controller, Get, Post, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
-import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBody, ApiTags } from "@nestjs/swagger";
 import { AuthProviderEnum } from "../auth/auth-provider-enum";
 import { HttpUser } from "../auth/decorator/http-user";
 import { ServerConfig } from "../../config/server-config";
@@ -39,9 +39,9 @@ export class AuthController {
     code: Code.WRONG_CREDENTIALS_ERROR,
     data: RestResponseSignupJwt,
   })
-  @ApiResponse({
-    status: Code.UNAUTHORIZED_ERROR.code,
-    description: Code.UNAUTHORIZED_ERROR.message,
+  @ApiResponseGeneric({
+    code: Code.UNAUTHORIZED_ERROR,
+    data: null,
   })
   async googleAuthCallback(
     @HttpUser() user: HttpUserPayload | HttpOauthUserPayload,
@@ -63,14 +63,16 @@ export class AuthController {
   @Post("signup")
   @UseGuards(AuthGuard(AuthProviderEnum.JWT_SIGNUP))
   @ApiBody({ type: RestAuthSignupBody })
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestResponseJwt })
-  @ApiResponse({
-    status: Code.UNAUTHORIZED_ERROR.code,
-    description: Code.UNAUTHORIZED_ERROR.message,
+  @ApiResponseGeneric({ code: Code.CREATED, data: RestResponseJwt })
+  @ApiResponseGeneric({
+    code: Code.UNAUTHORIZED_ERROR,
+    data: null,
+    description: "invalid signup-token",
   })
-  @ApiResponse({
-    status: Code.BAD_REQUEST_ERROR.code,
-    description: Code.BAD_REQUEST_ERROR.message,
+  @ApiResponseGeneric({
+    code: Code.BAD_REQUEST_ERROR,
+    data: null,
+    description: "invalid body",
   })
   async signUp(@HttpUser() user: HttpUserPayload) {
     const token: RestResponseJwt = await this.authService.getLoginToken(user);

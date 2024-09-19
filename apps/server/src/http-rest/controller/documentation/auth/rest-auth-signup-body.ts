@@ -10,7 +10,7 @@ export class RestAuthSignupBody {
   @IsEmail()
   email!: string;
 
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: "string", required: false })
   @IsOptional()
   @IsString()
   thumbnailRelativePath?: string;

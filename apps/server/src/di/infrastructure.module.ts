@@ -8,6 +8,8 @@ import { TypeormCommentRepository } from "../infrastructure/persistence/typeorm/
 import { TypeormGroupRepository } from "../infrastructure/persistence/typeorm/repository/group/group-repository";
 import { TypeormContentRepository } from "../infrastructure/persistence/typeorm/repository/content/content-repository";
 import { TYPEORM_DIRECTORY } from "../infrastructure/persistence/typeorm/typeorm-directory";
+import { APP_FILTER } from "@nestjs/core";
+import { NestHttpExceptionFilter } from "../http-rest/exception-filter/NestHttpExceptionFilter";
 
 const typeormSqliteOptions = {
   type: "sqlite",
@@ -39,6 +41,13 @@ const persistenceProviders: Provider[] = [
   },
 ];
 
+const providers: Provider[] = [
+  {
+    provide: APP_FILTER,
+    useClass: NestHttpExceptionFilter,
+  },
+];
+
 // NOTE : dynamic module의 object에 덮어 씌워짐
 // @Global()
 // @Module({
@@ -61,7 +70,7 @@ export class InfrastructureModule {
     return {
       module: InfrastructureModule,
       imports: [TypeOrmModule.forRoot(options)],
-      providers: [...persistenceProviders],
+      providers: [...persistenceProviders, ...providers],
       exports: [
         DiTokens.UserRepository,
         DiTokens.GroupRepository,
