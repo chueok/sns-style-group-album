@@ -7,17 +7,15 @@ import { HttpAuthService } from "../http-rest/auth/http-auth-service";
 import { HttpGoogleStrategy } from "../http-rest/auth/passport/http-google-strategy";
 import { HttpJwtSignupStrategy } from "../http-rest/auth/passport/http-jwt-signup-strategy";
 import { HttpJwtStrategy } from "../http-rest/auth/passport/http-jwt-strategy";
-import { UserModule } from "./user.module";
 
 @Module({
   controllers: [AuthController],
   imports: [
-    InfrastructureModule,
+    InfrastructureModule.forRoot(),
     JwtModule.register({
       secret: ServerConfig.JWT_SECRET,
       signOptions: { expiresIn: "30m" },
     }),
-    UserModule,
   ],
   providers: [
     HttpAuthService,

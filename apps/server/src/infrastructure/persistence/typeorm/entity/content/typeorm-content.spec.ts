@@ -1,7 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { DataSource, Repository } from "typeorm";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { typeormSqliteOptions } from "../../config/typeorm-config";
 import { join, basename } from "path";
 import {
   TypeormBucket,
@@ -15,6 +13,7 @@ import { ContentTypeEnum } from "@repo/be-core";
 import { TypeormComment } from "../comment/typeorm-comment.entity";
 import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
 import { TypeormLike } from "../like/typeorm-like.entity";
+import { InfrastructureModule } from "../../../../../di/infrastructure.module";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -30,8 +29,7 @@ describe("TypeormContent", () => {
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
-        TypeOrmModule.forRoot({
-          ...typeormSqliteOptions,
+        InfrastructureModule.forRoot({
           database: parameters.testDbPath,
           synchronize: false,
           dropSchema: false,
@@ -48,6 +46,7 @@ describe("TypeormContent", () => {
   });
 
   afterAll(async () => {
+    await dataSource.destroy();
     await module.close();
   });
 

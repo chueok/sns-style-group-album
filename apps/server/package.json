@@ -10,9 +10,9 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "npm run test:dummy && cross-env DOTENV_CONFIG_PATH=.env.test jest",
-    "test:watch": "npm run test:dummy && cross-env DOTENV_CONFIG_PATH=.env.test jest --watch",
-    "test:cov": "cross-env DOTENV_CONFIG_PATH=.env.test jest --coverage",
+    "test": "npm run test:dummy && jest",
+    "test:watch": "npm run test:dummy && jest --watch",
+    "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:dummy": "npm run start --prefix script/make-dummy-db"

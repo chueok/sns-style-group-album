@@ -97,13 +97,13 @@ export class DummyDatabaseHandler {
     }
   }
 
-  async load(dbFilePath: string): Promise<void> {
+  async load(sourceFilePath: string): Promise<void> {
     CustomAssert.isTrue(
       typeof this.dataSource.options.database === "string",
       new Error("Database is not a file"),
     );
     await this.dataSource.destroy();
-    await copyFile(dbFilePath, this.dataSource.options.database);
+    await copyFile(sourceFilePath, this.dataSource.options.database);
     this.dataSource.setOptions({ dropSchema: false });
     await this.dataSource.initialize();
 
@@ -159,7 +159,13 @@ export class DummyDatabaseHandler {
     const owner = getRandomElement(userList);
     typeormEntity.owner = Promise.resolve(owner);
 
-    const members = new Set(getRandomElementList(userList));
+    const members = new Set<TypeormUser>();
+    userList.forEach((user) => {
+      const random = getRandomElement([user, null]);
+      if (random) {
+        members.add(random);
+      }
+    });
     members.add(owner); // owner는 멤버에 포함
     typeormEntity.members = Promise.resolve(Array.from(members));
 
@@ -387,11 +393,11 @@ function getRandomElement<T>(array: T[]): T {
   return array.at(randomIndex) as T;
 }
 
-function getRandomElementList<T>(array: T[], maxNum?: number): T[] {
-  const list = new Set<T>();
-  const cnt = Math.floor(Math.random() * (maxNum || array.length));
-  for (let i = 0; i < cnt; i++) {
-    list.add(getRandomElement(array));
-  }
-  return Array.from(list);
-}
+// function getRandomElementList<T>(array: T[], maxNum?: number): T[] {
+//   const list = new Set<T>();
+//   const cnt = Math.floor(Math.random() * (maxNum || array.length));
+//   for (let i = 0; i < cnt; i++) {
+//     list.add(getRandomElement(array));
+//   }
+//   return Array.from(list);
+// }

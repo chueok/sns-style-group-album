@@ -1,49 +1,72 @@
-import { Module } from "@nestjs/common";
+import { DynamicModule, Provider } from "@nestjs/common";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { join } from "path";
 import { ServerConfig } from "../config/server-config";
+import { DiTokens } from "./di-tokens";
+import { TypeormUserRepository } from "../infrastructure/persistence/typeorm/repository/user/user-repository";
+import { TypeormCommentRepository } from "../infrastructure/persistence/typeorm/repository/comment/comment-repository";
+import { TypeormGroupRepository } from "../infrastructure/persistence/typeorm/repository/group/group-repository";
+import { TypeormContentRepository } from "../infrastructure/persistence/typeorm/repository/content/content-repository";
+import { TYPEORM_DIRECTORY } from "../infrastructure/persistence/typeorm/typeorm-directory";
 
-const entitiesPath = join(
-  __dirname,
-  "..",
-  "infrastructure",
-  "persistence",
-  "typeorm",
-  "entity",
-  "**",
-  "*.entity.{ts,js}",
-);
-const databasePath = join("db", ServerConfig.DB_FILE);
-
-export const typeormSqliteOptions = {
+const typeormSqliteOptions = {
   type: "sqlite",
-  database: databasePath,
+  database: join("db", ServerConfig.DB_FILE),
   autoLoadEntities: true,
   logging: ServerConfig.DB_LOG_ENABLE,
-  entities: [entitiesPath],
+  entities: [join(TYPEORM_DIRECTORY, "entity", "**", "*.entity.{ts,js}")],
 
-  synchronize: ServerConfig.NODE_ENV === "production" ? false : true,
-  dropSchema: ServerConfig.NODE_ENV === "production" ? false : true,
+  synchronize: false,
+  dropSchema: false,
 } satisfies TypeOrmModuleOptions;
 
-@Module({
-  imports: [TypeOrmModule.forRoot(typeormSqliteOptions)],
-})
+const persistenceProviders: Provider[] = [
+  {
+    provide: DiTokens.UserRepository,
+    useClass: TypeormUserRepository,
+  },
+  {
+    provide: DiTokens.GroupRepository,
+    useClass: TypeormGroupRepository,
+  },
+  {
+    provide: DiTokens.ContentRepository,
+    useClass: TypeormContentRepository,
+  },
+  {
+    provide: DiTokens.CommentRepository,
+    useClass: TypeormCommentRepository,
+  },
+];
+
+// NOTE : dynamic module의 object에 덮어 씌워짐
+// @Global()
+// @Module({
+//   imports: [TypeOrmModule.forRoot(typeormSqliteOptions)],
+//   providers: [...persistenceProviders],
+// })
 export class InfrastructureModule {
-  static forTest(payload: {
-    dbPath: string;
-    synchronize: boolean;
-    dropSchema: boolean;
-  }) {
+  static forRoot(payload?: {
+    database?: string;
+    synchronize?: boolean;
+    dropSchema?: boolean;
+  }): DynamicModule {
+    const options = {
+      ...typeormSqliteOptions,
+      database: payload?.database || typeormSqliteOptions.database,
+      synchronize: payload?.synchronize || typeormSqliteOptions.synchronize,
+      dropSchema: payload?.dropSchema || typeormSqliteOptions.dropSchema,
+    };
+
     return {
       module: InfrastructureModule,
-      imports: [
-        TypeOrmModule.forRoot({
-          ...typeormSqliteOptions,
-          database: payload.dbPath,
-          synchronize: payload.synchronize,
-          dropSchema: payload.dropSchema,
-        }),
+      imports: [TypeOrmModule.forRoot(options)],
+      providers: [...persistenceProviders],
+      exports: [
+        DiTokens.UserRepository,
+        DiTokens.GroupRepository,
+        DiTokens.ContentRepository,
+        DiTokens.CommentRepository,
       ],
     };
   }

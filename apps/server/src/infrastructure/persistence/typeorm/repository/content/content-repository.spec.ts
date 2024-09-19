@@ -1,12 +1,13 @@
 import { join, basename } from "path";
 import { DataSource } from "typeorm";
-import { typeormSqliteOptions } from "../../config/typeorm-config";
 import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
 import { TypeormContentRepository } from "./content-repository";
 import { TypeormContent } from "../../entity/content/typeorm-content.entity";
 import { TypeormUser } from "../../entity/user/typeorm-user.entity";
 import { TypeormGroup } from "../../entity/group/typeorm-group.entity";
 import { ContentTypeEnum } from "@repo/be-core";
+import { Test, TestingModule } from "@nestjs/testing";
+import { InfrastructureModule } from "../../../../../di/infrastructure.module";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -14,19 +15,22 @@ const parameters = {
 };
 
 describe("ContentRepository", () => {
+  let module: TestingModule;
   let dataSource: DataSource;
   let testDatabaseHandler: DummyDatabaseHandler;
   let contentRepository: TypeormContentRepository;
 
   beforeAll(async () => {
-    dataSource = new DataSource({
-      ...typeormSqliteOptions,
-      database: parameters.testDbPath,
-      synchronize: false,
-      dropSchema: false,
-    });
-
-    await dataSource.initialize();
+    module = await Test.createTestingModule({
+      imports: [
+        InfrastructureModule.forRoot({
+          database: parameters.testDbPath,
+          synchronize: false,
+          dropSchema: false,
+        }),
+      ],
+    }).compile();
+    dataSource = module.get<DataSource>(DataSource);
 
     testDatabaseHandler = new DummyDatabaseHandler(dataSource);
     await testDatabaseHandler.load(parameters.dummyDbPath);
@@ -36,6 +40,7 @@ describe("ContentRepository", () => {
 
   afterAll(async () => {
     await dataSource.destroy();
+    await module.close();
   });
 
   it("should be defined", () => {

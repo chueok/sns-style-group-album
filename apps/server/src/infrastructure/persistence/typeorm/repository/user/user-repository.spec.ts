@@ -1,12 +1,13 @@
 import { join, basename } from "path";
 import { DataSource } from "typeorm";
-import { typeormSqliteOptions } from "../../config/typeorm-config";
 import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
 import { TypeormUserRepository } from "./user-repository";
 import { TypeormUser } from "../../entity/user/typeorm-user.entity";
 import { TypeormGroup } from "../../entity/group/typeorm-group.entity";
 import { UserMapper } from "./mapper/user-mapper";
-import { User, UserId } from "@repo/be-core";
+import { IUserRepository, User, UserId } from "@repo/be-core";
+import { Test, TestingModule } from "@nestjs/testing";
+import { InfrastructureModule } from "../../../../../di/infrastructure.module";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -14,28 +15,37 @@ const parameters = {
 };
 
 describe("UserRepository", () => {
+  let module: TestingModule;
   let dataSource: DataSource;
   let testDatabaseHandler: DummyDatabaseHandler;
-  let userRepository: TypeormUserRepository;
+  let userRepository: IUserRepository;
   let targetOrmUser: TypeormUser;
 
   beforeAll(async () => {
-    dataSource = new DataSource({
-      ...typeormSqliteOptions,
-      database: parameters.testDbPath,
-      synchronize: false,
-      dropSchema: false,
-    });
+    module = await Test.createTestingModule({
+      imports: [
+        InfrastructureModule.forRoot({
+          database: parameters.testDbPath,
+          synchronize: false,
+          dropSchema: false,
+        }),
+      ],
+    }).compile();
 
-    await dataSource.initialize();
-
-    testDatabaseHandler = new DummyDatabaseHandler(dataSource);
+    dataSource = module.get<DataSource>(DataSource);
 
     userRepository = new TypeormUserRepository(dataSource);
+
+    testDatabaseHandler = new DummyDatabaseHandler(dataSource);
 
     await testDatabaseHandler.load(parameters.dummyDbPath);
 
     targetOrmUser = testDatabaseHandler.getDbCacheList(TypeormUser).at(-1)!;
+  });
+
+  afterAll(async () => {
+    await dataSource.destroy();
+    await module.close();
   });
 
   describe("findUserById", () => {

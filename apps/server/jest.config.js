@@ -1,4 +1,5 @@
 /** @type {import('jest').Config} */
+require("dotenv").config({ path: ".env.test" });
 
 const config = {
   verbose: true,

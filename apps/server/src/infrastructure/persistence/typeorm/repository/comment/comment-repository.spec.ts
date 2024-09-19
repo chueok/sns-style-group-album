@@ -1,6 +1,5 @@
 import { join, basename } from "path";
 import { DataSource } from "typeorm";
-import { typeormSqliteOptions } from "../../config/typeorm-config";
 import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
 import { TypeormCommentRepository } from "./comment-repository";
 import { TypeormComment } from "../../entity/comment/typeorm-comment.entity";
@@ -8,6 +7,8 @@ import { CommentMapper } from "./mapper/comment-mapper";
 import { TypeormContent } from "../../entity/content/typeorm-content.entity";
 import { Comment, CommentId, GroupId } from "@repo/be-core";
 import { TypeormUser } from "../../entity/user/typeorm-user.entity";
+import { Test, TestingModule } from "@nestjs/testing";
+import { InfrastructureModule } from "../../../../../di/infrastructure.module";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -15,20 +16,23 @@ const parameters = {
 };
 
 describe("CommentRepository", () => {
+  let module: TestingModule;
   let dataSource: DataSource;
   let testDatabaseHandler: DummyDatabaseHandler;
   let commentRepository: TypeormCommentRepository;
   let targetOrmComment: TypeormComment;
 
   beforeAll(async () => {
-    dataSource = new DataSource({
-      ...typeormSqliteOptions,
-      database: parameters.testDbPath,
-      synchronize: false,
-      dropSchema: false,
-    });
-
-    await dataSource.initialize();
+    module = await Test.createTestingModule({
+      imports: [
+        InfrastructureModule.forRoot({
+          database: parameters.testDbPath,
+          synchronize: false,
+          dropSchema: false,
+        }),
+      ],
+    }).compile();
+    dataSource = module.get<DataSource>(DataSource);
 
     testDatabaseHandler = new DummyDatabaseHandler(dataSource);
     await testDatabaseHandler.load(parameters.dummyDbPath);
@@ -41,6 +45,7 @@ describe("CommentRepository", () => {
 
   afterAll(async () => {
     await dataSource.destroy();
+    await module.close();
   });
 
   describe("findCommentById", () => {

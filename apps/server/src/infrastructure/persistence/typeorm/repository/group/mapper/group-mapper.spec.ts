@@ -1,10 +1,11 @@
 import { join, basename } from "path";
-import { typeormSqliteOptions } from "../../../config/typeorm-config";
 import { DataSource } from "typeorm";
 import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
 import { TypeormGroup } from "../../../entity/group/typeorm-group.entity";
 import { GroupMapper } from "./group-mapper";
 import { Group } from "@repo/be-core";
+import { Test, TestingModule } from "@nestjs/testing";
+import { InfrastructureModule } from "../../../../../../di/infrastructure.module";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -12,17 +13,20 @@ const parameters = {
 };
 
 describe("GroupMapper", () => {
+  let module: TestingModule;
   let dataSource: DataSource;
   let testDatabaseHandler: DummyDatabaseHandler;
   beforeAll(async () => {
-    dataSource = new DataSource({
-      ...typeormSqliteOptions,
-      database: parameters.testDbPath,
-      synchronize: false,
-      dropSchema: false,
-    });
-
-    await dataSource.initialize();
+    module = await Test.createTestingModule({
+      imports: [
+        InfrastructureModule.forRoot({
+          database: parameters.testDbPath,
+          synchronize: false,
+          dropSchema: false,
+        }),
+      ],
+    }).compile();
+    dataSource = module.get<DataSource>(DataSource);
 
     testDatabaseHandler = new DummyDatabaseHandler(dataSource);
 
@@ -31,6 +35,7 @@ describe("GroupMapper", () => {
 
   afterAll(async () => {
     await dataSource.destroy();
+    await module.close();
   });
 
   it("should be defined", () => {

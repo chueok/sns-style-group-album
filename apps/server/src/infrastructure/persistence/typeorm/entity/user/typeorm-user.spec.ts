@@ -1,11 +1,10 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { DataSource, Repository } from "typeorm";
-import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { TypeormUser } from "./typeorm-user.entity";
 import { join, basename } from "path";
 import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
-import { typeormSqliteOptions } from "../../config/typeorm-config";
+import { InfrastructureModule } from "../../../../../di/infrastructure.module";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -21,8 +20,7 @@ describe("TypeormUser", () => {
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
-        TypeOrmModule.forRoot({
-          ...typeormSqliteOptions,
+        InfrastructureModule.forRoot({
           database: parameters.testDbPath,
           synchronize: false,
           dropSchema: false,
@@ -39,6 +37,7 @@ describe("TypeormUser", () => {
   });
 
   afterAll(async () => {
+    await dataSource.destroy();
     await module.close();
   });
 

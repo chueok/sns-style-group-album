@@ -1,14 +1,13 @@
 import { DataSource } from "typeorm";
 import { DummyDatabaseHandler } from "./dummy-database-handler";
 import { Test, TestingModule } from "@nestjs/testing";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { typeormSqliteOptions } from "../../src/infrastructure/persistence/typeorm/config/typeorm-config";
 import { TypeormUser } from "../../src/infrastructure/persistence/typeorm/entity/user/typeorm-user.entity";
 import { TypeormGroup } from "../../src/infrastructure/persistence/typeorm/entity/group/typeorm-group.entity";
 import { TypeormContent } from "../../src/infrastructure/persistence/typeorm/entity/content/typeorm-content.entity";
 import { TypeormComment } from "../../src/infrastructure/persistence/typeorm/entity/comment/typeorm-comment.entity";
 import { join, basename } from "path";
 import { TypeormLike } from "../../src/infrastructure/persistence/typeorm/entity/like/typeorm-like.entity";
+import { InfrastructureModule } from "../../src/di/infrastructure.module";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -29,8 +28,7 @@ describe("TestDatabaseHandler", () => {
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
-        TypeOrmModule.forRoot({
-          ...typeormSqliteOptions,
+        InfrastructureModule.forRoot({
           database: parameters.testDbPath,
           synchronize: true,
           dropSchema: false,
@@ -45,7 +43,7 @@ describe("TestDatabaseHandler", () => {
   });
 
   afterAll(async () => {
-    // await testDatabaseHnandler.clearDatabase();
+    await dataSource.destroy();
     await module.close();
   });
 
@@ -137,7 +135,6 @@ describe("TestDatabaseHandler", () => {
 
   it("should loaded db and dummy db", async () => {
     await testDatabaseHandler.load(parameters.dummyDbPath);
-    await testDatabaseHandler.commit();
 
     const targetUsers = await dataSource.getRepository(TypeormUser).find();
     const targetGroups = await dataSource.getRepository(TypeormGroup).find();
@@ -201,5 +198,5 @@ describe("TestDatabaseHandler", () => {
       }))!;
 
     expect(foundComment.id).toEqual(newComment.id);
-  });
+  }, 10000);
 });
