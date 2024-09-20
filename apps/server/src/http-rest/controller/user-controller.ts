@@ -13,7 +13,7 @@ import { RestResponse } from "./documentation/common/rest-response";
 import { RestResponseUserDetail } from "./documentation/user/response-user-detail";
 import { RestResponseUserSymple } from "./documentation/user/response-user-symple";
 import { Code } from "@repo/be-core";
-import { ApiResponseGeneric } from "./documentation/common/decorator/api-response-generic";
+import { ApiResponseGeneric } from "./documentation/decorator/api-response-generic";
 import { RestEditUserBody } from "./documentation/user/edit-user-body";
 
 @Controller("users")

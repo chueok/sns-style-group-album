@@ -9,7 +9,7 @@ import {
   Query,
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { ApiResponseGeneric } from "./documentation/common/decorator/api-response-generic";
+import { ApiResponseGeneric } from "./documentation/decorator/api-response-generic";
 import { RestCommentCreateBody } from "./documentation/comment/rest-comment-create-body";
 import { RestResponseComment } from "./documentation/comment/rest-response-comment";
 import { RestCommentEditBody } from "./documentation/comment/rest-comment-edit-body";

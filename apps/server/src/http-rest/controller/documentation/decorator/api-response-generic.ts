@@ -1,9 +1,8 @@
 import { applyDecorators } from "@nestjs/common";
 import { ApiExtraModels, ApiResponse, getSchemaPath } from "@nestjs/swagger";
-import { RestResponse } from "../rest-response";
+import { RestResponse } from "../common/rest-response";
 import { CodeDescription, Constructor } from "@repo/be-core";
 
-// TODO : 파일 위치 옮길 것.
 export const ApiResponseGeneric = <
   GenericType extends Constructor<unknown> | null,
 >(payload: {

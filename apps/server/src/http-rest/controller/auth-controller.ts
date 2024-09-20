@@ -10,7 +10,7 @@ import {
   isHttpOauthUserPayload,
 } from "../auth/type/http-oauth-user";
 import { RestAuthSignupBody } from "./documentation/auth/rest-auth-signup-body";
-import { ApiResponseGeneric } from "./documentation/common/decorator/api-response-generic";
+import { ApiResponseGeneric } from "./documentation/decorator/api-response-generic";
 import { RestResponseSignupJwt } from "./documentation/auth/rest-response-signup-jwt";
 import { RestResponseJwt } from "./documentation/auth/rest-response-jwt";
 import { Code } from "@repo/be-core";
