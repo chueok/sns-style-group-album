@@ -20,10 +20,14 @@ import { HttpOauthUserPayload } from "./type/http-oauth-user";
 import { RestResponseJwt } from "../controller/documentation/auth/rest-response-jwt";
 import { RestResponseSignupJwt } from "../controller/documentation/auth/rest-response-signup-jwt";
 import { DiTokens } from "../../di/di-tokens";
+import { TypeormUser } from "../../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity";
+import { TypeormGroup } from "../../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity";
 
 @Injectable()
 export class HttpAuthService {
-  private readonly oauthRepository: Repository<TypeormOauth>;
+  private readonly typeormUserRepository: Repository<TypeormUser>;
+  private readonly typeormOauthRepository: Repository<TypeormOauth>;
+  private readonly typeormGroupRepository: Repository<TypeormGroup>;
 
   private readonly logger: LoggerService;
 
@@ -34,7 +38,9 @@ export class HttpAuthService {
     readonly dataSource: DataSource,
     @OptionalInject() logger?: LoggerService,
   ) {
-    this.oauthRepository = dataSource.getRepository(TypeormOauth);
+    this.typeormOauthRepository = dataSource.getRepository(TypeormOauth);
+    this.typeormUserRepository = dataSource.getRepository(TypeormUser);
+    this.typeormGroupRepository = dataSource.getRepository(TypeormGroup);
 
     this.logger = logger || new Logger(HttpAuthService.name);
   }
@@ -77,7 +83,7 @@ export class HttpAuthService {
     oauth.secretToken = signupToken;
     oauth.email = user.email || null;
     oauth.createdDateTime = new Date();
-    await this.oauthRepository.save(oauth);
+    await this.typeormOauthRepository.save(oauth);
 
     return {
       signupToken,
@@ -92,7 +98,7 @@ export class HttpAuthService {
     thumbnailRelativePath: Nullable<string>;
     email: string;
   }): Promise<Nullable<HttpUserPayload>> {
-    const oauth = await this.oauthRepository.findOneBy({
+    const oauth = await this.typeormOauthRepository.findOneBy({
       provider: payload.provider,
       providerId: payload.providerId,
       secretToken: payload.signupToken,
@@ -134,5 +140,27 @@ export class HttpAuthService {
       thumbnailRelativePath: user.thumbnailRelativePath,
     };
     return userPayload;
+  }
+
+  async isUserInGroup(userId: string, groupId: string): Promise<boolean> {
+    const isInGroup =
+      (await this.typeormUserRepository
+        .createQueryBuilder("user")
+        .innerJoinAndSelect("user.groups", "group")
+        .where("user.id = :userId", { userId })
+        .andWhere("user.deletedDateTime is null")
+        .andWhere("group.id = :groupId", { groupId })
+        .getCount()) > 0;
+    return isInGroup;
+  }
+
+  async isGroupOwner(userId: string, groupId: string): Promise<boolean> {
+    const isOwner =
+      (await this.typeormGroupRepository
+        .createQueryBuilder("group")
+        .where("group.id = :groupId", { groupId })
+        .andWhere("group.ownerId = :userId", { userId })
+        .getCount()) > 0;
+    return isOwner;
   }
 }

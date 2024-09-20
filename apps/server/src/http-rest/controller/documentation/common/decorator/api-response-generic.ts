@@ -3,14 +3,16 @@ import { ApiExtraModels, ApiResponse, getSchemaPath } from "@nestjs/swagger";
 import { RestResponse } from "../rest-response";
 import { CodeDescription, Constructor } from "@repo/be-core";
 
+// TODO : 파일 위치 옮길 것.
 export const ApiResponseGeneric = <
   GenericType extends Constructor<unknown> | null,
 >(payload: {
   code: CodeDescription;
   data: GenericType;
+  isArray?: boolean;
   description?: string;
 }) => {
-  const { code, data, description } = payload;
+  const { code, data, description, isArray } = payload;
   const models: any[] = [RestResponse];
   if (data) {
     models.push(data);
@@ -21,15 +23,18 @@ export const ApiResponseGeneric = <
     ApiResponse({
       status: code.code,
       description,
+      isArray: isArray || false,
       schema: {
         allOf: [
           { $ref: getSchemaPath(RestResponse) },
           {
             properties: {
               data: data
-                ? {
-                    $ref: getSchemaPath(data),
-                  }
+                ? isArray
+                  ? { items: { $ref: getSchemaPath(data) }, type: "array" }
+                  : {
+                      $ref: getSchemaPath(data),
+                    }
                 : {
                     default: null,
                   },

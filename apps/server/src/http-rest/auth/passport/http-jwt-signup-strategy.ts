@@ -18,7 +18,7 @@ export class HttpJwtSignupStrategy extends PassportStrategy(
 ) {
   private extractJwtFromRequest: JwtFromRequestFunction;
 
-  constructor(private authService: HttpAuthService) {
+  constructor(private readonly authService: HttpAuthService) {
     const extractJwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
     super({
       jwtFromRequest: extractJwtFromRequest,

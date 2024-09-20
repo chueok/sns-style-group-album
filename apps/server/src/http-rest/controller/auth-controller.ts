@@ -1,7 +1,5 @@
 import { Controller, Get, Post, UseGuards } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
 import { ApiBody, ApiTags } from "@nestjs/swagger";
-import { AuthProviderEnum } from "../auth/auth-provider-enum";
 import { HttpUser } from "../auth/decorator/http-user";
 import { ServerConfig } from "../../config/server-config";
 import assert from "assert";
@@ -17,6 +15,8 @@ import { RestResponseSignupJwt } from "./documentation/auth/rest-response-signup
 import { RestResponseJwt } from "./documentation/auth/rest-response-jwt";
 import { Code } from "@repo/be-core";
 import { RestResponse } from "./documentation/common/rest-response";
+import { HttpSignupAuthGuard } from "../auth/guard/signup-auth-guard";
+import { HttpGoogleAuthGuard } from "../auth/guard/google-auth-guard";
 
 const AUTH_PATH_NAME = "auth";
 const googleCallbackPath = validateCallbackPath();
@@ -27,13 +27,13 @@ export class AuthController {
   constructor(private readonly authService: HttpAuthService) {}
 
   @Get("login/google")
-  @UseGuards(AuthGuard(AuthProviderEnum.GOOGLE))
+  @UseGuards(HttpGoogleAuthGuard)
   googleAuth() {
     // redirect google login page
   }
 
   @Get(googleCallbackPath)
-  @UseGuards(AuthGuard(AuthProviderEnum.GOOGLE))
+  @UseGuards(HttpGoogleAuthGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: RestResponseJwt })
   @ApiResponseGeneric({
     code: Code.WRONG_CREDENTIALS_ERROR,
@@ -45,7 +45,7 @@ export class AuthController {
   })
   async googleAuthCallback(
     @HttpUser() user: HttpUserPayload | HttpOauthUserPayload,
-  ) {
+  ): Promise<RestResponse<RestResponseSignupJwt | RestResponseJwt | null>> {
     if (isHttpOauthUserPayload(user)) {
       const token: RestResponseSignupJwt =
         await this.authService.getSignupToken(user);
@@ -61,7 +61,7 @@ export class AuthController {
   }
 
   @Post("signup")
-  @UseGuards(AuthGuard(AuthProviderEnum.JWT_SIGNUP))
+  @UseGuards(HttpSignupAuthGuard)
   @ApiBody({ type: RestAuthSignupBody })
   @ApiResponseGeneric({ code: Code.CREATED, data: RestResponseJwt })
   @ApiResponseGeneric({
@@ -74,7 +74,9 @@ export class AuthController {
     data: null,
     description: "invalid body",
   })
-  async signUp(@HttpUser() user: HttpUserPayload) {
+  async signUp(
+    @HttpUser() user: HttpUserPayload,
+  ): Promise<RestResponse<RestResponseJwt | null>> {
     const token: RestResponseJwt = await this.authService.getLoginToken(user);
     return RestResponse.success(token);
   }

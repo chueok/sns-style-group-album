@@ -13,7 +13,7 @@ export class HttpJwtStrategy extends PassportStrategy(
   Strategy,
   AuthProviderEnum.JWT,
 ) {
-  constructor(private authService: HttpAuthService) {
+  constructor(private readonly authService: HttpAuthService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
