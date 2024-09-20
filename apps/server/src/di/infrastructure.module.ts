@@ -74,6 +74,7 @@ export class InfrastructureModule {
 
     return {
       module: InfrastructureModule,
+      global: true,
       imports: [TypeOrmModule.forRoot(options)],
       providers: [...persistenceProviders, ...providers],
       exports: [

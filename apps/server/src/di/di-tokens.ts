@@ -4,4 +4,7 @@ export class DiTokens {
   static readonly GroupRepository = Symbol("GroupRepository");
   static readonly ContentRepository = Symbol("ContentRepository");
   static readonly CommentRepository = Symbol("CommentRepository");
+
+  // service
+  static readonly AuthService = Symbol("AuthService");
 }

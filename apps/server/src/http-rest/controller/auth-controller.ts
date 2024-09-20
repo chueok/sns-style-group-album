@@ -1,9 +1,16 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Post,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { HttpUser } from "../auth/decorator/http-user";
 import { ServerConfig } from "../../config/server-config";
 import assert from "assert";
-import { HttpAuthService } from "../auth/http-auth-service";
 import { HttpUserPayload } from "../auth/type/http-user";
 import {
   HttpOauthUserPayload,
@@ -17,6 +24,8 @@ import { Code, Exception } from "@repo/be-core";
 import { RestResponse } from "./documentation/common/rest-response";
 import { HttpGoogleAuthGuard } from "../auth/guard/google-auth-guard";
 import { ExtractJwt } from "passport-jwt";
+import { DiTokens } from "../../di/di-tokens";
+import { IAuthService } from "../auth/auth-service.interface";
 
 const AUTH_PATH_NAME = "auth";
 const googleCallbackPath = validateCallbackPath();
@@ -24,7 +33,9 @@ const googleCallbackPath = validateCallbackPath();
 @Controller(AUTH_PATH_NAME)
 @ApiTags(AUTH_PATH_NAME)
 export class AuthController {
-  constructor(private readonly authService: HttpAuthService) {}
+  constructor(
+    @Inject(DiTokens.AuthService) private readonly authService: IAuthService,
+  ) {}
 
   @Get("login/google")
   @UseGuards(HttpGoogleAuthGuard)

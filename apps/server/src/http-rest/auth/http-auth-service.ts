@@ -25,9 +25,10 @@ import { TypeormGroup } from "../../infrastructure/persistence/typeorm/entity/gr
 import { HttpJwtSignupModel, HttpJwtSignupPayload } from "./type/http-jwt";
 import { plainToInstance } from "class-transformer";
 import { validateSync } from "class-validator";
+import { IAuthService } from "./auth-service.interface";
 
 @Injectable()
-export class HttpAuthService {
+export class HttpAuthService implements IAuthService {
   private readonly typeormUserRepository: Repository<TypeormUser>;
   private readonly typeormOauthRepository: Repository<TypeormOauth>;
   private readonly typeormGroupRepository: Repository<TypeormGroup>;

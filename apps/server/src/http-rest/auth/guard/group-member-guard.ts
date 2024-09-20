@@ -1,10 +1,18 @@
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import {
+  CanActivate,
+  ExecutionContext,
+  Inject,
+  Injectable,
+} from "@nestjs/common";
 import { HttpRequestWithUser } from "../type/http-user";
-import { HttpAuthService } from "../http-auth-service";
+import { IAuthService } from "../auth-service.interface";
+import { DiTokens } from "../../../di/di-tokens";
 
 @Injectable()
 export class HttpGroupMemberGuard implements CanActivate {
-  constructor(private readonly authService: HttpAuthService) {}
+  constructor(
+    @Inject(DiTokens.AuthService) private readonly authService: IAuthService,
+  ) {}
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: HttpRequestWithUser = context.switchToHttp().getRequest();

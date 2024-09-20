@@ -1,9 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { Profile, Strategy, VerifyCallback } from "passport-google-oauth20";
 import { ServerConfig } from "../../../config/server-config";
 import { AuthProviderEnum } from "../auth-provider-enum";
-import { HttpAuthService } from "../http-auth-service";
 import { HttpUserPayload } from "../type/http-user";
 import { Code, Exception, Optional } from "@repo/be-core";
 import {
@@ -11,13 +10,17 @@ import {
   HttpOauthUserPayload,
 } from "../type/http-oauth-user";
 import { validateSync } from "class-validator";
+import { IAuthService } from "../auth-service.interface";
+import { DiTokens } from "../../../di/di-tokens";
 
 @Injectable()
 export class HttpGoogleStrategy extends PassportStrategy(
   Strategy,
   AuthProviderEnum.GOOGLE,
 ) {
-  constructor(private readonly authService: HttpAuthService) {
+  constructor(
+    @Inject(DiTokens.AuthService) private readonly authService: IAuthService,
+  ) {
     super({
       clientID: ServerConfig.OAUTH_GOOGLE_ID,
       clientSecret: ServerConfig.OAUTH_GOOGLE_SECRET,

@@ -1,19 +1,22 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
-import { HttpAuthService } from "../http-auth-service";
 import { ServerConfig } from "../../../config/server-config";
 import { Optional } from "@repo/be-core";
 import { HttpUserPayload } from "../type/http-user";
 import { HttpJwtUserPayload } from "../type/http-jwt";
 import { AuthProviderEnum } from "../auth-provider-enum";
+import { DiTokens } from "../../../di/di-tokens";
+import { IAuthService } from "../auth-service.interface";
 
 @Injectable()
 export class HttpJwtStrategy extends PassportStrategy(
   Strategy,
   AuthProviderEnum.JWT,
 ) {
-  constructor(private readonly authService: HttpAuthService) {
+  constructor(
+    @Inject(DiTokens.AuthService) private readonly authService: IAuthService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
