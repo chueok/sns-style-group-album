@@ -22,6 +22,9 @@ import { RestResponseSignupJwt } from "../controller/documentation/auth/rest-res
 import { DiTokens } from "../../di/di-tokens";
 import { TypeormUser } from "../../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity";
 import { TypeormGroup } from "../../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity";
+import { HttpJwtSignupModel, HttpJwtSignupPayload } from "./type/http-jwt";
+import { plainToInstance } from "class-transformer";
+import { validateSync } from "class-validator";
 
 @Injectable()
 export class HttpAuthService {
@@ -73,7 +76,12 @@ export class HttpAuthService {
   async getSignupToken(
     user: HttpOauthUserPayload,
   ): Promise<RestResponseSignupJwt> {
-    const signupToken = this.jwtService.sign(user, {
+    const signupPayload: HttpJwtSignupPayload = {
+      ...user,
+      createdTimestamp: Date.now(),
+    };
+
+    const signupToken = this.jwtService.sign(signupPayload, {
       expiresIn: "30m",
     });
 
@@ -90,6 +98,36 @@ export class HttpAuthService {
     };
   }
 
+  async validateSignupToken(
+    jwt: string,
+  ): Promise<Nullable<HttpJwtSignupPayload>> {
+    let jwtPayload: HttpJwtSignupPayload;
+    try {
+      jwtPayload = this.jwtService.verify(jwt);
+    } catch (error) {
+      return null;
+    }
+
+    const signupModel = plainToInstance(HttpJwtSignupModel, jwtPayload);
+
+    const errors = validateSync(signupModel);
+    if (errors.length > 0) {
+      null;
+    }
+
+    const oauth = await this.typeormOauthRepository.findOneBy({
+      provider: signupModel.provider,
+      providerId: signupModel.providerId,
+      secretToken: jwt,
+      userId: undefined,
+    });
+    if (!oauth) {
+      return null;
+    }
+
+    return signupModel.toObject();
+  }
+
   async signup(payload: {
     signupToken: string;
     provider: string;
@@ -98,23 +136,12 @@ export class HttpAuthService {
     thumbnailRelativePath: Nullable<string>;
     email: string;
   }): Promise<Nullable<HttpUserPayload>> {
-    const oauth = await this.typeormOauthRepository.findOneBy({
-      provider: payload.provider,
-      providerId: payload.providerId,
-      secretToken: payload.signupToken,
-      userId: undefined,
-    });
-
-    if (!oauth) {
-      this.logger.log(`oauth not found: ${payload}`);
-      return null;
-    }
-
     const newUserPayload: CreateUserEntityPayload<"new"> = {
       username: payload.username,
       email: payload.email,
       thumbnailRelativePath: payload.thumbnailRelativePath,
     };
+
     const newUser = await User.new(newUserPayload);
     const result = await this.userRepository.createUser(newUser);
     if (!result) {

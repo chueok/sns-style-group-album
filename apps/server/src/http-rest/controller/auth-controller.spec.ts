@@ -61,8 +61,8 @@ describe("AuthController", () => {
       const signupUser: HttpOauthUserPayload = {
         provider: "google",
         providerId: v4(),
-        profileUrl: v4(),
-        email: v4(),
+        profileUrl: faker.internet.url(),
+        email: faker.internet.email(),
       };
       const { signupToken } = await authService.getSignupToken(signupUser);
       const username = v4();
@@ -77,11 +77,38 @@ describe("AuthController", () => {
         .expect(Code.CREATED.code);
     });
 
-    it("[empty jwt] should return 401", async () => {
+    it("[stale signup-token] should return 401", async () => {
+      const signupUser: HttpOauthUserPayload = {
+        provider: "google",
+        providerId: v4(),
+        profileUrl: faker.internet.url(),
+        email: faker.internet.email(),
+      };
+      const { signupToken } = await authService.getSignupToken(signupUser);
+      const username = v4();
+      const email = faker.internet.email();
+
+      // Stale the token
+      await authService.getSignupToken(signupUser);
+
       const response: supertest.Response = await supertest(
         testingServer.getHttpServer(),
       )
         .post("/auth/signup")
+        .auth(signupToken, { type: "bearer" })
+        .send({ username, email })
+        .expect(Code.UNAUTHORIZED_ERROR.code);
+    });
+
+    it("[empty jwt] should return 401", async () => {
+      const username = v4();
+      const email = faker.internet.email();
+
+      const response: supertest.Response = await supertest(
+        testingServer.getHttpServer(),
+      )
+        .post("/auth/signup")
+        .send({ username, email })
         .expect(Code.UNAUTHORIZED_ERROR.code);
     });
 
@@ -89,8 +116,8 @@ describe("AuthController", () => {
       const signupUser: HttpOauthUserPayload = {
         provider: "google",
         providerId: v4(),
-        profileUrl: v4(),
-        email: v4(),
+        profileUrl: faker.internet.url(),
+        email: faker.internet.email(),
       };
       const signupToken = jwtService.sign(signupUser, {
         secret: "fake-secret",
@@ -111,8 +138,8 @@ describe("AuthController", () => {
       const signupUser: HttpOauthUserPayload = {
         provider: "google",
         providerId: v4(),
-        profileUrl: v4(),
-        email: v4(),
+        profileUrl: faker.internet.url(),
+        email: faker.internet.email(),
       };
       const { signupToken } = await authService.getSignupToken(signupUser);
 

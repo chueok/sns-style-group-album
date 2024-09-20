@@ -6,7 +6,10 @@ import { AuthProviderEnum } from "../auth-provider-enum";
 import { HttpAuthService } from "../http-auth-service";
 import { HttpUserPayload } from "../type/http-user";
 import { Code, Exception, Optional } from "@repo/be-core";
-import { HttpOauthUser, HttpOauthUserPayload } from "../type/http-oauth-user";
+import {
+  HttpOauthUserModel,
+  HttpOauthUserPayload,
+} from "../type/http-oauth-user";
 import { validateSync } from "class-validator";
 
 @Injectable()
@@ -35,7 +38,7 @@ export class HttpGoogleStrategy extends PassportStrategy(
       const user = await this.authService.getOauthUser(provider, id);
       // 신규 유저
       if (!user) {
-        const oauthUser = new HttpOauthUser();
+        const oauthUser = new HttpOauthUserModel();
         oauthUser.provider = provider;
         oauthUser.providerId = id;
         oauthUser.profileUrl = profileUrl;

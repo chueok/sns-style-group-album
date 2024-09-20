@@ -1,5 +1,5 @@
-import { Controller, Get, Post, UseGuards } from "@nestjs/common";
-import { ApiBody, ApiTags } from "@nestjs/swagger";
+import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
+import { ApiTags } from "@nestjs/swagger";
 import { HttpUser } from "../auth/decorator/http-user";
 import { ServerConfig } from "../../config/server-config";
 import assert from "assert";
@@ -13,10 +13,10 @@ import { RestAuthSignupBody } from "./documentation/auth/rest-auth-signup-body";
 import { ApiResponseGeneric } from "./documentation/decorator/api-response-generic";
 import { RestResponseSignupJwt } from "./documentation/auth/rest-response-signup-jwt";
 import { RestResponseJwt } from "./documentation/auth/rest-response-jwt";
-import { Code } from "@repo/be-core";
+import { Code, Exception } from "@repo/be-core";
 import { RestResponse } from "./documentation/common/rest-response";
-import { HttpSignupAuthGuard } from "../auth/guard/signup-auth-guard";
 import { HttpGoogleAuthGuard } from "../auth/guard/google-auth-guard";
+import { ExtractJwt } from "passport-jwt";
 
 const AUTH_PATH_NAME = "auth";
 const googleCallbackPath = validateCallbackPath();
@@ -61,8 +61,6 @@ export class AuthController {
   }
 
   @Post("signup")
-  @UseGuards(HttpSignupAuthGuard)
-  @ApiBody({ type: RestAuthSignupBody })
   @ApiResponseGeneric({ code: Code.CREATED, data: RestResponseJwt })
   @ApiResponseGeneric({
     code: Code.UNAUTHORIZED_ERROR,
@@ -74,9 +72,34 @@ export class AuthController {
     data: null,
     description: "invalid body",
   })
-  async signUp(
-    @HttpUser() user: HttpUserPayload,
+  async signup(
+    @Req() req: Request,
+    @Body() body: RestAuthSignupBody,
   ): Promise<RestResponse<RestResponseJwt | null>> {
+    const jwt = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+    if (!jwt) {
+      throw Exception.new({ code: Code.UNAUTHORIZED_ERROR });
+    }
+
+    const signupPayload = await this.authService.validateSignupToken(jwt);
+    if (!signupPayload) {
+      throw Exception.new({ code: Code.UNAUTHORIZED_ERROR });
+    }
+
+    const user = await this.authService.signup({
+      signupToken: jwt,
+      provider: signupPayload.provider,
+      providerId: signupPayload.providerId,
+      username: body.username,
+      email: body.email,
+      thumbnailRelativePath:
+        body.thumbnailRelativePath || signupPayload.profileUrl || null,
+    });
+
+    if (!user) {
+      throw Exception.new({ code: Code.BAD_REQUEST_ERROR });
+    }
+
     const token: RestResponseJwt = await this.authService.getLoginToken(user);
     return RestResponse.success(token);
   }

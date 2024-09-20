@@ -1,13 +1,6 @@
 import { IsEmail, IsOptional, IsString, IsUrl } from "class-validator";
 
-export type HttpOauthUserPayload = {
-  provider: string;
-  providerId: string;
-  profileUrl?: string;
-  email?: string;
-};
-
-export class HttpOauthUser {
+export class HttpOauthUserModel {
   @IsString()
   provider!: string;
 
@@ -31,6 +24,13 @@ export class HttpOauthUser {
     };
   }
 }
+
+export type HttpOauthUserPayload = {
+  provider: string;
+  providerId: string;
+  profileUrl?: string;
+  email?: string;
+};
 
 export function isHttpOauthUserPayload(
   payload: object,

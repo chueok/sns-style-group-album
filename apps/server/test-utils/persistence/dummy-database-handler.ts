@@ -136,7 +136,7 @@ export class DummyDatabaseHandler {
     typeormEntity.groups = Promise.resolve([]);
     typeormEntity.thumbnailRelativePath = getRandomElement([
       null,
-      faker.system.filePath(),
+      faker.internet.url(),
     ]);
 
     typeormEntity.createdDateTime = faker.date.past();

@@ -126,7 +126,7 @@ export class TypeormCommentRepository implements ICommentRepository {
         `comment.${payload.pagination.by}`,
         payload.pagination.direction === "desc" ? "DESC" : "ASC",
       )
-      .limit(payload.pagination.limit);
+      .take(payload.pagination.limit);
 
     if (payload.pagination.cursor) {
       if (payload.pagination.direction === "desc") {

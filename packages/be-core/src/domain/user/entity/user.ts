@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsUUID } from "class-validator";
+import { IsEmail, IsOptional, IsString, IsUrl, IsUUID } from "class-validator";
 import { CreateUserEntityPayload } from "./type/create-user-entity-payload";
 import { v4 } from "uuid";
 import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
@@ -16,14 +16,14 @@ export class User extends EntityWithCUDTime<UserId> {
   }
 
   @IsOptional()
-  @IsString()
+  @IsEmail()
   private _email: Nullable<string>;
   get email(): Nullable<string> {
     return this._email;
   }
 
   @IsOptional()
-  @IsString()
+  @IsUrl()
   private _thumbnailRelativePath: Nullable<string>;
   get thumbnailRelativePath(): Nullable<string> {
     return this._thumbnailRelativePath;

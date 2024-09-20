@@ -1,5 +1,6 @@
 import {
   ArgumentsHost,
+  BadRequestException,
   Catch,
   ExceptionFilter,
   HttpException,
@@ -39,6 +40,12 @@ export class NestHttpExceptionFilter implements ExceptionFilter {
         Code.UNAUTHORIZED_ERROR.message,
         NestHttpExceptionFilter.isProduction ? null : error.cause,
       );
+    } else if (error instanceof BadRequestException) {
+      errorResponse = RestResponse.error(
+        Code.BAD_REQUEST_ERROR.code,
+        Code.BAD_REQUEST_ERROR.message,
+        NestHttpExceptionFilter.isProduction ? null : error.cause,
+      );
     } else if (
       !NestHttpExceptionFilter.isProduction &&
       error instanceof HttpException
@@ -58,11 +65,16 @@ export class NestHttpExceptionFilter implements ExceptionFilter {
     errorResponse: RestResponse<unknown>,
   ): RestResponse<unknown> {
     if (error instanceof Exception) {
-      errorResponse = RestResponse.error(
-        error.code,
-        error.message,
-        NestHttpExceptionFilter.isProduction ? null : error.data,
-      );
+      if (
+        error.code === Code.UNAUTHORIZED_ERROR.code ||
+        error.code === Code.BAD_REQUEST_ERROR.code
+      ) {
+        errorResponse = RestResponse.error(
+          error.code,
+          error.message,
+          NestHttpExceptionFilter.isProduction ? null : error.data,
+        );
+      }
     }
 
     return errorResponse;
