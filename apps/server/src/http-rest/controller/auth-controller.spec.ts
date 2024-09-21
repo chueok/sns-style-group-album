@@ -6,12 +6,13 @@ import { basename, join } from "path";
 import { faker } from "@faker-js/faker";
 import { Code } from "@repo/be-core";
 import { JwtService } from "@nestjs/jwt";
-import { HttpAuthService } from "../auth/http-auth-service";
 import { AppController } from "../../app.controller";
 import { AppService } from "../../app.service";
 import { InfrastructureModule } from "../../di/infrastructure.module";
 import { AuthModule } from "../../di/auth.module";
 import { HttpOauthUserPayload } from "../auth/type/http-oauth-user";
+import { DiTokens } from "../../di/di-tokens";
+import { IAuthService } from "../auth/auth-service.interface";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -20,7 +21,7 @@ const parameters = {
 describe("AuthController", () => {
   let testingServer: NestExpressApplication;
   let testingModule: TestingModule;
-  let authService: HttpAuthService;
+  let authService: IAuthService;
   let jwtService: JwtService;
 
   beforeEach(async () => {
@@ -36,7 +37,7 @@ describe("AuthController", () => {
       ],
     }).compile();
 
-    authService = testingModule.get<HttpAuthService>(HttpAuthService);
+    authService = testingModule.get<IAuthService>(DiTokens.AuthService);
     jwtService = testingModule.get(JwtService);
 
     testingServer = testingModule.createNestApplication();
