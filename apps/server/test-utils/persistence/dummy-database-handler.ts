@@ -42,6 +42,22 @@ export class DummyDatabaseHandler {
     TypeormLike,
   ] as const;
 
+  private needToCommitFlag = false;
+  private needToCommitIndexRecord: Record<string, number> = {};
+  private changeNeedToCommit<T extends ArrayElement<typeof this.entities>>(
+    entity: T,
+  ): void {
+    if (!this.needToCommitFlag) {
+      this.needToCommitFlag = true;
+      this.needToCommitIndexRecord[entity.name] =
+        this.getDbCacheList(entity).length;
+    }
+  }
+  private resetNeedToCommit(): void {
+    this.needToCommitFlag = false;
+    this.needToCommitIndexRecord = {};
+  }
+
   private dbCacheListMap: Record<string, any[]>;
   public getDbCacheList<T extends ArrayElement<typeof this.entities>>(
     constructor: T,
@@ -62,6 +78,8 @@ export class DummyDatabaseHandler {
       await this.dataSource.getRepository(entity).delete({});
     }
     this.resetDbCache();
+
+    this.resetNeedToCommit();
   }
 
   async buildDummyData(payload: {
@@ -90,11 +108,16 @@ export class DummyDatabaseHandler {
 
   async commit(): Promise<void> {
     for (const entity of this.entities) {
-      const list = this.getDbCacheList(entity) as unknown as TypeormUser[];
+      const startIndex = this.needToCommitIndexRecord[entity.name] || 0;
+      const list = this.getDbCacheList(entity).splice(
+        startIndex,
+      ) as unknown as TypeormUser[];
       await this.dataSource
         .getRepository(entity as typeof TypeormUser)
         .save(list);
     }
+    this.resetNeedToCommit();
+    await this.loadDbCache();
   }
 
   async load(sourceFilePath: string): Promise<void> {
@@ -122,13 +145,15 @@ export class DummyDatabaseHandler {
     }
   }
 
-  resetDbCache(): void {
+  private resetDbCache(): void {
     this.entities.forEach((entity) => {
       this.getDbCacheList(entity).length = 0;
     });
   }
 
   makeDummyUser(): TypeormUser {
+    this.changeNeedToCommit(TypeormUser);
+
     const typeormEntity = new TypeormUser();
     typeormEntity.id = faker.string.uuid() as UserId;
     typeormEntity.username = faker.internet.userName();
@@ -149,6 +174,8 @@ export class DummyDatabaseHandler {
   }
 
   makeDummyGroup(): TypeormGroup {
+    this.changeNeedToCommit(TypeormGroup);
+
     const userList = this.getDbCacheList(TypeormUser);
     CustomAssert.isTrue(userList.length > 0, new Error("User is empty"));
 
@@ -180,6 +207,8 @@ export class DummyDatabaseHandler {
   async makeDummyContent(payload?: {
     type?: ContentTypeEnum;
   }): Promise<TypeormContent> {
+    this.changeNeedToCommit(TypeormContent);
+
     const groupList = this.getDbCacheList(TypeormGroup);
     CustomAssert.isTrue(groupList.length > 0, new Error("Group is empty"));
 
@@ -304,6 +333,8 @@ export class DummyDatabaseHandler {
   }
 
   async makeDummyLike(): Promise<TypeormLike> {
+    this.changeNeedToCommit(TypeormLike);
+
     const contentList = this.getDbCacheList(TypeormContent);
     const groupList = this.getDbCacheList(TypeormGroup);
     CustomAssert.isTrue(contentList.length > 0, new Error("Content is empty"));
@@ -328,6 +359,8 @@ export class DummyDatabaseHandler {
   }
 
   makeDummyComment(): TypeormComment {
+    this.changeNeedToCommit(TypeormComment);
+
     const contentList = this.getDbCacheList(TypeormContent);
     const userList = this.getDbCacheList(TypeormUser);
     CustomAssert.isTrue(
