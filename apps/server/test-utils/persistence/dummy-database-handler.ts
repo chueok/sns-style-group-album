@@ -42,20 +42,11 @@ export class DummyDatabaseHandler {
     TypeormLike,
   ] as const;
 
-  private needToCommitFlag = false;
-  private needToCommitIndexRecord: Record<string, number> = {};
-  private changeNeedToCommit<T extends ArrayElement<typeof this.entities>>(
-    entity: T,
-  ): void {
-    if (!this.needToCommitFlag) {
-      this.needToCommitFlag = true;
-      this.needToCommitIndexRecord[entity.name] =
-        this.getDbCacheList(entity).length;
-    }
-  }
-  private resetNeedToCommit(): void {
-    this.needToCommitFlag = false;
-    this.needToCommitIndexRecord = {};
+  private temporaryEntityListMap: Record<string, any[]> = {};
+  private getTemporaryEntityList<T extends ArrayElement<typeof this.entities>>(
+    constructor: T,
+  ): InstanceType<T>[] {
+    return this.temporaryEntityListMap[constructor.name] as InstanceType<T>[];
   }
 
   private dbCacheListMap: Record<string, any[]>;
@@ -67,8 +58,10 @@ export class DummyDatabaseHandler {
 
   constructor(private dataSource: DataSource) {
     this.dbCacheListMap = {};
+    this.temporaryEntityListMap = {};
     Object.values(this.entities).forEach((v) => {
       this.dbCacheListMap[v.name] = [];
+      this.temporaryEntityListMap[v.name] = [];
     });
   }
 
@@ -78,8 +71,6 @@ export class DummyDatabaseHandler {
       await this.dataSource.getRepository(entity).delete({});
     }
     this.resetDbCache();
-
-    this.resetNeedToCommit();
   }
 
   async buildDummyData(payload: {
@@ -108,16 +99,15 @@ export class DummyDatabaseHandler {
 
   async commit(): Promise<void> {
     for (const entity of this.entities) {
-      const startIndex = this.needToCommitIndexRecord[entity.name] || 0;
-      const list = this.getDbCacheList(entity).splice(
-        startIndex,
+      const list = this.getTemporaryEntityList(
+        entity,
       ) as unknown as TypeormUser[];
-      await this.dataSource
+      const savedEntities = await this.dataSource
         .getRepository(entity as typeof TypeormUser)
         .save(list);
+      this.getDbCacheList(entity).push(...savedEntities);
+      this.getTemporaryEntityList(entity).length = 0;
     }
-    this.resetNeedToCommit();
-    await this.loadDbCache();
   }
 
   async load(sourceFilePath: string): Promise<void> {
@@ -130,14 +120,10 @@ export class DummyDatabaseHandler {
     this.dataSource.setOptions({ dropSchema: false });
     await this.dataSource.initialize();
 
-    this.resetDbCache();
-    for (const entity of this.entities) {
-      const list = await this.dataSource.getRepository(entity).find();
-      this.getDbCacheList(entity).push(...list);
-    }
+    await this.loadDbCache();
   }
 
-  async loadDbCache(): Promise<void> {
+  private async loadDbCache(): Promise<void> {
     this.resetDbCache();
     for (const entity of this.entities) {
       const list = await this.dataSource.getRepository(entity).find();
@@ -152,8 +138,6 @@ export class DummyDatabaseHandler {
   }
 
   makeDummyUser(): TypeormUser {
-    this.changeNeedToCommit(TypeormUser);
-
     const typeormEntity = new TypeormUser();
     typeormEntity.id = faker.string.uuid() as UserId;
     typeormEntity.username = faker.internet.userName();
@@ -168,15 +152,15 @@ export class DummyDatabaseHandler {
     typeormEntity.updatedDateTime = getRandomElement([null, faker.date.past()]);
     typeormEntity.deletedDateTime = getRandomElement([null, faker.date.past()]);
 
-    this.getDbCacheList(TypeormUser).push(typeormEntity);
+    this.getTemporaryEntityList(TypeormUser).push(typeormEntity);
 
     return typeormEntity;
   }
 
   makeDummyGroup(): TypeormGroup {
-    this.changeNeedToCommit(TypeormGroup);
-
-    const userList = this.getDbCacheList(TypeormUser);
+    const userList: TypeormUser[] = this.getDbCacheList(TypeormUser).concat(
+      this.getTemporaryEntityList(TypeormUser),
+    );
     CustomAssert.isTrue(userList.length > 0, new Error("User is empty"));
 
     const typeormEntity = new TypeormGroup();
@@ -200,23 +184,25 @@ export class DummyDatabaseHandler {
     typeormEntity.updatedDateTime = getRandomElement([null, faker.date.past()]);
     typeormEntity.deletedDateTime = getRandomElement([null, faker.date.past()]);
 
-    this.getDbCacheList(TypeormGroup).push(typeormEntity);
+    this.getTemporaryEntityList(TypeormGroup).push(typeormEntity);
     return typeormEntity;
   }
 
   async makeDummyContent(payload?: {
     type?: ContentTypeEnum;
   }): Promise<TypeormContent> {
-    this.changeNeedToCommit(TypeormContent);
-
-    const groupList = this.getDbCacheList(TypeormGroup);
+    const groupList = this.getDbCacheList(TypeormGroup).concat(
+      this.getTemporaryEntityList(TypeormGroup),
+    );
     CustomAssert.isTrue(groupList.length > 0, new Error("Group is empty"));
 
     const group = getRandomElement(groupList);
     const memberList = await group.members;
     CustomAssert.isTrue(memberList.length > 0, new Error("Member is empty"));
 
-    const contentList = this.getDbCacheList(TypeormContent);
+    const contentList = this.getDbCacheList(TypeormContent).concat(
+      this.getTemporaryEntityList(TypeormContent),
+    );
     const groupContentList = contentList.filter(
       async (content) => (await content.group).id === group.id,
     );
@@ -328,15 +314,17 @@ export class DummyDatabaseHandler {
         break;
     }
 
-    contentList.push(instance);
+    this.getTemporaryEntityList(TypeormContent).push(instance);
     return instance;
   }
 
   async makeDummyLike(): Promise<TypeormLike> {
-    this.changeNeedToCommit(TypeormLike);
-
-    const contentList = this.getDbCacheList(TypeormContent);
-    const groupList = this.getDbCacheList(TypeormGroup);
+    const contentList = this.getDbCacheList(TypeormContent).concat(
+      this.getTemporaryEntityList(TypeormContent),
+    );
+    const groupList = this.getDbCacheList(TypeormGroup).concat(
+      this.getTemporaryEntityList(TypeormGroup),
+    );
     CustomAssert.isTrue(contentList.length > 0, new Error("Content is empty"));
 
     const targetcontent = getRandomElement(contentList);
@@ -354,15 +342,17 @@ export class DummyDatabaseHandler {
     typeormLike.content = Promise.resolve(targetcontent);
     typeormLike.user = Promise.resolve(getRandomElement(memberList));
 
-    this.getDbCacheList(TypeormLike).push(typeormLike);
+    this.getTemporaryEntityList(TypeormLike).push(typeormLike);
     return typeormLike;
   }
 
   makeDummyComment(): TypeormComment {
-    this.changeNeedToCommit(TypeormComment);
-
-    const contentList = this.getDbCacheList(TypeormContent);
-    const userList = this.getDbCacheList(TypeormUser);
+    const contentList = this.getDbCacheList(TypeormContent).concat(
+      this.getTemporaryEntityList(TypeormContent),
+    );
+    const userList = this.getDbCacheList(TypeormUser).concat(
+      this.getTemporaryEntityList(TypeormUser),
+    );
     CustomAssert.isTrue(
       contentList.length > 0 && userList.length > 0,
       new Error("Content or User is empty"),
@@ -414,8 +404,7 @@ export class DummyDatabaseHandler {
         break;
     }
 
-    const commentList = this.getDbCacheList(TypeormComment);
-    commentList.push(instance);
+    this.getTemporaryEntityList(TypeormComment).push(instance);
     return instance;
   }
 }

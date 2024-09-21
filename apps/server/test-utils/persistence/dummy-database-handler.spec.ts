@@ -198,5 +198,5 @@ describe("TestDatabaseHandler", () => {
       }))!;
 
     expect(foundComment.id).toEqual(newComment.id);
-  }, 10000);
+  });
 });
