@@ -10,9 +10,9 @@ import {
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { ApiResponseGeneric } from "./documentation/decorator/api-response-generic";
-import { RestCommentCreateBody } from "./documentation/comment/rest-comment-create-body";
-import { RestResponseComment } from "./documentation/comment/rest-response-comment";
-import { RestCommentEditBody } from "./documentation/comment/rest-comment-edit-body";
+import { RestCommentCreateBody } from "./documentation/comment/comment-create-body";
+import { RestCommentResponse } from "./documentation/comment/comment-response";
+import { RestCommentEditBody } from "./documentation/comment/comment-edit-body";
 import { Code } from "@repo/be-core";
 import { RestGetCommentListQuery } from "./documentation/comment/get-comment-list-query";
 import { RestResponse } from "./documentation/common/rest-response";
@@ -21,40 +21,40 @@ import { RestResponse } from "./documentation/common/rest-response";
 @ApiTags("comments")
 export class CommentController {
   @Post()
-  @ApiResponseGeneric({ code: Code.CREATED, data: RestResponseComment })
+  @ApiResponseGeneric({ code: Code.CREATED, data: RestCommentResponse })
   async createComment(
     @Body() body: RestCommentCreateBody,
-  ): Promise<RestResponse<RestResponseComment | null>> {
+  ): Promise<RestResponse<RestCommentResponse | null>> {
     throw new Error("Not implemented");
   }
 
   @Get()
   @ApiResponseGeneric({
     code: Code.SUCCESS,
-    data: RestResponseComment,
+    data: RestCommentResponse,
     isArray: true,
   })
   // TODO : pagenation 구현 필요 (content에 해당하는 comment를 가져오기 위함)
   async getCommentList(
     @Query() query: RestGetCommentListQuery,
-  ): Promise<RestResponse<RestResponseComment[] | null>> {
+  ): Promise<RestResponse<RestCommentResponse[] | null>> {
     throw new Error("Not implemented");
   }
 
   @Get(":commentId")
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestResponseComment })
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestCommentResponse })
   async getComment(
     @Param("commentId") commentId: string,
-  ): Promise<RestResponse<RestResponseComment | null>> {
+  ): Promise<RestResponse<RestCommentResponse | null>> {
     throw new Error("Not implemented");
   }
 
   @Patch(":commentId")
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestResponseComment })
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestCommentResponse })
   async editComment(
     @Param("commentId") commentId: string,
     @Body() body: RestCommentEditBody,
-  ): Promise<RestResponse<RestResponseComment | null>> {
+  ): Promise<RestResponse<RestCommentResponse | null>> {
     throw new Error("Not implemented");
   }
 

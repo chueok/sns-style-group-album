@@ -13,7 +13,7 @@ import { RestResponse } from "./documentation/common/rest-response";
 import { Code } from "@repo/be-core";
 import { ApiResponseGeneric } from "./documentation/decorator/api-response-generic";
 import { RestGetContentListQuery } from "./documentation/content/get-content-list-query";
-import { RestResponseContentDetail } from "./documentation/content/response-content-detail";
+import { RestContentResponse } from "./documentation/content/content-response";
 import { RestEditContentBody } from "./documentation/content/edit-content-body";
 import { RestCreateContentBody } from "./documentation/content/create-content-body";
 
@@ -23,21 +23,21 @@ export class ContentController {
   @Get()
   @ApiResponseGeneric({
     code: Code.SUCCESS,
-    data: RestResponseContentDetail,
+    data: RestContentResponse,
     isArray: true,
   })
   // TODO : pagenation 구현 필요
   async getContentList(
     @Query() query: RestGetContentListQuery,
-  ): Promise<RestResponse<RestResponseContentDetail[] | null>> {
+  ): Promise<RestResponse<RestContentResponse[] | null>> {
     throw new Error("Not implemented");
   }
 
   @Get(":contentId")
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestResponseContentDetail })
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestContentResponse })
   async getContent(
     @Param("contentId") contentId: string,
-  ): Promise<RestResponse<RestResponseContentDetail | null>> {
+  ): Promise<RestResponse<RestContentResponse | null>> {
     throw new Error("Not implemented");
   }
 
@@ -50,19 +50,19 @@ export class ContentController {
   }
 
   @Patch(":contentId")
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestResponseContentDetail })
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestContentResponse })
   async editContent(
     @Param("contentId") contentId: string,
     @Body() body: RestEditContentBody,
-  ): Promise<RestResponse<RestResponseContentDetail>> {
+  ): Promise<RestResponse<RestContentResponse>> {
     throw new Error("Not implemented");
   }
 
   @Post()
-  @ApiResponseGeneric({ code: Code.CREATED, data: RestResponseContentDetail })
+  @ApiResponseGeneric({ code: Code.CREATED, data: RestContentResponse })
   async createContent(
     @Body() body: RestCreateContentBody,
-  ): Promise<RestResponse<RestResponseContentDetail>> {
+  ): Promise<RestResponse<RestContentResponse>> {
     throw new Error("Not implemented");
   }
 

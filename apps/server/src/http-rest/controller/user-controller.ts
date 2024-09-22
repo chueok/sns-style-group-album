@@ -10,8 +10,8 @@ import {
 import { ApiTags } from "@nestjs/swagger";
 import { RestGetUserListQuery } from "./documentation/user/get-user-list-query";
 import { RestResponse } from "./documentation/common/rest-response";
-import { RestResponseUserDetail } from "./documentation/user/response-user-detail";
-import { RestResponseUserSymple } from "./documentation/user/response-user-symple";
+import { RestUserResponse } from "./documentation/user/user-response";
+import { RestUserSimpleResponse } from "./documentation/user/user-simple-response";
 import { Code } from "@repo/be-core";
 import { ApiResponseGeneric } from "./documentation/decorator/api-response-generic";
 import { RestEditUserBody } from "./documentation/user/edit-user-body";
@@ -20,22 +20,22 @@ import { RestEditUserBody } from "./documentation/user/edit-user-body";
 @ApiTags("users")
 export class UserController {
   @Get(":userId")
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestResponseUserDetail })
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestUserResponse })
   async getUser(
     @Param("userId") userId: string,
-  ): Promise<RestResponse<RestResponseUserDetail | null>> {
+  ): Promise<RestResponse<RestUserResponse | null>> {
     throw new Error("Not implemented");
   }
 
   @Get()
   @ApiResponseGeneric({
     code: Code.SUCCESS,
-    data: RestResponseUserSymple,
+    data: RestUserSimpleResponse,
     isArray: true,
   })
   async getUserList(
     @Query() query: RestGetUserListQuery,
-  ): Promise<RestResponse<RestResponseUserSymple[] | null>> {
+  ): Promise<RestResponse<RestUserSimpleResponse[] | null>> {
     throw new Error("Not implemented");
   }
 
@@ -49,11 +49,11 @@ export class UserController {
 
   // TODO : profile 사진 변경 구현 필요
   @Patch(":userId")
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestResponseUserDetail })
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestUserResponse })
   async editUser(
     @Param("userId") userId: string,
     @Body() body: RestEditUserBody,
-  ): Promise<RestResponse<RestResponseUserDetail | null>> {
+  ): Promise<RestResponse<RestUserResponse | null>> {
     throw new Error("Not implemented");
   }
 }

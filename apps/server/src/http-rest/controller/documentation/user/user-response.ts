@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
-export class RestResponseUserDetail {
+export class RestUserResponse {
   @ApiProperty({ type: "string" })
   id!: string;
 

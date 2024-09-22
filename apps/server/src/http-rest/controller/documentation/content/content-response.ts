@@ -1,9 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { ContentTypeEnum } from "@repo/be-core";
-import { RestResponseContentSymple } from "./response-content-symple";
-import { RestResponseComment } from "../comment/rest-response-comment";
+import { RestContentSimpleResponse } from "./content-simple-response";
+import { RestCommentResponse } from "../comment/comment-response";
 
-export class RestResponseContentDetail {
+export class RestContentResponse {
   @ApiProperty({ type: "string" })
   id!: string;
 
@@ -19,8 +19,8 @@ export class RestResponseContentDetail {
   @ApiProperty({ type: "string" })
   text!: string;
 
-  @ApiProperty({ type: RestResponseContentSymple, isArray: true })
-  referencedContents!: RestResponseContentSymple[];
+  @ApiProperty({ type: RestContentSimpleResponse, isArray: true })
+  referencedContents!: RestContentSimpleResponse[];
 
   @ApiPropertyOptional({ type: "string" })
   thumbnailRelativePath?: string;
@@ -34,8 +34,8 @@ export class RestResponseContentDetail {
   @ApiProperty({ type: "number" })
   numComments!: number;
 
-  @ApiProperty({ type: RestResponseComment, isArray: true })
-  topComments!: RestResponseComment[];
+  @ApiProperty({ type: RestCommentResponse, isArray: true })
+  topComments!: RestCommentResponse[];
 
   @ApiProperty({ type: "number" })
   createdTimestamp!: number;

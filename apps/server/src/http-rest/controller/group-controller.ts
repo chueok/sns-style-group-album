@@ -13,8 +13,8 @@ import { RestResponse } from "./documentation/common/rest-response";
 import { Code } from "@repo/be-core";
 import { ApiResponseGeneric } from "./documentation/decorator/api-response-generic";
 import { RestGetGroupListQuery } from "./documentation/group/get-group-list-query";
-import { RestResponseGroupSymple } from "./documentation/group/response-group-symple";
-import { RestResponseGroupDetail } from "./documentation/group/response-group-detail";
+import { RestGroupSimpleResponse } from "./documentation/group/group-simple-response";
+import { RestGroupResponse } from "./documentation/group/group-response";
 import { RestCreateGroupBody } from "./documentation/group/create-group-body";
 import { RestEditGroupBody } from "./documentation/group/edit-group-body";
 
@@ -22,22 +22,22 @@ import { RestEditGroupBody } from "./documentation/group/edit-group-body";
 @ApiTags("groups")
 export class GroupController {
   @Get(":groupId")
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestResponseGroupDetail })
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestGroupResponse })
   async getGroup(
     @Param("groupId") groupId: string,
-  ): Promise<RestResponse<RestResponseGroupDetail | null>> {
+  ): Promise<RestResponse<RestGroupResponse | null>> {
     throw new Error("Not implemented");
   }
 
   @Get()
   @ApiResponseGeneric({
     code: Code.SUCCESS,
-    data: RestResponseGroupSymple,
+    data: RestGroupSimpleResponse,
     isArray: true,
   })
   async getGroupList(
     @Query() query: RestGetGroupListQuery,
-  ): Promise<RestResponseGroupSymple[] | null> {
+  ): Promise<RestGroupSimpleResponse[] | null> {
     throw new Error("Not implemented");
   }
 
@@ -50,19 +50,19 @@ export class GroupController {
   }
 
   @Patch(":groupId")
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestResponseGroupDetail })
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestGroupResponse })
   async editGroup(
     @Param("groupId") groupId: string,
     @Body() body: RestEditGroupBody,
-  ): Promise<RestResponse<RestResponseGroupDetail | null>> {
+  ): Promise<RestResponse<RestGroupResponse | null>> {
     throw new Error("Not implemented");
   }
 
   @Post()
-  @ApiResponseGeneric({ code: Code.CREATED, data: RestResponseGroupDetail })
+  @ApiResponseGeneric({ code: Code.CREATED, data: RestGroupResponse })
   async createGroup(
     @Body() body: RestCreateGroupBody,
-  ): Promise<RestResponse<RestResponseGroupDetail | null>> {
+  ): Promise<RestResponse<RestGroupResponse | null>> {
     throw new Error("Not implemented");
   }
 }

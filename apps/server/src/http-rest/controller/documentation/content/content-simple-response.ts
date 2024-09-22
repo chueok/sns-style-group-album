@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { ContentTypeEnum } from "@repo/be-core";
 
-export class RestResponseContentSymple {
+export class RestContentSimpleResponse {
   @ApiProperty({ type: "string" })
   id!: string;
 
