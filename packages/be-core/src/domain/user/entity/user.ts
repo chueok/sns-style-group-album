@@ -4,6 +4,7 @@ import { v4 } from "uuid";
 import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
 import { Nullable } from "../../../common/type/common-types";
 import { UserId } from "./type/user-id";
+import { GroupId } from "../../group/entity/type/group-id";
 
 export class User extends EntityWithCUDTime<UserId> {
   @IsUUID()
@@ -29,6 +30,18 @@ export class User extends EntityWithCUDTime<UserId> {
     return this._thumbnailRelativePath;
   }
 
+  @IsString({ each: true })
+  private _groups: GroupId[];
+  get groups(): GroupId[] {
+    return this._groups;
+  }
+
+  @IsString({ each: true })
+  private _ownGroups: GroupId[];
+  get ownGroups(): GroupId[] {
+    return this._ownGroups;
+  }
+
   async deleteUser(): Promise<void> {
     this._deletedDateTime = new Date();
     await this.validate();
@@ -47,11 +60,19 @@ export class User extends EntityWithCUDTime<UserId> {
     this._thumbnailRelativePath = payload.thumbnailRelativePath;
     if ("id" in payload) {
       this._id = payload.id;
+
+      this._groups = payload.groups;
+      this._ownGroups = payload.ownGroups;
+
       this._createdDateTime = payload.createdDateTime;
       this._updatedDateTime = payload.updatedDateTime;
       this._deletedDateTime = payload.deletedDateTime;
     } else {
       this._id = v4() as UserId;
+
+      this._groups = [];
+      this._ownGroups = [];
+
       this._createdDateTime = new Date();
       this._updatedDateTime = null;
       this._deletedDateTime = null;

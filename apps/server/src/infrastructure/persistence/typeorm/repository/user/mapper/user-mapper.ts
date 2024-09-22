@@ -1,5 +1,14 @@
 import { CreateUserEntityPayload, User } from "@repo/be-core";
 import { TypeormUser } from "../../../entity/user/typeorm-user.entity";
+import { TypeormGroup } from "../../../entity/group/typeorm-group.entity";
+
+type ToDomainPayloadType = {
+  elements: {
+    user: TypeormUser;
+    groups: TypeormGroup[];
+    ownGroups: TypeormGroup[];
+  }[];
+};
 
 type ToDomainReturnType = {
   results: User[];
@@ -8,21 +17,28 @@ type ToDomainReturnType = {
 
 export class UserMapper {
   public static async toDomainEntity(
-    payload: TypeormUser[],
+    payload: ToDomainPayloadType,
   ): Promise<ToDomainReturnType> {
     const results: User[] = [];
     const errors: Error[] = [];
 
-    const promiseList = payload.map(async (item) => {
-      const userPayload: CreateUserEntityPayload<"existing"> = {
-        username: item.username,
-        email: item.email,
-        thumbnailRelativePath: item.thumbnailRelativePath,
+    const { elements } = payload;
 
-        id: item.id,
-        createdDateTime: item.createdDateTime,
-        updatedDateTime: item.updatedDateTime,
-        deletedDateTime: item.deletedDateTime,
+    const promiseList = elements.map(async (item) => {
+      const { user, groups, ownGroups } = item;
+
+      const userPayload: CreateUserEntityPayload<"existing"> = {
+        username: user.username,
+        email: user.email,
+        thumbnailRelativePath: user.thumbnailRelativePath,
+
+        groups: groups.map((group) => group.id),
+        ownGroups: ownGroups.map((group) => group.id),
+
+        id: user.id,
+        createdDateTime: user.createdDateTime,
+        updatedDateTime: user.updatedDateTime,
+        deletedDateTime: user.deletedDateTime,
       };
       return User.new(userPayload);
     });

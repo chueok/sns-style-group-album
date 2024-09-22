@@ -21,4 +21,7 @@ export class RestUserResponse {
 
   @ApiProperty({ type: "number" })
   createdTimestamp!: number;
+
+  @ApiPropertyOptional({ type: "number" })
+  updatedTimestamp?: number;
 }

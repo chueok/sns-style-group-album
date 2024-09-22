@@ -46,7 +46,17 @@ describe("UserMapper", () => {
   describe("toDomainEntity", () => {
     it("[array] should convert orm entity to domain entity", async () => {
       const ormUserList = testDatabaseHandler.getDbCacheList(TypeormUser);
-      const { results, errors } = await UserMapper.toDomainEntity(ormUserList);
+      const elements = await Promise.all(
+        ormUserList.map(async (user) => {
+          return {
+            user,
+            groups: await user.groups,
+            ownGroups: await user.ownGroups,
+          };
+        }),
+      );
+
+      const { results, errors } = await UserMapper.toDomainEntity({ elements });
       expect(ormUserList.length).toEqual(results.length);
     });
   });
@@ -55,7 +65,17 @@ describe("UserMapper", () => {
     let domainUserList: User[];
     beforeAll(async () => {
       const ormUserList = testDatabaseHandler.getDbCacheList(TypeormUser);
-      const { results, errors } = await UserMapper.toDomainEntity(ormUserList);
+      const elements = await Promise.all(
+        ormUserList.map(async (user) => {
+          return {
+            user,
+            groups: await user.groups,
+            ownGroups: await user.ownGroups,
+          };
+        }),
+      );
+
+      const { results, errors } = await UserMapper.toDomainEntity({ elements });
       domainUserList = results;
     });
     it("[array] should convert domain entity to orm entity", async () => {

@@ -38,11 +38,18 @@ export class TypeormUserRepository implements IUserRepository {
   }
 
   async findUserById(id: UserId): Promise<Nullable<User>> {
-    const ormUser = await this.typeormUserRepository.findOneBy({ id });
+    const ormUser = await this.typeormUserRepository.findOne({
+      where: { id },
+      relations: { groups: true, ownGroups: true },
+    });
     if (!ormUser) {
       return null;
     }
-    const { results, errors } = await UserMapper.toDomainEntity([ormUser]);
+    const groups = await ormUser.groups;
+    const ownGroups = await ormUser.ownGroups;
+    const { results, errors } = await UserMapper.toDomainEntity({
+      elements: [{ user: ormUser, groups, ownGroups }],
+    });
     errors.forEach((error) => {
       this.logger.error(error);
     });
@@ -56,13 +63,18 @@ export class TypeormUserRepository implements IUserRepository {
     const ormUser = await this.typeormUserRepository
       .createQueryBuilder("user")
       .innerJoinAndSelect("user.groups", "group")
+      .leftJoinAndSelect("user.ownGroups", "ownGroup")
       .where("group.id = :groupId", { groupId: payload.groupId })
       .andWhere("user.username = :username", { username: payload.username })
       .getOne();
     if (!ormUser) {
       return null;
     }
-    const { results, errors } = await UserMapper.toDomainEntity([ormUser]);
+    const groups = await ormUser.groups;
+    const ownGroups = await ormUser.ownGroups;
+    const { results, errors } = await UserMapper.toDomainEntity({
+      elements: [{ user: ormUser, groups, ownGroups }],
+    });
     errors.forEach((error) => {
       this.logger.error(error);
     });
@@ -73,10 +85,21 @@ export class TypeormUserRepository implements IUserRepository {
     const ormUsers = await this.typeormUserRepository
       .createQueryBuilder("user")
       .innerJoinAndSelect("user.groups", "group")
+      .leftJoinAndSelect("user.ownGroups", "ownGroup")
       .where("group.id = :groupId", { groupId })
       .getMany();
 
-    const { results, errors } = await UserMapper.toDomainEntity(ormUsers);
+    const elements = await Promise.all(
+      ormUsers.map(async (ormUser) => {
+        return {
+          user: ormUser,
+          groups: await ormUser.groups,
+          ownGroups: await ormUser.ownGroups,
+        };
+      }),
+    );
+
+    const { results, errors } = await UserMapper.toDomainEntity({ elements });
     errors.forEach((error) => {
       this.logger.error(error);
     });
@@ -91,6 +114,8 @@ export class TypeormUserRepository implements IUserRepository {
     const ormUser = await this.typeormUserRepository
       .createQueryBuilder("user")
       .innerJoinAndSelect("user.oauths", "oauth")
+      .leftJoinAndSelect("user.groups", "group")
+      .leftJoinAndSelect("user.ownGroups", "ownGroup")
       .where("oauth.provider = :provider", { provider: payload.provider })
       .andWhere("oauth.providerId = :providerId", {
         providerId: payload.providerId,
@@ -101,7 +126,12 @@ export class TypeormUserRepository implements IUserRepository {
       return null;
     }
 
-    const { results, errors } = await UserMapper.toDomainEntity([ormUser]);
+    const groups = await ormUser.groups;
+    const ownGroups = await ormUser.ownGroups;
+
+    const { results, errors } = await UserMapper.toDomainEntity({
+      elements: [{ user: ormUser, groups, ownGroups }],
+    });
     errors.forEach((error) => {
       this.logger.error(error);
     });
