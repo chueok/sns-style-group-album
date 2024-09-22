@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUrl,
 } from "class-validator";
 import { ContentTypeEnum } from "../enum/content-type-enum";
 import { BucketStatusEnum } from "../enum/bucket-status";
@@ -47,14 +48,14 @@ export class ImageContent extends Content {
   override _type: ContentTypeEnum.IMAGE = ContentTypeEnum.IMAGE;
 
   @IsOptional()
-  @IsString()
+  @IsUrl()
   protected _largeRelativePath: Nullable<string>;
   get largeRelativePath(): Nullable<string> {
     return this._largeRelativePath;
   }
 
   @IsOptional()
-  @IsString()
+  @IsUrl()
   protected _originalRelativePath: string;
   get originalRelativePath(): string {
     return this._originalRelativePath;
