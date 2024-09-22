@@ -259,9 +259,8 @@ export class DummyDatabaseHandler {
         (instance as TypeormMedia).referred = Promise.resolve([]);
         (instance as TypeormMedia).thumbnailRelativePath =
           faker.system.filePath();
-        (instance as TypeormMedia).largeRelativePath = faker.system.filePath();
-        (instance as TypeormMedia).originalRelativePath =
-          faker.system.filePath();
+        (instance as TypeormMedia).largeRelativePath = faker.internet.url();
+        (instance as TypeormMedia).originalRelativePath = faker.internet.url();
         (instance as TypeormMedia).size = faker.number.int();
         (instance as TypeormMedia).ext = faker.system.commonFileExt();
         (instance as TypeormMedia).mimetype = faker.system.mimeType();
@@ -271,8 +270,7 @@ export class DummyDatabaseHandler {
         (instance as TypeormMedia).thumbnailRelativePath =
           faker.system.filePath();
         (instance as TypeormMedia).largeRelativePath = null;
-        (instance as TypeormMedia).originalRelativePath =
-          faker.system.filePath();
+        (instance as TypeormMedia).originalRelativePath = faker.internet.url();
         (instance as TypeormMedia).size = faker.number.int();
         (instance as TypeormMedia).ext = faker.system.commonFileExt();
         (instance as TypeormMedia).mimetype = faker.system.mimeType();
