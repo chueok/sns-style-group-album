@@ -1,6 +1,6 @@
 import { User } from "../../entity/user";
 
-export class UserDto {
+export class UserUsecaseDto {
   readonly id: string;
 
   readonly username: string;
@@ -17,7 +17,7 @@ export class UserDto {
 
   readonly updatedTimestamp?: number;
 
-  constructor(payload: UserDto) {
+  constructor(payload: UserUsecaseDto) {
     this.id = payload.id;
     this.username = payload.username;
     this.email = payload.email;
@@ -28,8 +28,8 @@ export class UserDto {
     this.updatedTimestamp = payload.updatedTimestamp;
   }
 
-  public static newFromUser(user: User): UserDto {
-    const dto: UserDto = new UserDto({
+  public static newFromUser(user: User): UserUsecaseDto {
+    const dto: UserUsecaseDto = new UserUsecaseDto({
       id: user.id,
       username: user.username,
       email: user.email || undefined,
@@ -42,7 +42,7 @@ export class UserDto {
     return dto;
   }
 
-  public static newListFromUsers(users: User[]): UserDto[] {
-    return users.map((user) => UserDto.newFromUser(user));
+  public static newListFromUsers(users: User[]): UserUsecaseDto[] {
+    return users.map((user) => UserUsecaseDto.newFromUser(user));
   }
 }

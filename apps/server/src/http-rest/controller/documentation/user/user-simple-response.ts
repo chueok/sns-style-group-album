@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { UserSimpleUsecaseDto } from "@repo/be-core";
 
-export class RestUserSimpleResponse {
+export class RestUserSimpleResponse implements UserSimpleUsecaseDto {
   @ApiProperty({ type: "string" })
   id!: string;
 

@@ -1,0 +1,74 @@
+import { Test, TestingModule } from "@nestjs/testing";
+import { basename, join } from "path";
+import { InfrastructureModule } from "../../di/infrastructure.module";
+import { INestApplication } from "@nestjs/common";
+import { AppModule } from "../../app.module";
+import request from "supertest";
+import { UserController } from "./user-controller";
+import { UserFixture } from "@test-utils/fixture/user-fixture";
+import { DataSource } from "typeorm";
+import { AuthFixture } from "@test-utils/fixture/auth-fixture";
+import { IAuthService } from "../auth/auth-service.interface";
+import { DiTokens } from "../../di/di-tokens";
+import { RestUserResponse } from "./documentation/user/user-response";
+
+const parameters = {
+  testDbPath: join("db", `${basename(__filename)}.sqlite`),
+  dummyDbPath: join("db", "dummy.sqlite"),
+};
+
+describe(`${UserController.name} e2e`, () => {
+  let app: INestApplication;
+  let userFixture: UserFixture;
+  let authFixtrue: AuthFixture;
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    })
+      .overrideModule(InfrastructureModule)
+      .useModule(
+        InfrastructureModule.forRoot({
+          database: parameters.testDbPath,
+          synchronize: false,
+          dropSchema: false,
+        }),
+      )
+      .compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+
+    const dataSource = moduleFixture.get(DataSource);
+    userFixture = new UserFixture(dataSource);
+    await userFixture.init(parameters.dummyDbPath);
+
+    const authService = moduleFixture.get<IAuthService>(DiTokens.AuthService);
+    authFixtrue = new AuthFixture(dataSource, authService);
+    await authFixtrue.init(parameters.dummyDbPath);
+  });
+
+  it("/users/:userId (GET)", async () => {
+    const { accessToken, user } =
+      await authFixtrue.get_group_owner_accessToken();
+    const result = await request(app.getHttpServer())
+      .get(`/users/${user.id}`)
+      .auth(accessToken, { type: "bearer" })
+      .expect(200);
+
+    const data = result.body.data as RestUserResponse;
+    expect(data.id).toBe(user.id);
+    expect(data.username).toBe(user.username);
+    expect(data.thumbnailRelativePath).toBe(
+      user.thumbnailRelativePath || undefined,
+    );
+    expect(data.email).toBe(user.email || undefined);
+    expect(data.groups).toEqual(
+      expect.arrayContaining((await user.groups).map((group) => group.id)),
+    );
+    expect(data.ownGroups).toEqual(
+      expect.arrayContaining((await user.ownGroups).map((group) => group.id)),
+    );
+    expect(data.createdTimestamp).toBe(user.createdDateTime.getTime());
+  });
+});

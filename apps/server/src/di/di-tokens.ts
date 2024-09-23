@@ -7,4 +7,7 @@ export class DiTokens {
 
   // service
   static readonly AuthService = Symbol("AuthService");
+
+  // usecase
+  static readonly GetUserUsecase = Symbol("GetUserUsecase");
 }

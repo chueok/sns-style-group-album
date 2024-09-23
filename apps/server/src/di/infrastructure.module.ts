@@ -11,6 +11,7 @@ import { TYPEORM_DIRECTORY } from "../infrastructure/persistence/typeorm/typeorm
 import { APP_FILTER, APP_PIPE } from "@nestjs/core";
 import { NestHttpExceptionFilter } from "../http-rest/exception-filter/NestHttpExceptionFilter";
 import { ClassValidationPipe } from "../http-rest/pipe/class-validation.pipe";
+import { GetUserUsecase, IUserRepository } from "@repo/be-core";
 
 const typeormSqliteOptions = {
   type: "sqlite",
@@ -39,6 +40,15 @@ const persistenceProviders: Provider[] = [
   {
     provide: DiTokens.CommentRepository,
     useClass: TypeormCommentRepository,
+  },
+];
+
+const usecaseProviders: Provider[] = [
+  {
+    provide: DiTokens.GetUserUsecase,
+    useFactory: (userRepository: IUserRepository) =>
+      new GetUserUsecase(userRepository),
+    inject: [DiTokens.UserRepository],
   },
 ];
 
@@ -76,12 +86,14 @@ export class InfrastructureModule {
       module: InfrastructureModule,
       global: true,
       imports: [TypeOrmModule.forRoot(options)],
-      providers: [...persistenceProviders, ...providers],
+      providers: [...persistenceProviders, ...usecaseProviders, ...providers],
       exports: [
         DiTokens.UserRepository,
         DiTokens.GroupRepository,
         DiTokens.ContentRepository,
         DiTokens.CommentRepository,
+
+        DiTokens.GetUserUsecase,
       ],
     };
   }

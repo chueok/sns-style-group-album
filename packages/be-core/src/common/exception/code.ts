@@ -96,4 +96,9 @@ export class Code {
     code: 4000,
     message: "Bad password.",
   };
+
+  public static USE_CASE_PORT_VALIDATION_ERROR: CodeDescription = {
+    code: 5000,
+    message: "Use-case port validation error.",
+  };
 }
