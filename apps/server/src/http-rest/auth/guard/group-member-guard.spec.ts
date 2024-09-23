@@ -22,7 +22,13 @@ const parameters = {
 class TestController {
   @Get(":groupId")
   @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
-  public async helloWorld() {
+  public async byParam() {
+    return "Hello World!";
+  }
+
+  @Get()
+  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
+  public async byQuery() {
     return "Hello World!";
   }
 }
@@ -67,6 +73,24 @@ describe(`${HttpGroupMemberGuard.name}`, () => {
       .get(`/test/${group.id}`)
       .auth(accessToken, { type: "bearer" })
       .expect(Code.SUCCESS.code);
+  });
+
+  it("should return 200 if groupId was delivered by query", async () => {
+    const { accessToken, group } = await fixture.get_group_member_accessToken();
+    const response = await supertest(testingServer.getHttpServer())
+      .get(`/test`)
+      .auth(accessToken, { type: "bearer" })
+      .query({ groupId: group.id })
+      .expect(Code.SUCCESS.code);
+  });
+
+  it("should return 500 if groupId was delivered both url and query", async () => {
+    const { accessToken, group } = await fixture.get_group_member_accessToken();
+    const response = await supertest(testingServer.getHttpServer())
+      .get(`/test/${group.id}`)
+      .auth(accessToken, { type: "bearer" })
+      .query({ groupId: group.id })
+      .expect(Code.INTERNAL_ERROR.code);
   });
 
   it("should return 403", async () => {

@@ -10,4 +10,7 @@ export class DiTokens {
 
   // usecase
   static readonly GetUserUsecase = Symbol("GetUserUsecase");
+  static readonly GetUserListByGroupIdUsecase = Symbol(
+    "GetUserListByGroupIdUsecase",
+  );
 }

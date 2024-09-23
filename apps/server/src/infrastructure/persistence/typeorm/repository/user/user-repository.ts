@@ -38,10 +38,14 @@ export class TypeormUserRepository implements IUserRepository {
   }
 
   async findUserById(id: UserId): Promise<Nullable<User>> {
-    const ormUser = await this.typeormUserRepository.findOne({
-      where: { id },
-      relations: { groups: true, ownGroups: true },
-    });
+    const ormUser = await this.typeormUserRepository
+      .createQueryBuilder("user")
+      .leftJoinAndSelect("user.groups", "group")
+      .leftJoinAndSelect("user.ownGroups", "ownGroup")
+      .where("user.id = :id", { id })
+      .andWhere("user.deletedDateTime is null")
+      .getOne();
+
     if (!ormUser) {
       return null;
     }
@@ -66,6 +70,7 @@ export class TypeormUserRepository implements IUserRepository {
       .leftJoinAndSelect("user.ownGroups", "ownGroup")
       .where("group.id = :groupId", { groupId: payload.groupId })
       .andWhere("user.username = :username", { username: payload.username })
+      .andWhere("user.deletedDateTime is null")
       .getOne();
     if (!ormUser) {
       return null;
@@ -87,6 +92,7 @@ export class TypeormUserRepository implements IUserRepository {
       .innerJoinAndSelect("user.groups", "group")
       .leftJoinAndSelect("user.ownGroups", "ownGroup")
       .where("group.id = :groupId", { groupId })
+      .andWhere("user.deletedDateTime is null")
       .getMany();
 
     const elements = await Promise.all(
@@ -120,6 +126,7 @@ export class TypeormUserRepository implements IUserRepository {
       .andWhere("oauth.providerId = :providerId", {
         providerId: payload.providerId,
       })
+      .andWhere("user.deletedDateTime is null")
       .getOne();
 
     if (!ormUser) {

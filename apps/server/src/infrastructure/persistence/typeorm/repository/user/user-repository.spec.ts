@@ -8,6 +8,8 @@ import { UserMapper } from "./mapper/user-mapper";
 import { IUserRepository, User, UserId } from "@repo/be-core";
 import { Test, TestingModule } from "@nestjs/testing";
 import { InfrastructureModule } from "../../../../../di/infrastructure.module";
+import { UserFixture } from "@test-utils/fixture/user-fixture";
+import assert from "assert";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -19,7 +21,8 @@ describe("UserRepository", () => {
   let dataSource: DataSource;
   let testDatabaseHandler: DummyDatabaseHandler;
   let userRepository: IUserRepository;
-  let targetOrmUser: TypeormUser;
+
+  let userFixture: UserFixture;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -40,7 +43,8 @@ describe("UserRepository", () => {
 
     await testDatabaseHandler.load(parameters.dummyDbPath);
 
-    targetOrmUser = testDatabaseHandler.getDbCacheList(TypeormUser).at(-1)!;
+    userFixture = new UserFixture(dataSource);
+    await userFixture.init(parameters.dummyDbPath);
   });
 
   afterAll(async () => {
@@ -50,10 +54,11 @@ describe("UserRepository", () => {
 
   describe("findUserById", () => {
     it("should find a user by id", async () => {
-      const user = await userRepository.findUserById(targetOrmUser.id);
+      const targetUser = await userFixture.getValidUser();
+      const user = await userRepository.findUserById(targetUser.id);
       expect(user).not.toBeNull();
       expect(user).toBeInstanceOf(User);
-      expect(user!.id).toEqual(targetOrmUser.id);
+      expect(user!.id).toEqual(targetUser.id);
     });
 
     it("should not find a user by id when an error occurs", async () => {
@@ -65,8 +70,11 @@ describe("UserRepository", () => {
   describe("findUserByGroupId", () => {
     let group: TypeormGroup;
     beforeAll(async () => {
-      const groups = await targetOrmUser.groups;
-      group = groups[0]!;
+      const targetGroup = testDatabaseHandler
+        .getDbCacheList(TypeormGroup)
+        .at(0);
+      assert(targetGroup, "targetGroup is null");
+      group = targetGroup;
     });
 
     it("should find users by group id", async () => {
@@ -83,40 +91,43 @@ describe("UserRepository", () => {
   });
 
   describe("findUserByUsernameOfGroup", () => {
+    let user: TypeormUser;
     let group: TypeormGroup;
 
     beforeAll(async () => {
-      const groups = await targetOrmUser.groups;
-      group = groups[0]!;
+      user = await userFixture.getValidUser();
+      const targetGroup = (await user.groups).at(0);
+      assert(targetGroup, "targetGroup is null");
+      group = targetGroup;
     });
 
     it("should find a user by username of group", async () => {
-      const user = await userRepository.findUserByUsernameOfGroup({
-        username: targetOrmUser.username,
+      const foundUser = await userRepository.findUserByUsernameOfGroup({
+        username: user.username,
         groupId: group.id,
       });
-      expect(user).not.toBeNull();
-      expect(user!.id).toEqual(targetOrmUser.id);
+      expect(foundUser).not.toBeNull();
+      expect(foundUser!.id).toEqual(user.id);
     });
 
     it("should not find a user by username of group when an error occurs", async () => {
-      const user = await userRepository.findUserByUsernameOfGroup({
-        username: targetOrmUser.username,
+      const foundUser = await userRepository.findUserByUsernameOfGroup({
+        username: user.username,
         groupId: "invalid",
       });
-      expect(user).toBeNull();
+      expect(foundUser).toBeNull();
 
-      const user2 = await userRepository.findUserByUsernameOfGroup({
+      const foundUser2 = await userRepository.findUserByUsernameOfGroup({
         username: "invalid",
         groupId: group.id,
       });
-      expect(user2).toBeNull();
+      expect(foundUser2).toBeNull();
     });
   });
 
   describe("createUser", () => {
     it("should create a user", async () => {
-      const dummyOrmUser = testDatabaseHandler.makeDummyUser();
+      const dummyOrmUser = testDatabaseHandler.makeDummyUser(false);
       const { results, errors } = (await UserMapper.toDomainEntity({
         elements: [{ user: dummyOrmUser, ownGroups: [], groups: [] }],
       }))!;
@@ -132,7 +143,7 @@ describe("UserRepository", () => {
     });
 
     it("should not create a user when an error occurs", async () => {
-      const dummyOrmUser = testDatabaseHandler.makeDummyUser();
+      const dummyOrmUser = testDatabaseHandler.makeDummyUser(false);
       const { results, errors } = (await UserMapper.toDomainEntity({
         elements: [{ user: dummyOrmUser, ownGroups: [], groups: [] }],
       }))!;
@@ -146,10 +157,12 @@ describe("UserRepository", () => {
 
   describe("updateUser", () => {
     it("should update a user", async () => {
-      const groups = await targetOrmUser.groups;
-      const ownGroups = await targetOrmUser.ownGroups;
+      const user = await userFixture.getValidUser();
+
+      const groups = await user.groups;
+      const ownGroups = await user.ownGroups;
       const { results, errors } = (await UserMapper.toDomainEntity({
-        elements: [{ user: targetOrmUser, groups, ownGroups }],
+        elements: [{ user, groups, ownGroups }],
       }))!;
       const domainUser = results[0]!;
       await domainUser.changeUsername("new-username");

@@ -75,13 +75,17 @@ export class DummyDatabaseHandler {
 
   async buildDummyData(payload: {
     numUser: number;
+    numDeletedUser: number;
     numGroup: number;
     numContent: number;
     numComment: number;
     numLike: number;
   }): Promise<void> {
     for (let i = 0; i < payload.numUser; i++) {
-      this.makeDummyUser();
+      this.makeDummyUser(false);
+    }
+    for (let i = 0; i < payload.numDeletedUser; i++) {
+      this.makeDummyUser(true);
     }
     for (let i = 0; i < payload.numGroup; i++) {
       this.makeDummyGroup();
@@ -137,7 +141,7 @@ export class DummyDatabaseHandler {
     });
   }
 
-  makeDummyUser(): TypeormUser {
+  makeDummyUser(isDeleted?: boolean): TypeormUser {
     const typeormEntity = new TypeormUser();
     typeormEntity.id = faker.string.uuid() as UserId;
     typeormEntity.username = faker.internet.userName();
@@ -150,8 +154,14 @@ export class DummyDatabaseHandler {
 
     typeormEntity.createdDateTime = faker.date.past();
     typeormEntity.updatedDateTime = getRandomElement([null, faker.date.past()]);
-    typeormEntity.deletedDateTime = getRandomElement([null, faker.date.past()]);
-
+    if (isDeleted === undefined) {
+      typeormEntity.deletedDateTime = getRandomElement([
+        faker.date.past(),
+        null,
+      ]);
+    } else {
+      typeormEntity.deletedDateTime = isDeleted ? faker.date.past() : null;
+    }
     this.getTemporaryEntityList(TypeormUser).push(typeormEntity);
 
     return typeormEntity;
@@ -167,17 +177,21 @@ export class DummyDatabaseHandler {
     typeormEntity.id = faker.string.uuid() as GroupId;
     typeormEntity.name = faker.internet.userName();
 
-    const owner = getRandomElement(userList);
+    const owner = getRandomElement(
+      userList.filter((user) => !user.deletedDateTime),
+    );
     typeormEntity.owner = Promise.resolve(owner);
 
-    const members = new Set<TypeormUser>();
-    userList.forEach((user) => {
-      const random = getRandomElement([user, null]);
-      if (random) {
-        members.add(random);
-      }
-    });
-    members.add(owner); // owner는 멤버에 포함
+    const members: TypeormUser[] = [];
+    members.push(owner); // owner는 멤버에 포함
+    userList
+      .filter((user) => !user.deletedDateTime)
+      .forEach((user) => {
+        const random = getRandomElement([user, null]);
+        if (random && !members.includes(random)) {
+          members.push(random);
+        }
+      });
     typeormEntity.members = Promise.resolve(Array.from(members));
 
     typeormEntity.createdDateTime = faker.date.past();

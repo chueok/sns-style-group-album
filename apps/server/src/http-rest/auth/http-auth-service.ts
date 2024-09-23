@@ -174,7 +174,7 @@ export class HttpAuthService implements IAuthService {
     const isInGroup =
       (await this.typeormUserRepository
         .createQueryBuilder("user")
-        .innerJoinAndSelect("user.groups", "group")
+        .leftJoinAndSelect("user.groups", "group")
         .where("user.id = :userId", { userId })
         .andWhere("user.deletedDateTime is null")
         .andWhere("group.id = :groupId", { groupId })

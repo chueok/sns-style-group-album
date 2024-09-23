@@ -6,6 +6,7 @@ export async function makeDummyDB(
   dbPath: string,
   nums: {
     numUser: number;
+    numDeletedUser: number;
     numGroup: number;
     numContent: number;
     numComment: number;
@@ -27,6 +28,7 @@ export async function makeDummyDB(
 
   await testDatabaseHandler.buildDummyData({
     numUser: nums.numUser,
+    numDeletedUser: nums.numDeletedUser,
     numGroup: nums.numGroup,
     numContent: nums.numContent,
     numComment: nums.numComment,

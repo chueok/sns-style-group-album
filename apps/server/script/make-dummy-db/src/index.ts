@@ -7,6 +7,7 @@ const entitiesPath = join(rootPath, "src", "**", "*.entity.{ts,js}");
 const dbPath = join(rootPath, "db", "dummy.sqlite");
 const nums = {
   numUser: 10,
+  numDeletedUser: 2,
   numGroup: 3,
   numContent: 200,
   numComment: 1000,

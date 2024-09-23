@@ -53,12 +53,17 @@ describe("TestDatabaseHandler", () => {
 
     await testDatabaseHandler.commit();
 
-    const foundUser = await dataSource.getRepository(TypeormUser).find();
-    expect(foundUser[0]).not.toBeNull();
-    expect(foundUser[0]?.id).toBe(dummyUser.id);
+    const foundUser = await dataSource
+      .getRepository(TypeormUser)
+      .findOneBy({ id: dummyUser.id });
+    expect(foundUser).not.toBeNull();
+    expect(foundUser?.id).toBe(dummyUser.id);
   });
 
   it("should create a dummy group", async () => {
+    // for group owner
+    testDatabaseHandler.makeDummyUser(false);
+
     const dummyGroup = testDatabaseHandler.makeDummyGroup();
     expect(dummyGroup instanceof TypeormGroup).toBe(true);
 
@@ -73,6 +78,9 @@ describe("TestDatabaseHandler", () => {
   });
 
   it("should create a dummy content", async () => {
+    testDatabaseHandler.makeDummyUser(false);
+    testDatabaseHandler.makeDummyGroup();
+
     const dummyContent = await testDatabaseHandler.makeDummyContent();
     expect(dummyContent instanceof TypeormContent).toBe(true);
 
@@ -87,6 +95,10 @@ describe("TestDatabaseHandler", () => {
   });
 
   it("should create a dummy comment", async () => {
+    testDatabaseHandler.makeDummyUser(false);
+    testDatabaseHandler.makeDummyGroup();
+    testDatabaseHandler.makeDummyContent();
+
     const dummyComment = testDatabaseHandler.makeDummyComment();
     expect(dummyComment instanceof TypeormComment).toBe(true);
 
@@ -107,6 +119,7 @@ describe("TestDatabaseHandler", () => {
     it("shoud create many dummies", async () => {
       const payload = {
         numUser: 10,
+        numDeletedUser: 5,
         numGroup: 10,
         numContent: 10,
         numComment: 10,
@@ -126,7 +139,7 @@ describe("TestDatabaseHandler", () => {
         .getRepository(TypeormComment)
         .find();
 
-      expect(foundUsers.length).toBe(payload.numUser);
+      expect(foundUsers.length).toBe(payload.numUser + payload.numDeletedUser);
       expect(foundGroups.length).toBe(payload.numGroup);
       expect(foundContents.length).toBe(payload.numContent);
       expect(foundComments.length).toBe(payload.numComment);

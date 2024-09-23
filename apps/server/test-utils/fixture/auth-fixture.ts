@@ -24,13 +24,52 @@ export class AuthFixture {
     await this.dbHandler.load(dbLoadPath);
   }
 
+  public async get_validUser_accessToken(): Promise<{
+    user: TypeormUser;
+    accessToken: string;
+  }> {
+    const user = this.dbHandler
+      .getDbCacheList(TypeormUser)
+      .filter((user) => user.deletedDateTime === null)
+      .at(0);
+    assert(!!user, "there is no valid user");
+
+    const loginToken = await this.authService.getLoginToken({
+      id: user.id,
+      username: user.username,
+      thumbnailRelativePath: user.thumbnailRelativePath,
+    });
+    return { user, accessToken: loginToken.accessToken };
+  }
+
+  public async get_deletedUser_accessToken(): Promise<{
+    user: TypeormUser;
+    accessToken: string;
+  }> {
+    const user = this.dbHandler
+      .getDbCacheList(TypeormUser)
+      .filter((user) => user.deletedDateTime !== null)
+      .at(0);
+    assert(!!user, "there is no deleted user");
+
+    const loginToken = await this.authService.getLoginToken({
+      id: user.id,
+      username: user.username,
+      thumbnailRelativePath: user.thumbnailRelativePath,
+    });
+    return { user, accessToken: loginToken.accessToken };
+  }
+
   public async get_invalidAccessToken_validUser_invalidScretKey(): Promise<{
     accessToken: string;
     user: TypeormUser;
   }> {
     assert(!!this.jwtService, "jwtService is not exist");
 
-    const validUser = this.dbHandler.getDbCacheList(TypeormUser).at(0);
+    const validUser = this.dbHandler
+      .getDbCacheList(TypeormUser)
+      .filter((user) => user.deletedDateTime === null)
+      .at(0);
     assert(!!validUser, "user list is empty");
 
     const payload: HttpJwtUserPayload = {
@@ -72,12 +111,20 @@ export class AuthFixture {
     group: TypeormGroup;
   }> {
     const groupList = this.dbHandler.getDbCacheList(TypeormGroup);
-    const group = groupList.find(async (group) => {
-      (await group.members).length > 1;
-    });
-    assert(group, "group not found");
-    const user = (await group.members)
-      .filter((member) => member.id !== group.ownerId)
+
+    let targetGroup: TypeormGroup | null = null;
+    for (const group of groupList) {
+      if ((await group.members).length > 1) {
+        targetGroup = group;
+      }
+    }
+    assert(targetGroup, "group not found");
+
+    const user = (await targetGroup.members)
+      .filter((member) => {
+        const result: boolean = member.id !== targetGroup.ownerId;
+        return result;
+      })
       .at(0);
     assert(user, "user not found");
 
@@ -90,7 +137,7 @@ export class AuthFixture {
     return {
       accessToken: loginToken.accessToken,
       user,
-      group,
+      group: targetGroup,
     };
   }
 

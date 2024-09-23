@@ -14,9 +14,21 @@ export class UserFixture {
     await this.dbHandler.load(dbLoadPath);
   }
 
-  async getAnyUser(): Promise<TypeormUser> {
-    const user = this.dbHandler.getDbCacheList(TypeormUser).at(0);
-    assert(!!user, "user list is empty");
+  async getValidUser(): Promise<TypeormUser> {
+    const user = this.dbHandler
+      .getDbCacheList(TypeormUser)
+      .filter((user) => user.deletedDateTime === null)
+      .at(0);
+    assert(!!user, "there is no valid user");
+    return user;
+  }
+
+  async getDeletedUser(): Promise<TypeormUser> {
+    const user = this.dbHandler
+      .getDbCacheList(TypeormUser)
+      .filter((user) => user.deletedDateTime !== null)
+      .at(0);
+    assert(!!user, "there is no deleted user");
     return user;
   }
 }

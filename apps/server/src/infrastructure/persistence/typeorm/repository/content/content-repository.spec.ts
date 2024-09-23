@@ -8,6 +8,7 @@ import { TypeormGroup } from "../../entity/group/typeorm-group.entity";
 import { ContentTypeEnum } from "@repo/be-core";
 import { Test, TestingModule } from "@nestjs/testing";
 import { InfrastructureModule } from "../../../../../di/infrastructure.module";
+import { UserFixture } from "@test-utils/fixture/user-fixture";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -19,6 +20,7 @@ describe("ContentRepository", () => {
   let dataSource: DataSource;
   let testDatabaseHandler: DummyDatabaseHandler;
   let contentRepository: TypeormContentRepository;
+  let userFixture: UserFixture;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -36,6 +38,9 @@ describe("ContentRepository", () => {
     await testDatabaseHandler.load(parameters.dummyDbPath);
 
     contentRepository = new TypeormContentRepository(dataSource);
+
+    userFixture = new UserFixture(dataSource);
+    await userFixture.init(parameters.dummyDbPath);
   });
 
   afterAll(async () => {
@@ -168,7 +173,7 @@ describe("ContentRepository", () => {
     let targetOrmUser: TypeormUser;
     let targetGroup: TypeormGroup;
     beforeAll(async () => {
-      targetOrmUser = testDatabaseHandler.getDbCacheList(TypeormUser).at(-1)!;
+      targetOrmUser = await userFixture.getValidUser();
       targetGroup = (await targetOrmUser.groups).at(-1)!;
     });
 

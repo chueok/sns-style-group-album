@@ -63,11 +63,22 @@ describe(`${HttpJwtAuthGuard.name}`, () => {
   });
 
   it("should return 200 in happy path", async () => {
-    const { accessToken, user } = await fixture.get_group_owner_accessToken();
+    const { accessToken, user } = await fixture.get_validUser_accessToken();
+    expect(user.deletedDateTime).toBeNull();
     const response = await supertest(testingServer.getHttpServer())
       .get(`/test`)
       .auth(accessToken, { type: "bearer" })
       .expect(Code.SUCCESS.code);
+  });
+
+  it("should return 401, if user was deleted", async () => {
+    const { accessToken, user } = await fixture.get_deletedUser_accessToken();
+    expect(user.deletedDateTime).not.toBeNull();
+
+    const response = await supertest(testingServer.getHttpServer())
+      .get(`/test`)
+      .auth(accessToken, { type: "bearer" })
+      .expect(Code.UNAUTHORIZED_ERROR.code);
   });
 
   it("should return 401 when accessToken is not valid", async () => {
