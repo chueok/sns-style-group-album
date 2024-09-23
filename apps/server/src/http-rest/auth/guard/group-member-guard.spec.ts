@@ -75,22 +75,22 @@ describe(`${HttpGroupMemberGuard.name}`, () => {
       .expect(Code.SUCCESS.code);
   });
 
-  it("should return 200 if groupId was delivered by query", async () => {
+  it("should return 403 if groupId was delivered by query", async () => {
     const { accessToken, group } = await fixture.get_group_member_accessToken();
     const response = await supertest(testingServer.getHttpServer())
       .get(`/test`)
       .auth(accessToken, { type: "bearer" })
       .query({ groupId: group.id })
-      .expect(Code.SUCCESS.code);
+      .expect(Code.ACCESS_DENIED_ERROR.code);
   });
 
-  it("should return 500 if groupId was delivered both url and query", async () => {
+  it("should return 200 if groupId was delivered both url and query", async () => {
     const { accessToken, group } = await fixture.get_group_member_accessToken();
     const response = await supertest(testingServer.getHttpServer())
       .get(`/test/${group.id}`)
       .auth(accessToken, { type: "bearer" })
       .query({ groupId: group.id })
-      .expect(Code.INTERNAL_ERROR.code);
+      .expect(Code.SUCCESS.code);
   });
 
   it("should return 403", async () => {

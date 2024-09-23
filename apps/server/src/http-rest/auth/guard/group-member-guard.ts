@@ -7,7 +7,6 @@ import {
 import { HttpRequestWithUser } from "../type/http-user";
 import { IAuthService } from "../auth-service.interface";
 import { DiTokens } from "../../../di/di-tokens";
-import { Code, CustomAssert, Exception } from "@repo/be-core";
 
 @Injectable()
 export class HttpGroupMemberGuard implements CanActivate {
@@ -22,15 +21,7 @@ export class HttpGroupMemberGuard implements CanActivate {
       return false;
     }
 
-    CustomAssert.isFalse(
-      (request as any)?.params?.groupId && (request as any)?.query?.groupId,
-      Exception.new({
-        code: Code.INTERNAL_ERROR,
-        overrideMessage: "api design error",
-      }),
-    );
-    const groupId =
-      (request as any)?.params?.groupId || (request as any)?.query?.groupId;
+    const groupId = (request as any)?.params?.groupId;
 
     if (!groupId || typeof groupId !== "string") {
       return false;

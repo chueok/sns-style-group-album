@@ -12,7 +12,7 @@ import { APP_FILTER, APP_PIPE } from "@nestjs/core";
 import { NestHttpExceptionFilter } from "../http-rest/exception-filter/NestHttpExceptionFilter";
 import { ClassValidationPipe } from "../http-rest/pipe/class-validation.pipe";
 import {
-  GetUserListByGroupIdUsecase,
+  GetGroupMembersUsecase,
   GetUserUsecase,
   IUserRepository,
 } from "@repo/be-core";
@@ -57,7 +57,7 @@ const usecaseProviders: Provider[] = [
   {
     provide: DiTokens.GetUserListByGroupIdUsecase,
     useFactory: (userRepository: IUserRepository) =>
-      new GetUserListByGroupIdUsecase(userRepository),
+      new GetGroupMembersUsecase(userRepository),
     inject: [DiTokens.UserRepository],
   },
 ];
