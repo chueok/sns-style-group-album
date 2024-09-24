@@ -145,4 +145,20 @@ export class TypeormUserRepository implements IUserRepository {
 
     return results[0] || null;
   }
+
+  async deleteUserById(id: string): Promise<boolean> {
+    const result = await this.typeormUserRepository.exists({
+      where: { id: id as UserId },
+    });
+    if (!result) {
+      return false;
+    }
+
+    return this.typeormUserRepository
+      .update(id, {
+        deletedDateTime: new Date(),
+      })
+      .catch(() => false)
+      .then(() => true);
+  }
 }

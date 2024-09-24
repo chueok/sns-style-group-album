@@ -20,5 +20,5 @@ export interface IUserRepository {
     providerId: string;
   }): Promise<Nullable<User>>;
 
-  // delete is not supported
+  deleteUserById(id: string): Promise<boolean>;
 }
