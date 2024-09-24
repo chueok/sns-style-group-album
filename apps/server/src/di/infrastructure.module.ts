@@ -12,6 +12,7 @@ import { APP_FILTER, APP_PIPE } from "@nestjs/core";
 import { NestHttpExceptionFilter } from "../http-rest/exception-filter/NestHttpExceptionFilter";
 import { ClassValidationPipe } from "../http-rest/pipe/class-validation.pipe";
 import {
+  DeleteUserUsecase,
   GetGroupMembersUsecase,
   GetUserUsecase,
   IUserRepository,
@@ -55,9 +56,15 @@ const usecaseProviders: Provider[] = [
     inject: [DiTokens.UserRepository],
   },
   {
-    provide: DiTokens.GetUserListByGroupIdUsecase,
+    provide: DiTokens.GetGroupMemberUsecase,
     useFactory: (userRepository: IUserRepository) =>
       new GetGroupMembersUsecase(userRepository),
+    inject: [DiTokens.UserRepository],
+  },
+  {
+    provide: DiTokens.DeleteUserUsecase,
+    useFactory: (userRepository: IUserRepository) =>
+      new DeleteUserUsecase(userRepository),
     inject: [DiTokens.UserRepository],
   },
 ];
@@ -104,7 +111,8 @@ export class InfrastructureModule {
         DiTokens.CommentRepository,
 
         DiTokens.GetUserUsecase,
-        DiTokens.GetUserListByGroupIdUsecase,
+        DiTokens.GetGroupMemberUsecase,
+        DiTokens.DeleteUserUsecase,
       ],
     };
   }

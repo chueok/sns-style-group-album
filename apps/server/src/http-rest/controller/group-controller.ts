@@ -32,8 +32,8 @@ import { DiTokens } from "../../di/di-tokens";
 @ApiTags("groups")
 export class GroupController {
   constructor(
-    @Inject(DiTokens.GetUserListByGroupIdUsecase)
-    private readonly getUserListByGroupIdUsecase: GetGroupMembersUsecase,
+    @Inject(DiTokens.GetGroupMemberUsecase)
+    private readonly getGroupMemberUsecase: GetGroupMembersUsecase,
   ) {}
 
   @Get(":groupId")
@@ -95,7 +95,7 @@ export class GroupController {
       groupId: groupId,
     });
 
-    const userList = await this.getUserListByGroupIdUsecase.execute(adapter);
+    const userList = await this.getGroupMemberUsecase.execute(adapter);
 
     return RestResponse.success(userList);
   }

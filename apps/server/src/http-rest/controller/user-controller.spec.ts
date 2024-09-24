@@ -71,4 +71,13 @@ describe(`${UserController.name} e2e`, () => {
     );
     expect(data.createdTimestamp).toBe(user.createdDateTime.getTime());
   });
+
+  it("/users/:userId (DELETE)", async () => {
+    const { accessToken, user } = await authFixtrue.get_validUser_accessToken();
+
+    await request(app.getHttpServer())
+      .delete(`/users/${user.id}`)
+      .auth(accessToken, { type: "bearer" })
+      .expect(200);
+  });
 });

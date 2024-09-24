@@ -11,7 +11,13 @@ import {
 import { ApiTags } from "@nestjs/swagger";
 import { RestResponse } from "./documentation/common/rest-response";
 import { RestUserResponse } from "./documentation/user/user-response";
-import { Code, GetUserAdaptor, GetUserUsecase } from "@repo/be-core";
+import {
+  Code,
+  DeleteUserAdapter,
+  DeleteUserUsecase,
+  GetUserAdaptor,
+  GetUserUsecase,
+} from "@repo/be-core";
 import { ApiResponseGeneric } from "./documentation/decorator/api-response-generic";
 import { RestEditUserBody } from "./documentation/user/edit-user-body";
 import { DiTokens } from "../../di/di-tokens";
@@ -23,6 +29,8 @@ export class UserController {
   constructor(
     @Inject(DiTokens.GetUserUsecase)
     private readonly getUserUsecase: GetUserUsecase,
+    @Inject(DiTokens.DeleteUserUsecase)
+    private readonly deleteUserUsecase: DeleteUserUsecase,
   ) {}
 
   @Get(":userId")
@@ -39,11 +47,16 @@ export class UserController {
   }
 
   @Delete(":userId")
+  @UseGuards(HttpJwtAuthGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
   async deleteUser(
     @Param("userId") userId: string,
   ): Promise<RestResponse<null>> {
-    throw new Error("Not implemented");
+    const adapter = await DeleteUserAdapter.new({ id: userId });
+
+    await this.deleteUserUsecase.execute(adapter);
+
+    return RestResponse.success(null);
   }
 
   // TODO : profile 사진 변경 구현 필요
