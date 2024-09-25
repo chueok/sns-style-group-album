@@ -17,6 +17,7 @@ import {
   GetUserUsecase,
   IUserRepository,
 } from "@repo/be-core";
+import { MinioObjectStorageAdapter } from "../infrastructure/persistence/object-storage/minio/minio-adapter";
 
 const typeormSqliteOptions = {
   type: "sqlite",
@@ -80,6 +81,17 @@ const providers: Provider[] = [
   },
 ];
 
+const objectStorageProviders: Provider[] = [
+  {
+    provide: DiTokens.ObjectStorage,
+    useFactory: async () => {
+      const objectStorage = new MinioObjectStorageAdapter();
+      await objectStorage.init();
+      return objectStorage;
+    },
+  },
+];
+
 // NOTE : dynamic module의 object에 덮어 씌워짐
 // @Global()
 // @Module({
@@ -103,7 +115,12 @@ export class InfrastructureModule {
       module: InfrastructureModule,
       global: true,
       imports: [TypeOrmModule.forRoot(options)],
-      providers: [...persistenceProviders, ...usecaseProviders, ...providers],
+      providers: [
+        ...persistenceProviders,
+        ...usecaseProviders,
+        ...providers,
+        ...objectStorageProviders,
+      ],
       exports: [
         DiTokens.UserRepository,
         DiTokens.GroupRepository,

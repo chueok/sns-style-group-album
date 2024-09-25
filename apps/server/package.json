@@ -15,7 +15,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test:dummy": "npm run start --prefix script/make-dummy-db"
+    "test:dummy": "npm run start --prefix script/make-dummy-db",
+    "docker:local": "docker-compose --env-file docker/local.minio.env -f docker/docker-compose.local.yaml up -d"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -32,6 +33,7 @@
     "dotenv": "^16.4.5",
     "env-var": "^7.5.0",
     "lodash": "^4.17.21",
+    "minio": "^8.0.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",

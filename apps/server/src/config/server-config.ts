@@ -22,4 +22,41 @@ export class ServerConfig {
     .asString();
 
   public static readonly JWT_SECRET = get("JWT_SECRET").required().asString();
+
+  public static readonly OBJECT_STORAGE_ENDPOINT = get(
+    "OBJECT_STORAGE_ENDPOINT",
+  )
+    .required()
+    .asString();
+  public static readonly OBJECT_STORAGE_PORT = get("OBJECT_STORAGE_PORT")
+    .required()
+    .asPortNumber();
+  public static readonly OBJECT_STORAGE_ACCESS_KEY = get(
+    "OBJECT_STORAGE_ACCESS_KEY",
+  )
+    .required()
+    .asString();
+  public static readonly OBJECT_STORAGE_SECRET_KEY = get(
+    "OBJECT_STORAGE_SECRET_KEY",
+  )
+    .required()
+    .asString();
+  public static readonly OBJECT_STORAGE_USE_SSL = get("OBJECT_STORAGE_USE_SSL")
+    .required()
+    .asBool();
+  public static readonly OBJECT_STORAGE_BASE_PATH = get(
+    "OBJECT_STORAGE_BASE_PATH",
+  )
+    .required()
+    .asString();
+  public static readonly OBJECT_STORAGE_MEDIA_BUCKET = get(
+    "OBJECT_STORAGE_MEDIA_BUCKET",
+  )
+    .required()
+    .asString();
+  public static readonly OBJECT_STORAGE_PUBLIC_BUCKET = get(
+    "OBJECT_STORAGE_PUBLIC_BUCKET",
+  )
+    .required()
+    .asString();
 }

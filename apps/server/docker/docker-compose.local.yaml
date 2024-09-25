@@ -1,0 +1,25 @@
+version: '3.2'
+
+services:
+  minio_local:
+    image: minio/minio
+    entrypoint: sh
+    command: -c '
+      minio server /export --console-address ":9001" &
+      tail -f /dev/null'
+    env_file:
+      - local.minio.env
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    networks:
+      - iposter_network_local
+    volumes:
+      - minio_data_local:/var/lib/minio/data
+
+volumes:
+  minio_data_local:
+
+networks:
+  iposter_network_local:
+    driver: bridge
