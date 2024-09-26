@@ -26,7 +26,7 @@ import { TableAlias } from "../table-alias";
 @Entity(TableAlias.CONTENT)
 @TableInheritance({ column: { type: "varchar", name: "type" } })
 export class TypeormContent {
-  @PrimaryColumn()
+  @PrimaryColumn({ type: "text" })
   id!: ContentId;
 
   @ManyToOne(() => TypeormGroup, {

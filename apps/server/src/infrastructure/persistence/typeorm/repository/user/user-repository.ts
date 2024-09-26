@@ -32,7 +32,7 @@ export class TypeormUserRepository implements IUserRepository {
     if (!ormEntity) return false;
 
     return this.typeormUserRepository
-      .update(user.id, ormEntity)
+      .save(ormEntity)
       .then(() => true)
       .catch(() => false);
   }
@@ -42,6 +42,7 @@ export class TypeormUserRepository implements IUserRepository {
       .createQueryBuilder("user")
       .leftJoinAndSelect("user.groups", "group")
       .leftJoinAndSelect("user.ownGroups", "ownGroup")
+      .leftJoinAndSelect("user.groupsWithProfile", "groupsWithProfile")
       .where("user.id = :id", { id })
       .andWhere("user.deletedDateTime is null")
       .getOne();
@@ -51,8 +52,9 @@ export class TypeormUserRepository implements IUserRepository {
     }
     const groups = await ormUser.groups;
     const ownGroups = await ormUser.ownGroups;
+    const groupsWithProfile = await ormUser.groupsWithProfile;
     const { results, errors } = await UserMapper.toDomainEntity({
-      elements: [{ user: ormUser, groups, ownGroups }],
+      elements: [{ user: ormUser, groups, ownGroups, groupsWithProfile }],
     });
     errors.forEach((error) => {
       this.logger.error(error);
@@ -68,6 +70,7 @@ export class TypeormUserRepository implements IUserRepository {
       .createQueryBuilder("user")
       .innerJoinAndSelect("user.groups", "group")
       .leftJoinAndSelect("user.ownGroups", "ownGroup")
+      .leftJoinAndSelect("user.groupsWithProfile", "groupsWithProfile")
       .where("group.id = :groupId", { groupId: payload.groupId })
       .andWhere("user.username = :username", { username: payload.username })
       .andWhere("user.deletedDateTime is null")
@@ -77,8 +80,10 @@ export class TypeormUserRepository implements IUserRepository {
     }
     const groups = await ormUser.groups;
     const ownGroups = await ormUser.ownGroups;
+    const groupsWithProfile = await ormUser.groupsWithProfile;
+
     const { results, errors } = await UserMapper.toDomainEntity({
-      elements: [{ user: ormUser, groups, ownGroups }],
+      elements: [{ user: ormUser, groups, ownGroups, groupsWithProfile }],
     });
     errors.forEach((error) => {
       this.logger.error(error);
@@ -91,6 +96,7 @@ export class TypeormUserRepository implements IUserRepository {
       .createQueryBuilder("user")
       .innerJoinAndSelect("user.groups", "group")
       .leftJoinAndSelect("user.ownGroups", "ownGroup")
+      .leftJoinAndSelect("user.groupsWithProfile", "groupsWithProfile")
       .where("group.id = :groupId", { groupId })
       .andWhere("user.deletedDateTime is null")
       .getMany();
@@ -101,6 +107,7 @@ export class TypeormUserRepository implements IUserRepository {
           user: ormUser,
           groups: await ormUser.groups,
           ownGroups: await ormUser.ownGroups,
+          groupsWithProfile: await ormUser.groupsWithProfile,
         };
       }),
     );
@@ -122,6 +129,7 @@ export class TypeormUserRepository implements IUserRepository {
       .innerJoinAndSelect("user.oauths", "oauth")
       .leftJoinAndSelect("user.groups", "group")
       .leftJoinAndSelect("user.ownGroups", "ownGroup")
+      .leftJoinAndSelect("user.groupsWithProfile", "groupsWithProfile")
       .where("oauth.provider = :provider", { provider: payload.provider })
       .andWhere("oauth.providerId = :providerId", {
         providerId: payload.providerId,
@@ -135,9 +143,10 @@ export class TypeormUserRepository implements IUserRepository {
 
     const groups = await ormUser.groups;
     const ownGroups = await ormUser.ownGroups;
+    const groupsWithProfile = await ormUser.groupsWithProfile;
 
     const { results, errors } = await UserMapper.toDomainEntity({
-      elements: [{ user: ormUser, groups, ownGroups }],
+      elements: [{ user: ormUser, groups, ownGroups, groupsWithProfile }],
     });
     errors.forEach((error) => {
       this.logger.error(error);

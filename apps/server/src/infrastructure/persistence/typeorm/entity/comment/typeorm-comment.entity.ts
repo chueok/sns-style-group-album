@@ -22,10 +22,10 @@ import { TableAlias } from "../table-alias";
 @Entity(TableAlias.COMMENT)
 @TableInheritance({ column: { type: "varchar", name: "type" } })
 export class TypeormComment {
-  @PrimaryColumn()
+  @PrimaryColumn({ type: "text" })
   id!: CommentId;
 
-  @Column({ nullable: false })
+  @Column({ type: "text", enum: CommentTypeEnum, nullable: false })
   commentType!: CommentTypeEnum;
 
   @Column({ nullable: false })

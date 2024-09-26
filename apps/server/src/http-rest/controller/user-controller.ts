@@ -22,6 +22,7 @@ import { ApiResponseGeneric } from "./documentation/decorator/api-response-gener
 import { RestEditUserBody } from "./documentation/user/edit-user-body";
 import { DiTokens } from "../../di/di-tokens";
 import { HttpJwtAuthGuard } from "../auth/guard/jwt-auth-guard";
+import { EditProfileImageResponse } from "./documentation/user/edit-profile-image-response";
 
 @Controller("users")
 @ApiTags("users")
@@ -69,5 +70,12 @@ export class UserController {
   }
 
   // TODO : profile 사진 변경은 별도 API로 분리 (presigned url 제공)
-  // @Patch(":userId/profile-image")
+  @Patch(":userId/profile-image")
+  @UseGuards(HttpJwtAuthGuard)
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: EditProfileImageResponse })
+  async editProfileImage(
+    @Param("userId") userId: string,
+  ): Promise<RestResponse<EditProfileImageResponse>> {
+    throw new Error("Not implemented");
+  }
 }

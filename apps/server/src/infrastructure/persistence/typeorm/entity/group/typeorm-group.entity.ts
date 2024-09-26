@@ -12,7 +12,7 @@ import { TableAlias } from "../table-alias";
 
 @Entity(TableAlias.GROUP)
 export class TypeormGroup {
-  @PrimaryColumn()
+  @PrimaryColumn({ type: "text" })
   id!: GroupId;
 
   @Column({ nullable: false })

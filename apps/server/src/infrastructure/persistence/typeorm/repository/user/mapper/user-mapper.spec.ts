@@ -52,6 +52,7 @@ describe("UserMapper", () => {
             user,
             groups: await user.groups,
             ownGroups: await user.ownGroups,
+            groupsWithProfile: await user.groupsWithProfile,
           };
         }),
       );
@@ -71,6 +72,7 @@ describe("UserMapper", () => {
             user,
             groups: await user.groups,
             ownGroups: await user.ownGroups,
+            groupsWithProfile: await user.groupsWithProfile,
           };
         }),
       );

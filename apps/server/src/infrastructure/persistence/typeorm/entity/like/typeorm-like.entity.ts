@@ -6,7 +6,7 @@ import { ContentId, UserId } from "@repo/be-core";
 
 @Entity(TableAlias.LIKE)
 export class TypeormLike {
-  @PrimaryColumn()
+  @PrimaryColumn({ type: "text" })
   id!: string;
 
   @ManyToOne(() => TypeormContent, {

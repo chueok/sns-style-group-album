@@ -23,8 +23,25 @@ export class User extends EntityWithCUDTime<UserId> {
     return this._email;
   }
 
+  @IsUUID("all", { each: true })
+  private _groupsWithProfile: GroupId[];
+  get groupsWithProfile(): GroupId[] {
+    return this._groupsWithProfile;
+  }
+  static getProfileRelativePath(
+    user: User,
+    groupId: GroupId,
+  ): Nullable<string> {
+    const foundGroupId = user._groupsWithProfile.find((id) => id === groupId);
+    if (!foundGroupId) {
+      return null;
+    }
+    return `groups/${foundGroupId}/users/${user.id}/profile.img`;
+  }
+
   @IsOptional()
   @IsUrl()
+  // bucket/groups/groupId/users/userId/profile.img
   // TODO : presignedUrl로 바꿔줘야 하는데, 그 책임을 어디에 둬야 할까?
   // 1. User 2. 별도 use case
   // 1의 경우 개발 미스로 url 변경 후 db저장을 하게 될까 우려 됨.
@@ -59,6 +76,16 @@ export class User extends EntityWithCUDTime<UserId> {
     await this.validate();
   }
 
+  async addProfile(groupId: GroupId): Promise<void> {
+    if (this._groupsWithProfile.includes(groupId)) {
+      return;
+    }
+
+    this._groupsWithProfile.push(groupId);
+    this._updatedDateTime = new Date();
+    await this.validate();
+  }
+
   constructor(payload: CreateUserEntityPayload<"all">) {
     super();
     this._username = payload.username;
@@ -69,6 +96,7 @@ export class User extends EntityWithCUDTime<UserId> {
 
       this._groups = payload.groups;
       this._ownGroups = payload.ownGroups;
+      this._groupsWithProfile = payload.groupsWithProfile;
 
       this._createdDateTime = payload.createdDateTime;
       this._updatedDateTime = payload.updatedDateTime;
@@ -78,6 +106,7 @@ export class User extends EntityWithCUDTime<UserId> {
 
       this._groups = [];
       this._ownGroups = [];
+      this._groupsWithProfile = [];
 
       this._createdDateTime = new Date();
       this._updatedDateTime = null;

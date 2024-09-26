@@ -49,6 +49,7 @@ export class ImageContent extends Content {
 
   @IsOptional()
   @IsUrl()
+  // bucket/groups/groupId/contents/contentId/large.img
   protected _largeRelativePath: Nullable<string>;
   get largeRelativePath(): Nullable<string> {
     return this._largeRelativePath;
@@ -56,6 +57,7 @@ export class ImageContent extends Content {
 
   @IsOptional()
   @IsUrl()
+  // bucket/groups/groupId/contents/contentId/original.img
   protected _originalRelativePath: string;
   get originalRelativePath(): string {
     return this._originalRelativePath;
@@ -98,6 +100,7 @@ export class ImageContent extends Content {
 export class VideoContent extends Content {
   override _type: ContentTypeEnum.VIDEO = ContentTypeEnum.VIDEO;
 
+  // bucket/groups/groupId/contents/contentId/original.avi
   protected _originalRelativePath: string;
   get originalRelativePath(): string {
     return this._originalRelativePath;

@@ -1,4 +1,11 @@
-import { PrimaryColumn, Column, ManyToMany, Entity, OneToMany } from "typeorm";
+import {
+  PrimaryColumn,
+  Column,
+  ManyToMany,
+  Entity,
+  OneToMany,
+  JoinTable,
+} from "typeorm";
 import { TypeormGroup } from "../group/typeorm-group.entity";
 import { Nullable, UserId } from "@repo/be-core";
 import { TableAlias } from "../table-alias";
@@ -6,7 +13,7 @@ import { TypeormOauth } from "../oauth/typeorm-oauth.entity";
 
 @Entity(TableAlias.USER)
 export class TypeormUser {
-  @PrimaryColumn()
+  @PrimaryColumn({ type: "text" })
   id!: UserId;
 
   @Column({ nullable: false })
@@ -27,6 +34,10 @@ export class TypeormUser {
 
   @OneToMany(() => TypeormGroup, (group) => group.owner)
   ownGroups!: Promise<TypeormGroup[]>;
+
+  @ManyToMany(() => TypeormGroup)
+  @JoinTable({ name: "GroupsWithProfileRelation" })
+  groupsWithProfile!: Promise<TypeormGroup[]>;
 
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;

@@ -7,6 +7,7 @@ type ToDomainPayloadType = {
     user: TypeormUser;
     groups: TypeormGroup[];
     ownGroups: TypeormGroup[];
+    groupsWithProfile: TypeormGroup[];
   }[];
 };
 
@@ -25,7 +26,7 @@ export class UserMapper {
     const { elements } = payload;
 
     const promiseList = elements.map(async (item) => {
-      const { user, groups, ownGroups } = item;
+      const { user, groups, ownGroups, groupsWithProfile } = item;
 
       const userPayload: CreateUserEntityPayload<"existing"> = {
         username: user.username,
@@ -34,6 +35,7 @@ export class UserMapper {
 
         groups: groups.map((group) => group.id),
         ownGroups: ownGroups.map((group) => group.id),
+        groupsWithProfile: groupsWithProfile.map((group) => group.id),
 
         id: user.id,
         createdDateTime: user.createdDateTime,
@@ -61,6 +63,13 @@ export class UserMapper {
       typeormUser.id = item.id;
       typeormUser.username = item.username;
       typeormUser.thumbnailRelativePath = item.thumbnailRelativePath;
+
+      const groupsWithProfile = item.groupsWithProfile.map((groupId) => {
+        const group = new TypeormGroup();
+        group.id = groupId;
+        return group;
+      });
+      typeormUser.groupsWithProfile = Promise.resolve(groupsWithProfile);
 
       typeormUser.createdDateTime = item.createdDateTime;
       typeormUser.updatedDateTime = item.updatedDateTime;

@@ -129,7 +129,14 @@ describe("UserRepository", () => {
     it("should create a user", async () => {
       const dummyOrmUser = testDatabaseHandler.makeDummyUser(false);
       const { results, errors } = (await UserMapper.toDomainEntity({
-        elements: [{ user: dummyOrmUser, ownGroups: [], groups: [] }],
+        elements: [
+          {
+            user: dummyOrmUser,
+            ownGroups: [],
+            groups: [],
+            groupsWithProfile: [],
+          },
+        ],
       }))!;
       const dummyDomainUser = results[0]!;
       expect(dummyDomainUser).toBeInstanceOf(User);
@@ -145,7 +152,14 @@ describe("UserRepository", () => {
     it("should not create a user when an error occurs", async () => {
       const dummyOrmUser = testDatabaseHandler.makeDummyUser(false);
       const { results, errors } = (await UserMapper.toDomainEntity({
-        elements: [{ user: dummyOrmUser, ownGroups: [], groups: [] }],
+        elements: [
+          {
+            user: dummyOrmUser,
+            ownGroups: [],
+            groups: [],
+            groupsWithProfile: [],
+          },
+        ],
       }))!;
       const dummyDomainUser = results[0]!;
       (dummyDomainUser as any)._username = undefined;
@@ -161,8 +175,9 @@ describe("UserRepository", () => {
 
       const groups = await user.groups;
       const ownGroups = await user.ownGroups;
+      const groupsWithProfile = await user.groupsWithProfile;
       const { results, errors } = (await UserMapper.toDomainEntity({
-        elements: [{ user, groups, ownGroups }],
+        elements: [{ user, groups, ownGroups, groupsWithProfile }],
       }))!;
       const domainUser = results[0]!;
       await domainUser.changeUsername("new-username");

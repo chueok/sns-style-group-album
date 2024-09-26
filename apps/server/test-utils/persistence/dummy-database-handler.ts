@@ -112,6 +112,7 @@ export class DummyDatabaseHandler {
       this.getDbCacheList(entity).push(...savedEntities);
       this.getTemporaryEntityList(entity).length = 0;
     }
+    await this.makeGroupsWithProfileRelation();
   }
 
   async load(sourceFilePath: string): Promise<void> {
@@ -418,6 +419,35 @@ export class DummyDatabaseHandler {
 
     this.getTemporaryEntityList(TypeormComment).push(instance);
     return instance;
+  }
+
+  async makeGroupsWithProfileRelation(): Promise<void> {
+    const userList = this.getDbCacheList(TypeormUser);
+    await Promise.all(
+      userList.map(async (user) => {
+        const groups = await this.dataSource
+          .createQueryBuilder()
+          .relation(TypeormUser, "groups")
+          .of(user.id)
+          .loadMany<TypeormGroup>()
+          .catch((e) => {
+            return [];
+          });
+        await Promise.all(
+          groups.map(async (group) => {
+            const isAdd = getRandomElement([true, false]);
+            if (isAdd) {
+              await this.dataSource
+                .createQueryBuilder()
+                .relation(TypeormUser, "groupsWithProfile")
+                .of(user.id)
+                .add(group.id)
+                .catch((e) => {});
+            }
+          }),
+        );
+      }),
+    );
   }
 }
 
