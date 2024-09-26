@@ -59,7 +59,6 @@ export class UserController {
     return RestResponse.success(null);
   }
 
-  // TODO : profile 사진 변경 구현 필요
   @Patch(":userId")
   @ApiResponseGeneric({ code: Code.SUCCESS, data: RestUserResponse })
   async editUser(
@@ -68,4 +67,7 @@ export class UserController {
   ): Promise<RestResponse<RestUserResponse | null>> {
     throw new Error("Not implemented");
   }
+
+  // TODO : profile 사진 변경은 별도 API로 분리 (presigned url 제공)
+  // @Patch(":userId/profile-image")
 }

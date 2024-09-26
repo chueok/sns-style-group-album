@@ -1,11 +1,11 @@
-import { Code, Exception, IObjectStorageAdapter } from "@repo/be-core";
+import { Code, Exception, IObjectStoragePort } from "@repo/be-core";
 import { ServerConfig } from "../../../../config/server-config";
 import { Client } from "minio";
 import { MinioPolicy } from "./minio-policy";
 import { Injectable, Logger } from "@nestjs/common";
 
 @Injectable()
-export class MinioObjectStorageAdapter implements IObjectStorageAdapter {
+export class MinioObjectStorageAdapter implements IObjectStoragePort {
   private readonly basePath = ServerConfig.OBJECT_STORAGE_BASE_PATH;
   private readonly client = new Client({
     accessKey: ServerConfig.OBJECT_STORAGE_ACCESS_KEY,

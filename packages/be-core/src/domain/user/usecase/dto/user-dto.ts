@@ -28,6 +28,7 @@ export class UserUsecaseDto {
     this.updatedTimestamp = payload.updatedTimestamp;
   }
 
+  // TODO : ObjectStoragePort를 사용하여 thumbnailRelativePath를 가공하여 반환하는 로직 추가
   public static newFromUser(user: User): UserUsecaseDto {
     const dto: UserUsecaseDto = new UserUsecaseDto({
       id: user.id,

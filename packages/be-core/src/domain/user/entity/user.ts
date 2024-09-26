@@ -25,6 +25,12 @@ export class User extends EntityWithCUDTime<UserId> {
 
   @IsOptional()
   @IsUrl()
+  // TODO : presignedUrl로 바꿔줘야 하는데, 그 책임을 어디에 둬야 할까?
+  // 1. User 2. 별도 use case
+  // 1의 경우 개발 미스로 url 변경 후 db저장을 하게 될까 우려 됨.
+  // 2의 경우는 그렇다고 막을 수 있나?
+  // dto로 전환 시 수행 해야 함
+  // entity에 어떤 것이 변환 되어야 하는지 명시 후, dto에서 변환
   private _thumbnailRelativePath: Nullable<string>;
   get thumbnailRelativePath(): Nullable<string> {
     return this._thumbnailRelativePath;

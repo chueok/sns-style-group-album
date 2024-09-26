@@ -1,4 +1,4 @@
-export interface IObjectStorageAdapter {
+export interface IObjectStoragePort {
   uploadFile(bucketName: string, key: string, filePath: string): Promise<void>;
   getPresignedUrlForUpload(
     bucketName: string,
