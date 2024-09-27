@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { Request, Response } from "express";
-import { RestResponse } from "../controller/documentation/common/rest-response";
+import { RestResponse } from "../controller/dto/common/rest-response";
 import { Code, Exception } from "@repo/be-core";
 import { ServerConfig } from "../../config/server-config";
 

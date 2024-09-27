@@ -10,7 +10,7 @@ import { DataSource } from "typeorm";
 import { AuthFixture } from "@test-utils/fixture/auth-fixture";
 import { IAuthService } from "../auth/auth-service.interface";
 import { DiTokens } from "../../di/di-tokens";
-import { UserResponseDto } from "./documentation/user/user-response";
+import { UserResponseDto } from "./dto/user/user-response";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),

@@ -9,13 +9,13 @@ import {
   Query,
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { RestResponse } from "./documentation/common/rest-response";
+import { RestResponse } from "./dto/common/rest-response";
 import { Code } from "@repo/be-core";
-import { ApiResponseGeneric } from "./documentation/decorator/api-response-generic";
-import { RestGetContentListQuery } from "./documentation/content/get-content-list-query";
-import { RestContentResponse } from "./documentation/content/content-response";
-import { RestEditContentBody } from "./documentation/content/edit-content-body";
-import { RestCreateContentBody } from "./documentation/content/create-content-body";
+import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
+import { RestGetContentListQuery } from "./dto/content/get-content-list-query";
+import { RestContentResponse } from "./dto/content/content-response";
+import { RestEditContentBody } from "./dto/content/edit-content-body";
+import { RestCreateContentBody } from "./dto/content/create-content-body";
 
 @Controller("contents")
 @ApiTags("contents")

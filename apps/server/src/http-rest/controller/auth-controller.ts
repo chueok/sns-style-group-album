@@ -16,12 +16,12 @@ import {
   HttpOauthUserPayload,
   isHttpOauthUserPayload,
 } from "../auth/type/http-oauth-user";
-import { RestAuthSignupBody } from "./documentation/auth/rest-auth-signup-body";
-import { ApiResponseGeneric } from "./documentation/decorator/api-response-generic";
-import { RestResponseSignupJwt } from "./documentation/auth/rest-response-signup-jwt";
-import { RestResponseJwt } from "./documentation/auth/rest-response-jwt";
+import { RestAuthSignupBody } from "./dto/auth/rest-auth-signup-body";
+import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
+import { RestResponseSignupJwt } from "./dto/auth/rest-response-signup-jwt";
+import { RestResponseJwt } from "./dto/auth/rest-response-jwt";
 import { Code, Exception } from "@repo/be-core";
-import { RestResponse } from "./documentation/common/rest-response";
+import { RestResponse } from "./dto/common/rest-response";
 import { HttpGoogleAuthGuard } from "../auth/guard/google-auth-guard";
 import { ExtractJwt } from "passport-jwt";
 import { DiTokens } from "../../di/di-tokens";

@@ -1,7 +1,7 @@
 import { HttpUserPayload } from "./type/http-user";
 import { HttpOauthUserPayload } from "./type/http-oauth-user";
-import { RestResponseJwt } from "../controller/documentation/auth/rest-response-jwt";
-import { RestResponseSignupJwt } from "../controller/documentation/auth/rest-response-signup-jwt";
+import { RestResponseJwt } from "../controller/dto/auth/rest-response-jwt";
+import { RestResponseSignupJwt } from "../controller/dto/auth/rest-response-signup-jwt";
 import { HttpJwtSignupPayload } from "./type/http-jwt";
 import { Nullable } from "@repo/be-core";
 

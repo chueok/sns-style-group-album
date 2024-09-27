@@ -11,21 +11,21 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { RestResponse } from "./documentation/common/rest-response";
+import { RestResponse } from "./dto/common/rest-response";
 import {
   Code,
   GetGroupMembersAdaptor,
   GetGroupMembersUsecase,
 } from "@repo/be-core";
-import { ApiResponseGeneric } from "./documentation/decorator/api-response-generic";
-import { RestGetGroupListQuery } from "./documentation/group/get-group-list-query";
-import { RestGroupSimpleResponse } from "./documentation/group/group-simple-response";
-import { RestGroupResponse } from "./documentation/group/group-response";
-import { RestCreateGroupBody } from "./documentation/group/create-group-body";
-import { RestEditGroupBody } from "./documentation/group/edit-group-body";
+import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
+import { RestGetGroupListQuery } from "./dto/group/get-group-list-query";
+import { RestGroupSimpleResponse } from "./dto/group/group-simple-response";
+import { RestGroupResponse } from "./dto/group/group-response";
+import { RestCreateGroupBody } from "./dto/group/create-group-body";
+import { RestEditGroupBody } from "./dto/group/edit-group-body";
 import { HttpJwtAuthGuard } from "../auth/guard/jwt-auth-guard";
 import { HttpGroupMemberGuard } from "../auth/guard/group-member-guard";
-import { UserSimpleResponse } from "./documentation/user/user-simple-response";
+import { UserSimpleResponse } from "./dto/user/user-simple-response";
 import { DiTokens } from "../../di/di-tokens";
 
 @Controller("groups")

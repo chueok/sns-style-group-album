@@ -9,13 +9,13 @@ import {
   Query,
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { ApiResponseGeneric } from "./documentation/decorator/api-response-generic";
-import { RestCommentCreateBody } from "./documentation/comment/comment-create-body";
-import { RestCommentResponse } from "./documentation/comment/comment-response";
-import { RestCommentEditBody } from "./documentation/comment/comment-edit-body";
+import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
+import { RestCommentCreateBody } from "./dto/comment/comment-create-body";
+import { RestCommentResponse } from "./dto/comment/comment-response";
+import { RestCommentEditBody } from "./dto/comment/comment-edit-body";
 import { Code } from "@repo/be-core";
-import { RestGetCommentListQuery } from "./documentation/comment/get-comment-list-query";
-import { RestResponse } from "./documentation/common/rest-response";
+import { RestGetCommentListQuery } from "./dto/comment/get-comment-list-query";
+import { RestResponse } from "./dto/common/rest-response";
 
 @Controller("comments")
 @ApiTags("comments")

@@ -9,8 +9,8 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { RestResponse } from "./documentation/common/rest-response";
-import { UserResponseDto } from "./documentation/user/user-response";
+import { RestResponse } from "./dto/common/rest-response";
+import { UserResponseDto } from "./dto/user/user-response";
 import {
   Code,
   DeleteUserAdapter,
@@ -19,11 +19,11 @@ import {
   GetUserUsecase,
   IObjectStoragePort,
 } from "@repo/be-core";
-import { ApiResponseGeneric } from "./documentation/decorator/api-response-generic";
-import { RestEditUserBody } from "./documentation/user/edit-user-body";
+import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
+import { RestEditUserBody } from "./dto/user/edit-user-body";
 import { DiTokens } from "../../di/di-tokens";
 import { HttpJwtAuthGuard } from "../auth/guard/jwt-auth-guard";
-import { EditProfileImageResponse } from "./documentation/user/edit-profile-image-response";
+import { EditProfileImageResponse } from "./dto/user/edit-profile-image-response";
 
 @Controller("users")
 @ApiTags("users")
