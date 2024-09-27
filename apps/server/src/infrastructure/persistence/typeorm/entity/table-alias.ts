@@ -5,4 +5,5 @@ export enum TableAlias {
   COMMENT = "Comment",
   LIKE = "Like",
   OAUTH = "Oauth",
+  USER_GROUP_PROFILE = "UserGroupProfile",
 }

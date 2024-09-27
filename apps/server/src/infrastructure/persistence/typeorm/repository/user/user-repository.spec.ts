@@ -10,6 +10,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { InfrastructureModule } from "../../../../../di/infrastructure.module";
 import { UserFixture } from "@test-utils/fixture/user-fixture";
 import assert from "assert";
+import { GroupFixture } from "@test-utils/fixture/group-fixture";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -23,6 +24,7 @@ describe("UserRepository", () => {
   let userRepository: IUserRepository;
 
   let userFixture: UserFixture;
+  let groupFixture: GroupFixture;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -43,8 +45,11 @@ describe("UserRepository", () => {
 
     await testDatabaseHandler.load(parameters.dummyDbPath);
 
+    // TODO : Fixture 이중 초기화에 대해 고민 해 볼 것
     userFixture = new UserFixture(dataSource);
     await userFixture.init(parameters.dummyDbPath);
+    groupFixture = new GroupFixture(dataSource);
+    await groupFixture.init(parameters.dummyDbPath);
   });
 
   afterAll(async () => {
@@ -93,12 +98,20 @@ describe("UserRepository", () => {
   describe("findUserByUsernameOfGroup", () => {
     let user: TypeormUser;
     let group: TypeormGroup;
+    let members: TypeormUser[];
 
     beforeAll(async () => {
       user = await userFixture.getValidUser();
-      const targetGroup = (await user.groups).at(0);
-      assert(targetGroup, "targetGroup is null");
-      group = targetGroup;
+      const { group: g, members: m } =
+        await groupFixture.getGroupHavingMembersAndContents();
+
+      group = g;
+
+      const u = m.at(0);
+      assert(u, "user is null");
+      user = u;
+
+      members = m;
     });
 
     it("should find a user by username of group", async () => {
@@ -134,7 +147,7 @@ describe("UserRepository", () => {
             user: dummyOrmUser,
             ownGroups: [],
             groups: [],
-            groupsWithProfile: [],
+            userGroupProfiles: [],
           },
         ],
       }))!;
@@ -157,7 +170,7 @@ describe("UserRepository", () => {
             user: dummyOrmUser,
             ownGroups: [],
             groups: [],
-            groupsWithProfile: [],
+            userGroupProfiles: [],
           },
         ],
       }))!;
@@ -175,9 +188,9 @@ describe("UserRepository", () => {
 
       const groups = await user.groups;
       const ownGroups = await user.ownGroups;
-      const groupsWithProfile = await user.groupsWithProfile;
+      const userGroupProfiles = await user.userGroupProfiles;
       const { results, errors } = (await UserMapper.toDomainEntity({
-        elements: [{ user, groups, ownGroups, groupsWithProfile }],
+        elements: [{ user, groups, ownGroups, userGroupProfiles }],
       }))!;
       const domainUser = results[0]!;
       await domainUser.changeUsername("new-username");

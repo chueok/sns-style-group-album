@@ -92,6 +92,7 @@ export class AuthController {
       throw Exception.new({ code: Code.UNAUTHORIZED_ERROR });
     }
 
+    // TODO : 토큰 인증 후 사인업 하는 로직을 전부 AuthService로 이동
     const signupPayload = await this.authService.validateSignupToken(jwt);
     if (!signupPayload) {
       throw Exception.new({ code: Code.UNAUTHORIZED_ERROR });

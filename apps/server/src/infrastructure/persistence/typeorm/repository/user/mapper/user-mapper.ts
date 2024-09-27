@@ -1,13 +1,14 @@
-import { CreateUserEntityPayload, User } from "@repo/be-core";
+import { CreateUserEntityPayload, User, UserGroupProfile } from "@repo/be-core";
 import { TypeormUser } from "../../../entity/user/typeorm-user.entity";
 import { TypeormGroup } from "../../../entity/group/typeorm-group.entity";
+import { TypeormUserGroupProfile } from "../../../entity/user-group-profile/typeorm-user-group-profile.entity";
 
 type ToDomainPayloadType = {
   elements: {
     user: TypeormUser;
     groups: TypeormGroup[];
     ownGroups: TypeormGroup[];
-    groupsWithProfile: TypeormGroup[];
+    userGroupProfiles: UserGroupProfile[];
   }[];
 };
 
@@ -15,6 +16,11 @@ type ToDomainReturnType = {
   results: User[];
   errors: Error[];
 };
+
+type ToOrmReturnType = {
+  user: TypeormUser;
+  userGroupProfile: UserGroupProfile[];
+}[];
 
 export class UserMapper {
   public static async toDomainEntity(
@@ -26,16 +32,27 @@ export class UserMapper {
     const { elements } = payload;
 
     const promiseList = elements.map(async (item) => {
-      const { user, groups, ownGroups, groupsWithProfile } = item;
+      const {
+        user,
+        groups,
+        ownGroups,
+        userGroupProfiles: userGroupProfile,
+      } = item;
 
       const userPayload: CreateUserEntityPayload<"existing"> = {
         username: user.username,
         email: user.email,
-        thumbnailRelativePath: user.thumbnailRelativePath,
+        hasProfileImage: user.hasProfileImage,
 
         groups: groups.map((group) => group.id),
         ownGroups: ownGroups.map((group) => group.id),
-        groupsWithProfile: groupsWithProfile.map((group) => group.id),
+        userGroupProfiles: userGroupProfile.map((profile) => {
+          return new UserGroupProfile({
+            groupId: profile.groupId,
+            nickname: profile.nickname,
+            hasProfileImage: profile.hasProfileImage,
+          });
+        }),
 
         id: user.id,
         createdDateTime: user.createdDateTime,
@@ -57,26 +74,31 @@ export class UserMapper {
     return { results, errors };
   }
 
-  public static toOrmEntity(payload: User[]): TypeormUser[] {
-    const userList = payload.map((item) => {
+  public static toOrmEntity(payload: User[]): ToOrmReturnType {
+    const ret = payload.map((item) => {
       const typeormUser = new TypeormUser();
       typeormUser.id = item.id;
       typeormUser.username = item.username;
-      typeormUser.thumbnailRelativePath = item.thumbnailRelativePath;
+      typeormUser.email = item.email;
 
-      const groupsWithProfile = item.groupsWithProfile.map((groupId) => {
-        const group = new TypeormGroup();
-        group.id = groupId;
-        return group;
-      });
-      typeormUser.groupsWithProfile = Promise.resolve(groupsWithProfile);
+      typeormUser.hasProfileImage = item.hasProfile;
 
       typeormUser.createdDateTime = item.createdDateTime;
       typeormUser.updatedDateTime = item.updatedDateTime;
       typeormUser.deletedDateTime = item.deletedDateTime;
-      return typeormUser;
+
+      const groupsWithProfile = item.userGroupProfiles.map((profile) => {
+        const typeormProfile = new TypeormUserGroupProfile();
+        typeormProfile.userId = item.id;
+        typeormProfile.groupId = profile.groupId;
+        typeormProfile.nickname = profile.nickname;
+        typeormProfile.hasProfileImage = profile.hasProfileImage;
+        return typeormProfile;
+      });
+
+      return { user: typeormUser, userGroupProfile: groupsWithProfile };
     });
 
-    return userList;
+    return ret;
   }
 }

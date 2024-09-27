@@ -5,7 +5,7 @@ import { MinioPolicy } from "./minio-policy";
 import { Injectable, Logger } from "@nestjs/common";
 
 @Injectable()
-export class MinioObjectStorageAdapter implements IObjectStoragePort {
+export class MinioObjectStorageFactory {
   private readonly basePath = ServerConfig.OBJECT_STORAGE_BASE_PATH;
   private readonly client = new Client({
     accessKey: ServerConfig.OBJECT_STORAGE_ACCESS_KEY,
@@ -16,7 +16,7 @@ export class MinioObjectStorageAdapter implements IObjectStoragePort {
     pathStyle: true,
   });
 
-  private readonly logger = new Logger(MinioObjectStorageAdapter.name);
+  private readonly logger = new Logger(MinioObjectStorageFactory.name);
 
   async init() {
     const isMediaBucketExist = await this.client.bucketExists(
@@ -44,6 +44,25 @@ export class MinioObjectStorageAdapter implements IObjectStoragePort {
         `Bucket ${ServerConfig.OBJECT_STORAGE_PUBLIC_BUCKET} policy set`,
       );
     }
+  }
+
+  async getObjectStorageAdapter(
+    bucketName: string,
+  ): Promise<IObjectStoragePort> {
+    return {
+      uploadFile: async (key: string, filePath: string) => {
+        await this.uploadFile(bucketName, key, filePath);
+      },
+      getPresignedUrlForUpload: async (key: string, expires?: number) => {
+        return this.getPresignedUrlForUpload(bucketName, key, expires);
+      },
+      getPresignedUrlForDownload: async (key: string, expires?: number) => {
+        return this.getPresignedUrlForDownload(bucketName, key, expires);
+      },
+      getPublicUrlForDownload: async (key: string) => {
+        return this.getPublicUrlForDownload(bucketName, key);
+      },
+    };
   }
 
   async uploadFile(

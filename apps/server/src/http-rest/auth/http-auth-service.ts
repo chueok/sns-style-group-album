@@ -49,6 +49,9 @@ export class HttpAuthService implements IAuthService {
     this.logger = logger || new Logger(HttpAuthService.name);
   }
 
+  /**
+   * provider와 providerId로 회원 정보를 조회
+   */
   async getOauthUser(
     provider: string,
     providerId: string,
@@ -62,18 +65,22 @@ export class HttpAuthService implements IAuthService {
     }
     const userPayload: HttpUserPayload = {
       id: user.id,
-      username: user.username,
-      thumbnailRelativePath: user.thumbnailRelativePath,
     };
     return userPayload;
   }
 
+  /**
+   * 유저 정보를 통해 로그인 토큰을 발급
+   */
   async getLoginToken(user: HttpUserPayload): Promise<RestResponseJwt> {
     return {
       accessToken: this.jwtService.sign(user),
     };
   }
 
+  /**
+   * 회원가입 토큰을 발급
+   */
   async getSignupToken(
     user: HttpOauthUserPayload,
   ): Promise<RestResponseSignupJwt> {
@@ -132,15 +139,14 @@ export class HttpAuthService implements IAuthService {
   async signup(payload: {
     signupToken: string;
     provider: string;
-    providerId: string;
+    providerId: string; // TODO : provider 정보 필요한지 확인
     username: string;
-    thumbnailRelativePath: Nullable<string>;
+    thumbnailRelativePath: Nullable<string>; // TODO : 회원가입 시 profile image 추가는 유저가? 서버가?
     email: string;
   }): Promise<Nullable<HttpUserPayload>> {
     const newUserPayload: CreateUserEntityPayload<"new"> = {
       username: payload.username,
       email: payload.email,
-      thumbnailRelativePath: payload.thumbnailRelativePath,
     };
 
     const newUser = await User.new(newUserPayload);
@@ -151,8 +157,6 @@ export class HttpAuthService implements IAuthService {
     }
     return {
       id: newUser.id,
-      username: newUser.username,
-      thumbnailRelativePath: newUser.thumbnailRelativePath,
     };
   }
 
@@ -164,8 +168,6 @@ export class HttpAuthService implements IAuthService {
     }
     const userPayload: HttpUserPayload = {
       id: user.id,
-      username: user.username,
-      thumbnailRelativePath: user.thumbnailRelativePath,
     };
     return userPayload;
   }

@@ -6,6 +6,7 @@ import { UserMapper } from "./user-mapper";
 import { User } from "@repo/be-core";
 import { Test, TestingModule } from "@nestjs/testing";
 import { InfrastructureModule } from "../../../../../../di/infrastructure.module";
+import { TypeormUserGroupProfile } from "../../../entity/user-group-profile/typeorm-user-group-profile.entity";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -52,12 +53,13 @@ describe("UserMapper", () => {
             user,
             groups: await user.groups,
             ownGroups: await user.ownGroups,
-            groupsWithProfile: await user.groupsWithProfile,
+            userGroupProfiles: await user.userGroupProfiles,
           };
         }),
       );
 
       const { results, errors } = await UserMapper.toDomainEntity({ elements });
+
       expect(ormUserList.length).toEqual(results.length);
     });
   });
@@ -72,7 +74,7 @@ describe("UserMapper", () => {
             user,
             groups: await user.groups,
             ownGroups: await user.ownGroups,
-            groupsWithProfile: await user.groupsWithProfile,
+            userGroupProfiles: await user.userGroupProfiles,
           };
         }),
       );
@@ -84,8 +86,12 @@ describe("UserMapper", () => {
       const ormUserList = UserMapper.toOrmEntity(domainUserList);
       expect(ormUserList).toBeInstanceOf(Array);
       expect(ormUserList.length).toEqual(domainUserList.length);
-      ormUserList.forEach((ormUser) => {
-        expect(ormUser).toBeInstanceOf(TypeormUser);
+      ormUserList.forEach(({ user, userGroupProfile }) => {
+        expect(user).toBeInstanceOf(TypeormUser);
+        expect(userGroupProfile).toBeInstanceOf(Array);
+        userGroupProfile.forEach((profile) => {
+          expect(profile).toBeInstanceOf(TypeormUserGroupProfile);
+        });
       });
     });
   });

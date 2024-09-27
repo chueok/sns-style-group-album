@@ -36,8 +36,6 @@ export class AuthFixture {
 
     const loginToken = await this.authService.getLoginToken({
       id: user.id,
-      username: user.username,
-      thumbnailRelativePath: user.thumbnailRelativePath,
     });
     return { user, accessToken: loginToken.accessToken };
   }
@@ -54,8 +52,6 @@ export class AuthFixture {
 
     const loginToken = await this.authService.getLoginToken({
       id: user.id,
-      username: user.username,
-      thumbnailRelativePath: user.thumbnailRelativePath,
     });
     return { user, accessToken: loginToken.accessToken };
   }
@@ -74,8 +70,6 @@ export class AuthFixture {
 
     const payload: HttpJwtUserPayload = {
       id: validUser.id,
-      username: validUser.username,
-      thumbnailRelativePath: validUser.thumbnailRelativePath,
     };
     const accessToken = this.jwtService.sign(payload, {
       secret: "fake-scret-asdjkfhlb",
@@ -94,8 +88,6 @@ export class AuthFixture {
 
     const payload: HttpJwtUserPayload = {
       id: v4(),
-      username: faker.internet.userName(),
-      thumbnailRelativePath: faker.internet.url(),
     };
     const accessToken = this.jwtService.sign(payload);
 
@@ -130,8 +122,6 @@ export class AuthFixture {
 
     const loginToken = await this.authService.getLoginToken({
       id: user.id,
-      username: user.username,
-      thumbnailRelativePath: user.thumbnailRelativePath,
     });
 
     return {
@@ -154,8 +144,6 @@ export class AuthFixture {
 
     const loginToken = await this.authService.getLoginToken({
       id: user.id,
-      username: user.username,
-      thumbnailRelativePath: user.thumbnailRelativePath,
     });
 
     return {

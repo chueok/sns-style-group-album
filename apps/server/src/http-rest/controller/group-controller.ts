@@ -25,7 +25,7 @@ import { RestCreateGroupBody } from "./documentation/group/create-group-body";
 import { RestEditGroupBody } from "./documentation/group/edit-group-body";
 import { HttpJwtAuthGuard } from "../auth/guard/jwt-auth-guard";
 import { HttpGroupMemberGuard } from "../auth/guard/group-member-guard";
-import { RestUserSimpleResponse } from "./documentation/user/user-simple-response";
+import { UserSimpleResponse } from "./documentation/user/user-simple-response";
 import { DiTokens } from "../../di/di-tokens";
 
 @Controller("groups")
@@ -85,12 +85,12 @@ export class GroupController {
   @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
-    data: RestUserSimpleResponse,
+    data: UserSimpleResponse,
     isArray: true,
   })
   async getGroupMembers(
     @Param("groupId") groupId: string,
-  ): Promise<RestResponse<RestUserSimpleResponse[]>> {
+  ): Promise<RestResponse<UserSimpleResponse[]>> {
     const adapter = await GetGroupMembersAdaptor.new({
       groupId: groupId,
     });

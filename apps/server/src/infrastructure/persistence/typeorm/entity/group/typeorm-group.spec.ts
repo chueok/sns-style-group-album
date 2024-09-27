@@ -2,10 +2,10 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { basename, join } from "path";
 import { DataSource, Repository } from "typeorm";
 import { TypeormGroup } from "./typeorm-group.entity";
-import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
 import { TypeormUser } from "../user/typeorm-user.entity";
 import { TypeormContent } from "../content/typeorm-content.entity";
 import { InfrastructureModule } from "../../../../../di/infrastructure.module";
+import { GroupFixture } from "@test-utils/fixture/group-fixture";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -16,7 +16,8 @@ describe("TypeormGroup", () => {
   let module: TestingModule;
   let dataSource: DataSource;
   let repository: Repository<TypeormGroup>;
-  let testDatabaseHandler: DummyDatabaseHandler;
+
+  let groupFixture: GroupFixture;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -32,9 +33,8 @@ describe("TypeormGroup", () => {
     dataSource = module.get<DataSource>(DataSource);
     repository = dataSource.getRepository(TypeormGroup);
 
-    testDatabaseHandler = new DummyDatabaseHandler(dataSource);
-
-    await testDatabaseHandler.load(parameters.dummyDbPath);
+    groupFixture = new GroupFixture(dataSource);
+    await groupFixture.init(parameters.dummyDbPath);
   });
 
   afterAll(async () => {
@@ -44,7 +44,7 @@ describe("TypeormGroup", () => {
 
   describe("save", () => {
     it("should save normally", async () => {
-      const group = testDatabaseHandler.makeDummyGroup();
+      const group = groupFixture.dbHandler.makeDummyGroup();
       const savedGroup = await repository.save(group);
       await expectEqualGroup(group, savedGroup);
     });
@@ -55,26 +55,13 @@ describe("TypeormGroup", () => {
     let targetMembers: TypeormUser[];
     let targetContents: TypeormContent[];
     beforeAll(async () => {
-      const groupList = testDatabaseHandler.getDbCacheList(TypeormGroup);
-      for (const group of groupList.reverse()) {
-        let conditionFlag = true;
-        if ((await group.members).length === 0) {
-          conditionFlag = false;
-        }
+      const { group, owner, members, contents } =
+        await groupFixture.getGroupHavingMembersAndContents();
+      targetGroup = group;
+      targetOwner = owner;
+      targetMembers = members;
+      targetContents = contents;
 
-        const contents = await getGroupContents(dataSource, group.id);
-        if (contents.length === 0) {
-          conditionFlag = false;
-        }
-
-        if (conditionFlag) {
-          targetGroup = group;
-          targetOwner = await targetGroup.owner;
-          targetMembers = await targetGroup.members;
-          targetContents = contents;
-          break;
-        }
-      }
       await repository.delete(targetGroup.id);
     });
 
@@ -133,12 +120,4 @@ async function expectEqualGroup(lhs: TypeormGroup, rhs: TypeormGroup) {
   expect(lhs.createdDateTime).toEqual(rhs.createdDateTime);
   expect(lhs.updatedDateTime).toEqual(rhs.updatedDateTime);
   expect(lhs.deletedDateTime).toEqual(rhs.deletedDateTime);
-}
-
-async function getGroupContents(dataSource: DataSource, groupId: string) {
-  return dataSource
-    .getRepository(TypeormContent)
-    .createQueryBuilder("content")
-    .where("content.groupId = :groupId", { groupId })
-    .getMany();
 }

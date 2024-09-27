@@ -59,8 +59,7 @@ describe("TypeormUser", () => {
 async function expectEqualUser(lhs: TypeormUser, rhs: TypeormUser) {
   expect(lhs.id).toEqual(rhs.id);
   expect(lhs.username).toEqual(rhs.username);
-  expect(lhs.thumbnailRelativePath).toEqual(rhs.thumbnailRelativePath);
-
+  expect(lhs.hasProfileImage).toEqual(rhs.hasProfileImage);
   expect(await lhs.groups).toStrictEqual(await rhs.groups);
 
   expect(lhs.createdDateTime).toEqual(rhs.createdDateTime);

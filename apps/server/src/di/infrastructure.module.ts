@@ -17,7 +17,7 @@ import {
   GetUserUsecase,
   IUserRepository,
 } from "@repo/be-core";
-import { MinioObjectStorageAdapter } from "../infrastructure/persistence/object-storage/minio/minio-adapter";
+import { MinioObjectStorageFactory } from "../infrastructure/persistence/object-storage/minio/minio-adapter";
 
 const typeormSqliteOptions = {
   type: "sqlite",
@@ -83,12 +83,21 @@ const providers: Provider[] = [
 
 const objectStorageProviders: Provider[] = [
   {
-    provide: DiTokens.ObjectStorage,
+    provide: DiTokens.ObjectStorageFactory,
     useFactory: async () => {
-      const objectStorage = new MinioObjectStorageAdapter();
+      const objectStorage = new MinioObjectStorageFactory();
       await objectStorage.init();
       return objectStorage;
     },
+  },
+  {
+    provide: DiTokens.MediaObjectStorage,
+    useFactory: async (factory: MinioObjectStorageFactory) => {
+      return factory.getObjectStorageAdapter(
+        ServerConfig.OBJECT_STORAGE_MEDIA_BUCKET,
+      );
+    },
+    inject: [DiTokens.ObjectStorageFactory],
   },
 ];
 
@@ -130,6 +139,8 @@ export class InfrastructureModule {
         DiTokens.GetUserUsecase,
         DiTokens.GetGroupMemberUsecase,
         DiTokens.DeleteUserUsecase,
+
+        DiTokens.MediaObjectStorage,
       ],
     };
   }

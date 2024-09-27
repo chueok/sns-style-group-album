@@ -1,13 +1,13 @@
 import { Code } from "../../../common/exception/code";
 import { Exception } from "../../../common/exception/exception";
 import { IUsecase } from "../../../common/usecase/usecase.interface";
+import { User } from "../entity/user";
 import { IUserRepository } from "../repository/user-repository.interface";
-import { UserUsecaseDto } from "./dto/user-dto";
 import { IGetUserPort } from "./port/get-user-port";
 
-export class GetUserUsecase implements IUsecase<IGetUserPort, UserUsecaseDto> {
+export class GetUserUsecase implements IUsecase<IGetUserPort, User> {
   constructor(private readonly userRepository: IUserRepository) {}
-  async execute(port: IGetUserPort): Promise<UserUsecaseDto> {
+  async execute(port: IGetUserPort): Promise<User> {
     const user = await this.userRepository.findUserById(port.id);
     if (!user) {
       throw Exception.new({
@@ -15,6 +15,6 @@ export class GetUserUsecase implements IUsecase<IGetUserPort, UserUsecaseDto> {
         overrideMessage: "User not found",
       });
     }
-    return UserUsecaseDto.newFromUser(user);
+    return user;
   }
 }

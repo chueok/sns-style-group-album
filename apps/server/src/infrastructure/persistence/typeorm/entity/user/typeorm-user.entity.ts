@@ -1,15 +1,9 @@
-import {
-  PrimaryColumn,
-  Column,
-  ManyToMany,
-  Entity,
-  OneToMany,
-  JoinTable,
-} from "typeorm";
+import { PrimaryColumn, Column, ManyToMany, Entity, OneToMany } from "typeorm";
 import { TypeormGroup } from "../group/typeorm-group.entity";
 import { Nullable, UserId } from "@repo/be-core";
 import { TableAlias } from "../table-alias";
 import { TypeormOauth } from "../oauth/typeorm-oauth.entity";
+import { TypeormUserGroupProfile } from "../user-group-profile/typeorm-user-group-profile.entity";
 
 @Entity(TableAlias.USER)
 export class TypeormUser {
@@ -22,8 +16,8 @@ export class TypeormUser {
   @Column({ type: "text", nullable: true })
   email!: Nullable<string>;
 
-  @Column({ type: "text", nullable: true })
-  thumbnailRelativePath!: Nullable<string>;
+  @Column({ type: "boolean", nullable: false })
+  hasProfileImage!: boolean;
 
   @OneToMany(() => TypeormOauth, (oauth) => oauth.user)
   oauths!: Promise<TypeormOauth[]>;
@@ -35,9 +29,8 @@ export class TypeormUser {
   @OneToMany(() => TypeormGroup, (group) => group.owner)
   ownGroups!: Promise<TypeormGroup[]>;
 
-  @ManyToMany(() => TypeormGroup)
-  @JoinTable({ name: "GroupsWithProfileRelation" })
-  groupsWithProfile!: Promise<TypeormGroup[]>;
+  @OneToMany(() => TypeormUserGroupProfile, (profile) => profile.user)
+  userGroupProfiles!: Promise<TypeormUserGroupProfile[]>;
 
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;

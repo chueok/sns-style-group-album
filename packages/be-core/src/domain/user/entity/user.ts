@@ -1,10 +1,18 @@
-import { IsEmail, IsOptional, IsString, IsUrl, IsUUID } from "class-validator";
+import {
+  IsBoolean,
+  IsEmail,
+  IsInstance,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from "class-validator";
 import { CreateUserEntityPayload } from "./type/create-user-entity-payload";
 import { v4 } from "uuid";
 import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
 import { Nullable } from "../../../common/type/common-types";
 import { UserId } from "./type/user-id";
 import { GroupId } from "../../group/entity/type/group-id";
+import { UserGroupProfile } from "./user-group-profile";
 
 export class User extends EntityWithCUDTime<UserId> {
   @IsUUID()
@@ -23,34 +31,10 @@ export class User extends EntityWithCUDTime<UserId> {
     return this._email;
   }
 
-  @IsUUID("all", { each: true })
-  private _groupsWithProfile: GroupId[];
-  get groupsWithProfile(): GroupId[] {
-    return this._groupsWithProfile;
-  }
-  static getProfileRelativePath(
-    user: User,
-    groupId: GroupId,
-  ): Nullable<string> {
-    const foundGroupId = user._groupsWithProfile.find((id) => id === groupId);
-    if (!foundGroupId) {
-      return null;
-    }
-    return `groups/${foundGroupId}/users/${user.id}/profile.img`;
-  }
-
-  @IsOptional()
-  @IsUrl()
-  // bucket/groups/groupId/users/userId/profile.img
-  // TODO : presignedUrl로 바꿔줘야 하는데, 그 책임을 어디에 둬야 할까?
-  // 1. User 2. 별도 use case
-  // 1의 경우 개발 미스로 url 변경 후 db저장을 하게 될까 우려 됨.
-  // 2의 경우는 그렇다고 막을 수 있나?
-  // dto로 전환 시 수행 해야 함
-  // entity에 어떤 것이 변환 되어야 하는지 명시 후, dto에서 변환
-  private _thumbnailRelativePath: Nullable<string>;
-  get thumbnailRelativePath(): Nullable<string> {
-    return this._thumbnailRelativePath;
+  @IsBoolean()
+  private _hasProfileImage: boolean;
+  get hasProfile(): boolean {
+    return this._hasProfileImage;
   }
 
   @IsString({ each: true })
@@ -65,6 +49,12 @@ export class User extends EntityWithCUDTime<UserId> {
     return this._ownGroups;
   }
 
+  @IsInstance(UserGroupProfile, { each: true })
+  private _userGroupProfiles: UserGroupProfile[];
+  get userGroupProfiles(): UserGroupProfile[] {
+    return this._userGroupProfiles;
+  }
+
   async deleteUser(): Promise<void> {
     this._deletedDateTime = new Date();
     await this.validate();
@@ -76,27 +66,18 @@ export class User extends EntityWithCUDTime<UserId> {
     await this.validate();
   }
 
-  async addProfile(groupId: GroupId): Promise<void> {
-    if (this._groupsWithProfile.includes(groupId)) {
-      return;
-    }
-
-    this._groupsWithProfile.push(groupId);
-    this._updatedDateTime = new Date();
-    await this.validate();
-  }
-
   constructor(payload: CreateUserEntityPayload<"all">) {
     super();
     this._username = payload.username;
     this._email = payload.email;
-    this._thumbnailRelativePath = payload.thumbnailRelativePath;
     if ("id" in payload) {
       this._id = payload.id;
 
+      this._hasProfileImage = payload.hasProfileImage;
+
       this._groups = payload.groups;
       this._ownGroups = payload.ownGroups;
-      this._groupsWithProfile = payload.groupsWithProfile;
+      this._userGroupProfiles = payload.userGroupProfiles;
 
       this._createdDateTime = payload.createdDateTime;
       this._updatedDateTime = payload.updatedDateTime;
@@ -104,9 +85,12 @@ export class User extends EntityWithCUDTime<UserId> {
     } else {
       this._id = v4() as UserId;
 
+      this._hasProfileImage = false;
+
       this._groups = [];
       this._ownGroups = [];
-      this._groupsWithProfile = [];
+
+      this._userGroupProfiles = [];
 
       this._createdDateTime = new Date();
       this._updatedDateTime = null;

@@ -29,6 +29,7 @@ import {
 import { add } from "date-fns";
 import { copyFile } from "fs/promises";
 import { TypeormLike } from "../../src/infrastructure/persistence/typeorm/entity/like/typeorm-like.entity";
+import { TypeormUserGroupProfile } from "../../src/infrastructure/persistence/typeorm/entity/user-group-profile/typeorm-user-group-profile.entity";
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 
@@ -37,6 +38,7 @@ export class DummyDatabaseHandler {
   entities = [
     TypeormUser,
     TypeormGroup,
+    TypeormUserGroupProfile,
     TypeormContent,
     TypeormComment,
     TypeormLike,
@@ -54,6 +56,14 @@ export class DummyDatabaseHandler {
     constructor: T,
   ): InstanceType<T>[] {
     return this.dbCacheListMap[constructor.name] as InstanceType<T>[];
+  }
+
+  private getAllEntityList<T extends ArrayElement<typeof this.entities>>(
+    constructor: T,
+  ): InstanceType<T>[] {
+    return this.getDbCacheList(constructor).concat(
+      this.getTemporaryEntityList(constructor),
+    );
   }
 
   constructor(private dataSource: DataSource) {
@@ -112,7 +122,6 @@ export class DummyDatabaseHandler {
       this.getDbCacheList(entity).push(...savedEntities);
       this.getTemporaryEntityList(entity).length = 0;
     }
-    await this.makeGroupsWithProfileRelation();
   }
 
   async load(sourceFilePath: string): Promise<void> {
@@ -147,11 +156,10 @@ export class DummyDatabaseHandler {
     typeormEntity.id = faker.string.uuid() as UserId;
     typeormEntity.username = faker.internet.userName();
     typeormEntity.email = faker.internet.email();
+
+    typeormEntity.hasProfileImage = faker.datatype.boolean();
+
     typeormEntity.groups = Promise.resolve([]);
-    typeormEntity.thumbnailRelativePath = getRandomElement([
-      null,
-      faker.internet.url(),
-    ]);
 
     typeormEntity.createdDateTime = faker.date.past();
     typeormEntity.updatedDateTime = getRandomElement([null, faker.date.past()]);
@@ -194,6 +202,9 @@ export class DummyDatabaseHandler {
         }
       });
     typeormEntity.members = Promise.resolve(Array.from(members));
+    members.forEach((member) => {
+      this.makeDummyUserGroupProfile(member.id, typeormEntity.id);
+    });
 
     typeormEntity.createdDateTime = faker.date.past();
     typeormEntity.updatedDateTime = getRandomElement([null, faker.date.past()]);
@@ -201,6 +212,20 @@ export class DummyDatabaseHandler {
 
     this.getTemporaryEntityList(TypeormGroup).push(typeormEntity);
     return typeormEntity;
+  }
+
+  private makeDummyUserGroupProfile(
+    userId: UserId,
+    groupId: GroupId,
+  ): TypeormUserGroupProfile {
+    const userGroupProfile = new TypeormUserGroupProfile();
+    userGroupProfile.userId = userId;
+    userGroupProfile.groupId = groupId;
+    userGroupProfile.hasProfileImage = faker.datatype.boolean();
+    userGroupProfile.nickname = faker.internet.userName();
+
+    this.getTemporaryEntityList(TypeormUserGroupProfile).push(userGroupProfile);
+    return userGroupProfile;
   }
 
   async makeDummyContent(payload?: {
@@ -419,35 +444,6 @@ export class DummyDatabaseHandler {
 
     this.getTemporaryEntityList(TypeormComment).push(instance);
     return instance;
-  }
-
-  async makeGroupsWithProfileRelation(): Promise<void> {
-    const userList = this.getDbCacheList(TypeormUser);
-    await Promise.all(
-      userList.map(async (user) => {
-        const groups = await this.dataSource
-          .createQueryBuilder()
-          .relation(TypeormUser, "groups")
-          .of(user.id)
-          .loadMany<TypeormGroup>()
-          .catch((e) => {
-            return [];
-          });
-        await Promise.all(
-          groups.map(async (group) => {
-            const isAdd = getRandomElement([true, false]);
-            if (isAdd) {
-              await this.dataSource
-                .createQueryBuilder()
-                .relation(TypeormUser, "groupsWithProfile")
-                .of(user.id)
-                .add(group.id)
-                .catch((e) => {});
-            }
-          }),
-        );
-      }),
-    );
   }
 }
 

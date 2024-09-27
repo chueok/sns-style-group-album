@@ -1,11 +1,11 @@
 import { Nullable } from "../../../../common/type/common-types";
 import { GroupId } from "../../../group/entity/type/group-id";
+import { UserGroupProfile } from "../user-group-profile";
 import { UserId } from "./user-id";
 
 type CommonCreateUserPayload = {
   username: string;
   email: Nullable<string>;
-  thumbnailRelativePath: Nullable<string>;
 };
 
 type CreateNewUserPayload = CommonCreateUserPayload & {};
@@ -13,10 +13,11 @@ type CreateNewUserPayload = CommonCreateUserPayload & {};
 type CreateExistingUserPayload = CommonCreateUserPayload & {
   id: UserId;
 
+  hasProfileImage: boolean;
+
   groups: GroupId[];
   ownGroups: GroupId[];
-
-  groupsWithProfile: GroupId[];
+  userGroupProfiles: UserGroupProfile[];
 
   createdDateTime: Date;
   updatedDateTime: Nullable<Date>;

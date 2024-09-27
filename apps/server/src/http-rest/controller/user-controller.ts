@@ -10,13 +10,14 @@ import {
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { RestResponse } from "./documentation/common/rest-response";
-import { RestUserResponse } from "./documentation/user/user-response";
+import { UserResponseDto } from "./documentation/user/user-response";
 import {
   Code,
   DeleteUserAdapter,
   DeleteUserUsecase,
   GetUserAdaptor,
   GetUserUsecase,
+  IObjectStoragePort,
 } from "@repo/be-core";
 import { ApiResponseGeneric } from "./documentation/decorator/api-response-generic";
 import { RestEditUserBody } from "./documentation/user/edit-user-body";
@@ -32,19 +33,25 @@ export class UserController {
     private readonly getUserUsecase: GetUserUsecase,
     @Inject(DiTokens.DeleteUserUsecase)
     private readonly deleteUserUsecase: DeleteUserUsecase,
+    @Inject(DiTokens.MediaObjectStorage)
+    private readonly mediaObjectStorage: IObjectStoragePort,
   ) {}
 
   @Get(":userId")
   @UseGuards(HttpJwtAuthGuard)
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestUserResponse })
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDto })
   async getUser(
     @Param("userId") userId: string,
-  ): Promise<RestResponse<RestUserResponse>> {
+  ): Promise<RestResponse<UserResponseDto>> {
     const adapter = await GetUserAdaptor.new({ id: userId });
 
     const user = await this.getUserUsecase.execute(adapter);
 
-    return RestResponse.success(user);
+    const userDto = await UserResponseDto.newFromUser(
+      user,
+      this.mediaObjectStorage,
+    );
+    return RestResponse.success(userDto);
   }
 
   @Delete(":userId")
@@ -61,11 +68,11 @@ export class UserController {
   }
 
   @Patch(":userId")
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestUserResponse })
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDto })
   async editUser(
     @Param("userId") userId: string,
     @Body() body: RestEditUserBody,
-  ): Promise<RestResponse<RestUserResponse | null>> {
+  ): Promise<RestResponse<UserResponseDto | null>> {
     throw new Error("Not implemented");
   }
 

@@ -9,6 +9,8 @@ import { ContentTypeEnum } from "@repo/be-core";
 import { Test, TestingModule } from "@nestjs/testing";
 import { InfrastructureModule } from "../../../../../di/infrastructure.module";
 import { UserFixture } from "@test-utils/fixture/user-fixture";
+import { GroupFixture } from "@test-utils/fixture/group-fixture";
+import assert from "assert";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -21,6 +23,7 @@ describe("ContentRepository", () => {
   let testDatabaseHandler: DummyDatabaseHandler;
   let contentRepository: TypeormContentRepository;
   let userFixture: UserFixture;
+  let groupFixture: GroupFixture;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -41,6 +44,8 @@ describe("ContentRepository", () => {
 
     userFixture = new UserFixture(dataSource);
     await userFixture.init(parameters.dummyDbPath);
+    groupFixture = new GroupFixture(dataSource);
+    await groupFixture.init(parameters.dummyDbPath);
   });
 
   afterAll(async () => {
@@ -174,7 +179,12 @@ describe("ContentRepository", () => {
     let targetGroup: TypeormGroup;
     beforeAll(async () => {
       targetOrmUser = await userFixture.getValidUser();
-      targetGroup = (await targetOrmUser.groups).at(-1)!;
+      const { group, members } =
+        await groupFixture.getGroupHavingMembersAndContents();
+      const user = members.at(0);
+      assert(user, "user is null");
+      targetOrmUser = user;
+      targetGroup = group;
     });
 
     it("should be defined", () => {

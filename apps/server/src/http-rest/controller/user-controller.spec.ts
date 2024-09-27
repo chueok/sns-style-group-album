@@ -10,7 +10,7 @@ import { DataSource } from "typeorm";
 import { AuthFixture } from "@test-utils/fixture/auth-fixture";
 import { IAuthService } from "../auth/auth-service.interface";
 import { DiTokens } from "../../di/di-tokens";
-import { RestUserResponse } from "./documentation/user/user-response";
+import { UserResponseDto } from "./documentation/user/user-response";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -56,12 +56,9 @@ describe(`${UserController.name} e2e`, () => {
       .auth(accessToken, { type: "bearer" })
       .expect(200);
 
-    const data = result.body.data as RestUserResponse;
+    const data = result.body.data as UserResponseDto;
     expect(data.id).toBe(user.id);
     expect(data.username).toBe(user.username);
-    expect(data.thumbnailRelativePath).toBe(
-      user.thumbnailRelativePath || undefined,
-    );
     expect(data.email).toBe(user.email || undefined);
     expect(data.groups).toEqual(
       expect.arrayContaining((await user.groups).map((group) => group.id)),
