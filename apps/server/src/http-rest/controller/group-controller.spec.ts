@@ -13,6 +13,7 @@ import { GroupResponseDTO } from "./dto/group/group-response";
 import { GroupController } from "./group-controller";
 import { GroupSimpleResponseDTO } from "./dto/group/group-simple-response";
 import { assert } from "console";
+import { UserSimpleResponseDTO } from "./dto/user/user-simple-response-dto";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -86,5 +87,19 @@ describe(`${GroupController.name} e2e`, () => {
 
     const data = result.body.data as GroupSimpleResponseDTO[];
     expect(data.length).toBe(expectGroupList.length);
+  });
+
+  it("/groups/:groupId/members (GET)", async () => {
+    const { accessToken, user, group } =
+      await authFixtrue.get_group_member_accessToken();
+    assert(!group.deletedDateTime, "group was deleted");
+
+    const result = await request(app.getHttpServer())
+      .get(`/groups/${group.id}/members`)
+      .auth(accessToken, { type: "bearer" })
+      .expect(200);
+
+    const data = result.body.data as UserSimpleResponseDTO[];
+    expect(data.length).toBe((await group.members).length);
   });
 });
