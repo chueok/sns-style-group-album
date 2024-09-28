@@ -15,12 +15,14 @@ import {
   EditUserGroupProfileUsecase,
   EditUserUsecase,
   GetGroupMembersUsecase,
+  GetGroupUsecase,
   GetUserUsecase,
+  IGroupRepository,
   IUserRepository,
 } from "@repo/be-core";
 import { MinioObjectStorageFactory } from "../infrastructure/persistence/object-storage/minio/minio-adapter";
 
-const typeormSqliteOptions = {
+export const typeormSqliteOptions = {
   type: "sqlite",
   database: join("db", ServerConfig.DB_FILE),
   autoLoadEntities: true,
@@ -50,7 +52,7 @@ const persistenceProviders: Provider[] = [
   },
 ];
 
-const usecaseProviders: Provider[] = [
+const userUsecaseProviders: Provider[] = [
   {
     provide: DiTokens.GetUserUsecase,
     useFactory: (userRepository: IUserRepository) =>
@@ -83,7 +85,16 @@ const usecaseProviders: Provider[] = [
   },
 ];
 
-const providers: Provider[] = [
+const groupUsecaseProviders: Provider[] = [
+  {
+    provide: DiTokens.GetGroupUsecase,
+    useFactory: (groupRepository: IGroupRepository) =>
+      new GetGroupUsecase(groupRepository),
+    inject: [DiTokens.GroupRepository],
+  },
+];
+
+const globalProviders: Provider[] = [
   {
     provide: APP_FILTER,
     useClass: NestHttpExceptionFilter,
@@ -135,23 +146,20 @@ export class InfrastructureModule {
       imports: [TypeOrmModule.forRoot(options)],
       providers: [
         ...persistenceProviders,
-        ...usecaseProviders,
-        ...providers,
+
+        ...userUsecaseProviders,
+        ...groupUsecaseProviders,
         ...objectStorageProviders,
+
+        ...globalProviders,
       ],
       exports: [
-        DiTokens.UserRepository,
-        DiTokens.GroupRepository,
-        DiTokens.ContentRepository,
-        DiTokens.CommentRepository,
+        ...persistenceProviders,
 
-        DiTokens.GetUserUsecase,
-        DiTokens.GetGroupMemberUsecase,
-        DiTokens.DeleteUserUsecase,
-        DiTokens.EditUserUsecase,
-        DiTokens.EditUserGroupProfileUsecase,
+        ...userUsecaseProviders,
+        ...groupUsecaseProviders,
 
-        DiTokens.MediaObjectStorage,
+        ...objectStorageProviders,
       ],
     };
   }

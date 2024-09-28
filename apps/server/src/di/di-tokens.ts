@@ -8,7 +8,7 @@ export class DiTokens {
   // service
   static readonly AuthService = Symbol("AuthService");
 
-  // usecase
+  // user usecase
   static readonly GetUserUsecase = Symbol("GetUserUsecase");
   static readonly GetGroupMemberUsecase = Symbol("GetGroupMemberUsecase");
   static readonly DeleteUserUsecase = Symbol("DeleteUserUsecase");
@@ -16,6 +16,9 @@ export class DiTokens {
   static readonly EditUserGroupProfileUsecase = Symbol(
     "EditUserGroupProfileUsecase",
   );
+
+  // group usecase
+  static readonly GetGroupUsecase = Symbol("GetGroupUsecase");
 
   // storage
   static readonly ObjectStorageFactory = Symbol("ObjectStorageFactory");

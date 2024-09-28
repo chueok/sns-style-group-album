@@ -7,26 +7,27 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   UseGuards,
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { RestResponse } from "./dto/common/rest-response";
 import {
   Code,
+  GetGroupAdapter,
   GetGroupMembersAdaptor,
   GetGroupMembersUsecase,
+  GetGroupUsecase,
 } from "@repo/be-core";
 import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
-import { RestGetGroupListQuery } from "./dto/group/get-group-list-query";
-import { RestGroupSimpleResponse } from "./dto/group/group-simple-response";
-import { RestGroupResponse } from "./dto/group/group-response";
+import { GroupSimpleResponseDTO } from "./dto/group/group-simple-response";
+import { GroupResponseDTO } from "./dto/group/group-response";
 import { RestCreateGroupBody } from "./dto/group/create-group-body";
 import { RestEditGroupBody } from "./dto/group/edit-group-body";
 import { HttpJwtAuthGuard } from "../auth/guard/jwt-auth-guard";
 import { HttpGroupMemberGuard } from "../auth/guard/group-member-guard";
 import { UserSimpleResponseDTO } from "./dto/user/user-simple-response-dto";
 import { DiTokens } from "../../di/di-tokens";
+import { HttpGroupOwnerGuard } from "../auth/guard/group-owner-guard";
 
 @Controller("groups")
 @ApiTags("groups")
@@ -34,25 +35,45 @@ export class GroupController {
   constructor(
     @Inject(DiTokens.GetGroupMemberUsecase)
     private readonly getGroupMemberUsecase: GetGroupMembersUsecase,
+
+    @Inject(DiTokens.GetGroupUsecase)
+    private readonly getGroupUsecase: GetGroupUsecase,
   ) {}
 
   @Get(":groupId")
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestGroupResponse })
+  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: GroupResponseDTO })
   async getGroup(
     @Param("groupId") groupId: string,
-  ): Promise<RestResponse<RestGroupResponse | null>> {
-    throw new Error("Not implemented");
+  ): Promise<RestResponse<GroupResponseDTO>> {
+    const adapter = await GetGroupAdapter.new({
+      groupId,
+    });
+    const group = await this.getGroupUsecase.execute(adapter);
+    const dto = GroupResponseDTO.newFromGroup(group);
+
+    return RestResponse.success(dto);
   }
 
   @Get()
+  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
-    data: RestGroupSimpleResponse,
+    data: GroupSimpleResponseDTO,
     isArray: true,
   })
-  async getGroupList(
-    @Query() query: RestGetGroupListQuery,
-  ): Promise<RestGroupSimpleResponse[] | null> {
+  async getGroupList(): Promise<GroupSimpleResponseDTO[] | null> {
+    throw new Error("Not implemented");
+  }
+
+  @Get("own")
+  @UseGuards(HttpJwtAuthGuard, HttpGroupOwnerGuard)
+  @ApiResponseGeneric({
+    code: Code.SUCCESS,
+    data: GroupSimpleResponseDTO,
+    isArray: true,
+  })
+  async getOwnGroupList(): Promise<GroupSimpleResponseDTO[]> {
     throw new Error("Not implemented");
   }
 
@@ -65,19 +86,19 @@ export class GroupController {
   }
 
   @Patch(":groupId")
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestGroupResponse })
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: GroupResponseDTO })
   async editGroup(
     @Param("groupId") groupId: string,
     @Body() body: RestEditGroupBody,
-  ): Promise<RestResponse<RestGroupResponse | null>> {
+  ): Promise<RestResponse<GroupResponseDTO | null>> {
     throw new Error("Not implemented");
   }
 
   @Post()
-  @ApiResponseGeneric({ code: Code.CREATED, data: RestGroupResponse })
+  @ApiResponseGeneric({ code: Code.CREATED, data: GroupResponseDTO })
   async createGroup(
     @Body() body: RestCreateGroupBody,
-  ): Promise<RestResponse<RestGroupResponse | null>> {
+  ): Promise<RestResponse<GroupResponseDTO | null>> {
     throw new Error("Not implemented");
   }
 
