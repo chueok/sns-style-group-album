@@ -31,6 +31,8 @@ import { HttpGroupMemberGuard } from "../auth/guard/group-member-guard";
 import { GetUserGroupProfileImageUploadUrlResponseDTO } from "./dto/user/get-user-group-profile-image-upload-url-response-dto";
 import { GetProfileImageUploadUrlResponseDTO } from "./dto/user/get-profile-image-upload-url-response-dto copy";
 import { EditUserGroupProfileBody } from "./dto/user/edit-user-group-profile-body";
+import { VerifiedUser } from "../auth/decorator/verified-user";
+import { VerifiedUserPayload } from "../auth/type/verified-user-payload";
 
 @Controller("users")
 @ApiTags("users")
@@ -48,13 +50,13 @@ export class UserController {
     private readonly editUserGroupProfileUsecase: EditUserGroupProfileUsecase,
   ) {}
 
-  @Get(":userId")
+  @Get()
   @UseGuards(HttpJwtAuthGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDTO })
   async getUser(
-    @Param("userId") userId: string,
+    @VerifiedUser() verifiedUser: VerifiedUserPayload,
   ): Promise<RestResponse<UserResponseDTO>> {
-    const adapter = await GetUserAdaptor.new({ id: userId });
+    const adapter = await GetUserAdaptor.new({ id: verifiedUser.id });
 
     const user = await this.getUserUsecase.execute(adapter);
 
@@ -65,28 +67,28 @@ export class UserController {
     return RestResponse.success(userDto);
   }
 
-  @Delete(":userId")
+  @Delete()
   @UseGuards(HttpJwtAuthGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
   async deleteUser(
-    @Param("userId") userId: string,
+    @VerifiedUser() verifiedUser: VerifiedUserPayload,
   ): Promise<RestResponse<null>> {
-    const adapter = await DeleteUserAdapter.new({ id: userId });
+    const adapter = await DeleteUserAdapter.new({ id: verifiedUser.id });
 
     await this.deleteUserUsecase.execute(adapter);
 
     return RestResponse.success(null);
   }
 
-  @Patch(":userId")
+  @Patch()
   @UseGuards(HttpJwtAuthGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDTO })
   async editUser(
-    @Param("userId") userId: string,
+    @VerifiedUser() verifiedUser: VerifiedUserPayload,
     @Body() body: RestEditUserBody,
   ): Promise<RestResponse<UserResponseDTO>> {
     const adapter = await EditUserAdapter.new({
-      userId: userId,
+      userId: verifiedUser.id,
       username: body.username,
     });
 
@@ -100,21 +102,21 @@ export class UserController {
   }
 
   // TODO : email 변경 구현 (email 인증 구현 필요)
-  @Patch(":userId/email")
+  @Patch("email")
   @UseGuards(HttpJwtAuthGuard)
   async editEmail() {}
 
-  @Get(":userId/profile-image")
+  @Get("profile-image-upload-url")
   @UseGuards(HttpJwtAuthGuard)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
     data: GetProfileImageUploadUrlResponseDTO,
   })
   async getProfileImageUploadURL(
-    @Param("userId") userId: string,
+    @VerifiedUser() verifiedUser: VerifiedUserPayload,
   ): Promise<RestResponse<GetProfileImageUploadUrlResponseDTO>> {
     const response = await GetProfileImageUploadUrlResponseDTO.new(
-      userId,
+      verifiedUser.id,
       this.mediaObjectStorage,
     );
 
@@ -127,16 +129,16 @@ export class UserController {
   async editProfileImage() {}
 
   // user group profile 변경
-  @Patch(":userId/profile/:groupId")
+  @Patch("profile/:groupId")
   @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDTO })
   async editUserGroupProfile(
-    @Param("userId") userId: string,
+    @VerifiedUser() verifiedUser: VerifiedUserPayload,
     @Param("groupId") groupId: string,
     @Body() body: EditUserGroupProfileBody,
   ): Promise<RestResponse<UserResponseDTO>> {
     const adapter = await EditUserGroupProfileAdapter.new({
-      userId: userId,
+      userId: verifiedUser.id,
       groupId: groupId,
       nickname: body.nickname,
     });
@@ -150,18 +152,18 @@ export class UserController {
     return RestResponse.success(dto);
   }
 
-  @Get(":userId/profile/:groupId/profile-image")
+  @Get("profile/:groupId/profile-image-upload-url")
   @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
     data: GetUserGroupProfileImageUploadUrlResponseDTO,
   })
   async getUserGroupProfileImageUploadURL(
-    @Param("userId") userId: string,
+    @VerifiedUser() verifiedUser: VerifiedUserPayload,
     @Param("groupId") groupId: string,
   ): Promise<RestResponse<GetUserGroupProfileImageUploadUrlResponseDTO>> {
     const response = await GetUserGroupProfileImageUploadUrlResponseDTO.new(
-      userId,
+      verifiedUser.id,
       groupId,
       this.mediaObjectStorage,
     );

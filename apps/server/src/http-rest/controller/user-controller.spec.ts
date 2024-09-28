@@ -50,11 +50,11 @@ describe(`${UserController.name} e2e`, () => {
     await authFixtrue.init(parameters.dummyDbPath);
   });
 
-  it("/users/:userId (GET)", async () => {
+  it("/users (GET)", async () => {
     const { accessToken, user } =
       await authFixtrue.get_group_owner_accessToken();
     const result = await request(app.getHttpServer())
-      .get(`/users/${user.id}`)
+      .get(`/users`)
       .auth(accessToken, { type: "bearer" })
       .expect(200);
 
@@ -71,20 +71,20 @@ describe(`${UserController.name} e2e`, () => {
     expect(data.createdTimestamp).toBe(user.createdDateTime.getTime());
   });
 
-  it("/users/:userId (DELETE)", async () => {
+  it("/users (DELETE)", async () => {
     const { accessToken, user } = await authFixtrue.get_validUser_accessToken();
 
     await request(app.getHttpServer())
-      .delete(`/users/${user.id}`)
+      .delete(`/users`)
       .auth(accessToken, { type: "bearer" })
       .expect(200);
   });
 
-  it("/users/:userId (PATCH)", async () => {
+  it("/users (PATCH)", async () => {
     const { accessToken, user } = await authFixtrue.get_validUser_accessToken();
 
     const result = await request(app.getHttpServer())
-      .patch(`/users/${user.id}`)
+      .patch(`/users`)
       .auth(accessToken, { type: "bearer" })
       .send({ username: "new-username" })
       .expect(200);
@@ -93,11 +93,11 @@ describe(`${UserController.name} e2e`, () => {
     expect(data.username).toBe("new-username");
   });
 
-  it("/users/:userId/profile-image (GET)", async () => {
+  it("/users/profile-image-upload-url (GET)", async () => {
     const { accessToken, user } = await authFixtrue.get_validUser_accessToken();
 
     const result = await request(app.getHttpServer())
-      .get(`/users/${user.id}/profile-image`)
+      .get(`/users/profile-image-upload-url`)
       .auth(accessToken, { type: "bearer" })
       .expect(200);
 
@@ -105,12 +105,12 @@ describe(`${UserController.name} e2e`, () => {
     expect(typeof data.presignedUrl).toBe("string");
   });
 
-  it("/user/:userId/profile/:groupId (PATCH)", async () => {
+  it("/user/profile/:groupId (PATCH)", async () => {
     const { accessToken, user, group } =
       await authFixtrue.get_group_member_accessToken();
 
     const result = await request(app.getHttpServer())
-      .patch(`/users/${user.id}/profile/${group.id}`)
+      .patch(`/users/profile/${group.id}`)
       .auth(accessToken, { type: "bearer" })
       .send({ nickname: "new-nickname" })
       .expect(200);
@@ -122,12 +122,12 @@ describe(`${UserController.name} e2e`, () => {
     expect(userGroupProfile?.nickname).toBe("new-nickname");
   });
 
-  it("/users/:userId/profile/:groupId/profile-image (GET)", async () => {
+  it("/users/profile/:groupId/profile-image-upload-url (GET)", async () => {
     const { accessToken, user, group } =
       await authFixtrue.get_group_member_accessToken();
 
     const result = await request(app.getHttpServer())
-      .get(`/users/${user.id}/profile/${group.id}/profile-image`)
+      .get(`/users/profile/${group.id}/profile-image-upload-url`)
       .auth(accessToken, { type: "bearer" })
       .expect(200);
 
