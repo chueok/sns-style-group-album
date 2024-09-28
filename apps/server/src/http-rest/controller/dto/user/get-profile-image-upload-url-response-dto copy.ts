@@ -6,13 +6,13 @@ export class GetProfileImageUploadUrlResponseDTO {
   @ApiProperty({ type: "string" })
   presignedUrl!: string;
 
-  public static async newFromUser(
-    user: User,
+  public static async new(
+    userId: string,
     mediaObjectStorage: IObjectStoragePort,
   ): Promise<GetProfileImageUploadUrlResponseDTO> {
     const dto = new GetProfileImageUploadUrlResponseDTO();
     dto.presignedUrl = await mediaObjectStorage.getPresignedUrlForUpload(
-      ObjectStorageKeyFactory.getUserProfilePath(user.id),
+      ObjectStorageKeyFactory.getUserProfilePath(userId),
     );
     return dto;
   }

@@ -66,6 +66,45 @@ export class User extends EntityWithCUDTime<UserId> {
     await this.validate();
   }
 
+  async changeUserGroupProfile(payload: {
+    groupId: GroupId;
+    nickname?: string;
+    hasProfileImage?: boolean;
+  }): Promise<boolean> {
+    if (!this.groups.includes(payload.groupId)) {
+      return false;
+    }
+    const userGroupProfile = this._userGroupProfiles.find(
+      (profile) => profile.groupId === payload.groupId,
+    );
+    // user group profile이 없는 경우 생성
+    if (!userGroupProfile) {
+      const nickname = payload.nickname ? payload.nickname : this.username;
+      const hasProfileImage = payload.hasProfileImage
+        ? payload.hasProfileImage
+        : false;
+      this._userGroupProfiles.push(
+        new UserGroupProfile({
+          groupId: payload.groupId,
+          nickname,
+          hasProfileImage,
+        }),
+      );
+      await this.validate();
+      return true;
+    }
+
+    // user group profile이 있는 경우 수정
+    if (payload.nickname) {
+      userGroupProfile.nickname = payload.nickname;
+    }
+    if (payload.hasProfileImage) {
+      userGroupProfile.hasProfileImage = payload.hasProfileImage;
+    }
+    await this.validate();
+    return true;
+  }
+
   constructor(payload: CreateUserEntityPayload<"all">) {
     super();
     this._username = payload.username;

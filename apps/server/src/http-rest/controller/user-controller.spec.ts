@@ -12,6 +12,7 @@ import { IAuthService } from "../auth/auth-service.interface";
 import { DiTokens } from "../../di/di-tokens";
 import { UserResponseDTO } from "./dto/user/user-response-dto";
 import { GetProfileImageUploadUrlResponseDTO } from "./dto/user/get-profile-image-upload-url-response-dto copy";
+import { GetUserGroupProfileImageUploadUrlResponseDTO } from "./dto/user/get-user-group-profile-image-upload-url-response-dto";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -79,6 +80,19 @@ describe(`${UserController.name} e2e`, () => {
       .expect(200);
   });
 
+  it("/users/:userId (PATCH)", async () => {
+    const { accessToken, user } = await authFixtrue.get_validUser_accessToken();
+
+    const result = await request(app.getHttpServer())
+      .patch(`/users/${user.id}`)
+      .auth(accessToken, { type: "bearer" })
+      .send({ username: "new-username" })
+      .expect(200);
+
+    const data = result.body.data as UserResponseDTO;
+    expect(data.username).toBe("new-username");
+  });
+
   it("/users/:userId/profile-image (GET)", async () => {
     const { accessToken, user } = await authFixtrue.get_validUser_accessToken();
 
@@ -88,6 +102,37 @@ describe(`${UserController.name} e2e`, () => {
       .expect(200);
 
     const data = result.body.data as GetProfileImageUploadUrlResponseDTO;
+    expect(typeof data.presignedUrl).toBe("string");
+  });
+
+  it("/user/:userId/profile/:groupId (PATCH)", async () => {
+    const { accessToken, user, group } =
+      await authFixtrue.get_group_member_accessToken();
+
+    const result = await request(app.getHttpServer())
+      .patch(`/users/${user.id}/profile/${group.id}`)
+      .auth(accessToken, { type: "bearer" })
+      .send({ nickname: "new-nickname" })
+      .expect(200);
+
+    const data = result.body.data as UserResponseDTO;
+    const userGroupProfile = data.userGroupProfiles.find(
+      (profile) => profile.groupId === group.id,
+    );
+    expect(userGroupProfile?.nickname).toBe("new-nickname");
+  });
+
+  it("/users/:userId/profile/:groupId/profile-image (GET)", async () => {
+    const { accessToken, user, group } =
+      await authFixtrue.get_group_member_accessToken();
+
+    const result = await request(app.getHttpServer())
+      .get(`/users/${user.id}/profile/${group.id}/profile-image`)
+      .auth(accessToken, { type: "bearer" })
+      .expect(200);
+
+    const data = result.body
+      .data as GetUserGroupProfileImageUploadUrlResponseDTO;
     expect(typeof data.presignedUrl).toBe("string");
   });
 });

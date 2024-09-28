@@ -1,19 +1,19 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IObjectStoragePort, User } from "@repo/be-core";
+import { IObjectStoragePort } from "@repo/be-core";
 import { ObjectStorageKeyFactory } from "../../../../infrastructure/persistence/object-storage/key-factory/object-storage-key-factory";
 
 export class GetUserGroupProfileImageUploadUrlResponseDTO {
   @ApiProperty({ type: "string" })
   presignedUrl!: string;
 
-  public static async newFromUser(
-    user: User,
+  public static async new(
+    userId: string,
     groupId: string,
     mediaObjectStorage: IObjectStoragePort,
   ): Promise<GetUserGroupProfileImageUploadUrlResponseDTO> {
     const dto = new GetUserGroupProfileImageUploadUrlResponseDTO();
     dto.presignedUrl = await mediaObjectStorage.getPresignedUrlForUpload(
-      ObjectStorageKeyFactory.getUserGroupProfilePath(groupId, user.id),
+      ObjectStorageKeyFactory.getUserGroupProfilePath(groupId, userId),
     );
     return dto;
   }
