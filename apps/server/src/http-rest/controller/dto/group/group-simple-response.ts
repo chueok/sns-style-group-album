@@ -14,4 +14,8 @@ export class GroupSimpleResponseDTO {
     dto.name = group.name;
     return dto;
   }
+
+  static newListFromGroups(groups: Group[]): GroupSimpleResponseDTO[] {
+    return groups.map((group) => GroupSimpleResponseDTO.newFromGroup(group));
+  }
 }

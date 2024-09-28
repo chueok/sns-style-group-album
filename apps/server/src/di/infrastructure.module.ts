@@ -14,6 +14,7 @@ import {
   DeleteUserUsecase,
   EditUserGroupProfileUsecase,
   EditUserUsecase,
+  GetGroupListUsecase,
   GetGroupMembersUsecase,
   GetGroupUsecase,
   GetUserUsecase,
@@ -90,6 +91,12 @@ const groupUsecaseProviders: Provider[] = [
     provide: DiTokens.GetGroupUsecase,
     useFactory: (groupRepository: IGroupRepository) =>
       new GetGroupUsecase(groupRepository),
+    inject: [DiTokens.GroupRepository],
+  },
+  {
+    provide: DiTokens.GetGroupListUsecase,
+    useFactory: (groupRepository: IGroupRepository) =>
+      new GetGroupListUsecase(groupRepository),
     inject: [DiTokens.GroupRepository],
   },
 ];

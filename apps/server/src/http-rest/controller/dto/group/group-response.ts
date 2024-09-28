@@ -26,4 +26,8 @@ export class GroupResponseDTO {
     dto.createdTimestamp = group.createdDateTime.getTime();
     return dto;
   }
+
+  static newListFromGroups(groups: Group[]): GroupResponseDTO[] {
+    return groups.map((group) => GroupResponseDTO.newFromGroup(group));
+  }
 }

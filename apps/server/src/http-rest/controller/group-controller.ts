@@ -14,6 +14,8 @@ import { RestResponse } from "./dto/common/rest-response";
 import {
   Code,
   GetGroupAdapter,
+  GetGroupListAdapter,
+  GetGroupListUsecase,
   GetGroupMembersAdaptor,
   GetGroupMembersUsecase,
   GetGroupUsecase,
@@ -28,6 +30,8 @@ import { HttpGroupMemberGuard } from "../auth/guard/group-member-guard";
 import { UserSimpleResponseDTO } from "./dto/user/user-simple-response-dto";
 import { DiTokens } from "../../di/di-tokens";
 import { HttpGroupOwnerGuard } from "../auth/guard/group-owner-guard";
+import { VerifiedUser } from "../auth/decorator/verified-user";
+import { VerifiedUserPayload } from "../auth/type/verified-user-payload";
 
 @Controller("groups")
 @ApiTags("groups")
@@ -38,6 +42,9 @@ export class GroupController {
 
     @Inject(DiTokens.GetGroupUsecase)
     private readonly getGroupUsecase: GetGroupUsecase,
+
+    @Inject(DiTokens.GetGroupListUsecase)
+    private readonly getGroupListUsecase: GetGroupListUsecase,
   ) {}
 
   @Get(":groupId")
@@ -56,14 +63,22 @@ export class GroupController {
   }
 
   @Get()
-  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
+  @UseGuards(HttpJwtAuthGuard)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
     data: GroupSimpleResponseDTO,
     isArray: true,
   })
-  async getGroupList(): Promise<GroupSimpleResponseDTO[] | null> {
-    throw new Error("Not implemented");
+  async getGroupList(
+    @VerifiedUser() verifiedUser: VerifiedUserPayload,
+  ): Promise<RestResponse<GroupSimpleResponseDTO[]>> {
+    const adapter = await GetGroupListAdapter.new({ userId: verifiedUser.id });
+
+    const groupList = await this.getGroupListUsecase.execute(adapter);
+
+    const dtos = GroupSimpleResponseDTO.newListFromGroups(groupList);
+
+    return RestResponse.success(dtos);
   }
 
   @Get("own")

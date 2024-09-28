@@ -48,9 +48,13 @@ export class TypeormGroupRepository implements IGroupRepository {
   }
 
   async findGroupById(groupId: GroupId): Promise<Nullable<Group>> {
-    const ormGroup = await this.typeormGroupRepository.findOneBy({
-      id: groupId,
-    });
+    const ormGroup = await this.typeormGroupRepository
+      .createQueryBuilder("group")
+      .leftJoinAndSelect("group.members", "member")
+      .where("group.id = :groupId", { groupId })
+      .andWhere("group.deletedDateTime is null")
+      .getOne();
+
     if (!ormGroup) {
       this.logger.error(`Group not found. id: ${groupId}`);
       return null;
@@ -72,6 +76,7 @@ export class TypeormGroupRepository implements IGroupRepository {
     const ormGroups = await this.typeormGroupRepository
       .createQueryBuilder("group")
       .where("group.ownerId = :ownerId", { ownerId })
+      .andWhere("group.deletedDateTime is null")
       .getMany();
 
     const groupElements = await Promise.all(
@@ -99,6 +104,7 @@ export class TypeormGroupRepository implements IGroupRepository {
       .createQueryBuilder("group")
       .innerJoinAndSelect("group.members", "member")
       .where("member.id = :userId", { userId })
+      .andWhere("group.deletedDateTime is null")
       .getMany();
 
     const groupElements = await Promise.all(
