@@ -28,7 +28,6 @@ import { plainToInstance } from "class-transformer";
 import { validateSync } from "class-validator";
 import { IAuthService } from "./auth-service.interface";
 import { JwtSignupModel, JwtSignupPayload } from "./type/jwt-signup-payload";
-import { JwtUserPayload } from "./type/jwt-user-payload";
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -55,7 +54,7 @@ export class AuthService implements IAuthService {
   /**
    * 유저 정보를 통해 로그인 토큰을 발급
    */
-  async getLoginToken(user: JwtUserPayload): Promise<RestResponseJwt> {
+  async getLoginToken(user: VerifiedUserPayload): Promise<RestResponseJwt> {
     return {
       accessToken: this.jwtService.sign(user),
     };

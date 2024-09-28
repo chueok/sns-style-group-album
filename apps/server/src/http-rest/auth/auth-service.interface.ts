@@ -3,10 +3,9 @@ import { OauthUserPayload } from "./type/oauth-user-payload";
 import { RestResponseJwt } from "../controller/dto/auth/rest-response-jwt";
 import { RestResponseSignupJwt } from "../controller/dto/auth/rest-response-signup-jwt";
 import { Nullable } from "@repo/be-core";
-import { JwtUserPayload } from "./type/jwt-user-payload";
 
 export interface IAuthService {
-  getLoginToken(user: JwtUserPayload): Promise<RestResponseJwt>;
+  getLoginToken(user: VerifiedUserPayload): Promise<RestResponseJwt>;
 
   getSignupToken(user: OauthUserPayload): Promise<RestResponseSignupJwt>;
 
