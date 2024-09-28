@@ -5,7 +5,10 @@ import { TypeormContent } from "../../../entity/content/typeorm-content.entity";
 import { ContentMapper } from "./content-mapper";
 import { Content } from "@repo/be-core";
 import { Test, TestingModule } from "@nestjs/testing";
-import { InfrastructureModule } from "../../../../../../di/infrastructure.module";
+import {
+  InfrastructureModule,
+  typeormSqliteOptions,
+} from "../../../../../../di/infrastructure.module";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -17,15 +20,20 @@ describe("ContentMapper", () => {
   let dataSource: DataSource;
   let testDatabaseHandler: DummyDatabaseHandler;
   beforeAll(async () => {
+    const testDataSource = new DataSource({
+      ...typeormSqliteOptions,
+      database: parameters.testDbPath,
+      synchronize: false,
+      dropSchema: false,
+    });
+    await testDataSource.initialize();
+
     module = await Test.createTestingModule({
-      imports: [
-        InfrastructureModule.forRoot({
-          database: parameters.testDbPath,
-          synchronize: false,
-          dropSchema: false,
-        }),
-      ],
-    }).compile();
+      imports: [InfrastructureModule],
+    })
+      .overrideProvider(DataSource)
+      .useValue(testDataSource)
+      .compile();
     dataSource = module.get<DataSource>(DataSource);
 
     testDatabaseHandler = new DummyDatabaseHandler(dataSource);

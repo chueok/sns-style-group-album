@@ -1,4 +1,4 @@
-import { DynamicModule, Provider } from "@nestjs/common";
+import { Global, Module, Provider } from "@nestjs/common";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { join } from "path";
 import { ServerConfig } from "../config/server-config";
@@ -122,45 +122,25 @@ const objectStorageProviders: Provider[] = [
 ];
 
 // NOTE : dynamic module의 object에 덮어 씌워짐
-// @Global()
-// @Module({
-//   imports: [TypeOrmModule.forRoot(typeormSqliteOptions)],
-//   providers: [...persistenceProviders],
-// })
-export class InfrastructureModule {
-  static forRoot(payload?: {
-    database?: string;
-    synchronize?: boolean;
-    dropSchema?: boolean;
-  }): DynamicModule {
-    const options = {
-      ...typeormSqliteOptions,
-      database: payload?.database || typeormSqliteOptions.database,
-      synchronize: payload?.synchronize || typeormSqliteOptions.synchronize,
-      dropSchema: payload?.dropSchema || typeormSqliteOptions.dropSchema,
-    };
+@Global()
+@Module({
+  imports: [TypeOrmModule.forRoot(typeormSqliteOptions)],
+  providers: [
+    ...persistenceProviders,
 
-    return {
-      module: InfrastructureModule,
-      global: true,
-      imports: [TypeOrmModule.forRoot(options)],
-      providers: [
-        ...persistenceProviders,
+    ...userUsecaseProviders,
+    ...groupUsecaseProviders,
+    ...objectStorageProviders,
 
-        ...userUsecaseProviders,
-        ...groupUsecaseProviders,
-        ...objectStorageProviders,
+    ...globalProviders,
+  ],
+  exports: [
+    ...persistenceProviders,
 
-        ...globalProviders,
-      ],
-      exports: [
-        ...persistenceProviders,
+    ...userUsecaseProviders,
+    ...groupUsecaseProviders,
 
-        ...userUsecaseProviders,
-        ...groupUsecaseProviders,
-
-        ...objectStorageProviders,
-      ],
-    };
-  }
-}
+    ...objectStorageProviders,
+  ],
+})
+export class InfrastructureModule {}

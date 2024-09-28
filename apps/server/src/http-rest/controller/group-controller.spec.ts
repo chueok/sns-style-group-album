@@ -30,6 +30,7 @@ describe(`${UserController.name} e2e`, () => {
       dropSchema: false,
     });
     await testDataSource.initialize();
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })

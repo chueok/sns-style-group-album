@@ -1,6 +1,9 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { basename, join } from "path";
-import { InfrastructureModule } from "../../di/infrastructure.module";
+import {
+  InfrastructureModule,
+  typeormSqliteOptions,
+} from "../../di/infrastructure.module";
 import { INestApplication } from "@nestjs/common";
 import { AppModule } from "../../app.module";
 import request from "supertest";
@@ -25,17 +28,21 @@ describe(`${UserController.name} e2e`, () => {
   let authFixtrue: AuthFixture;
 
   beforeEach(async () => {
+    const testDataSource = new DataSource({
+      ...typeormSqliteOptions,
+      database: parameters.testDbPath,
+      synchronize: false,
+      dropSchema: false,
+    });
+    await testDataSource.initialize();
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
       .overrideModule(InfrastructureModule)
-      .useModule(
-        InfrastructureModule.forRoot({
-          database: parameters.testDbPath,
-          synchronize: false,
-          dropSchema: false,
-        }),
-      )
+      .useModule(InfrastructureModule)
+      .overrideProvider(DataSource)
+      .useValue(testDataSource)
       .compile();
 
     app = moduleFixture.createNestApplication();

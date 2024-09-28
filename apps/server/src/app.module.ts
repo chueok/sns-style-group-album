@@ -9,7 +9,7 @@ import { GroupController } from "./http-rest/controller/group-controller";
 import { ContentController } from "./http-rest/controller/content-controller";
 
 @Module({
-  imports: [InfrastructureModule.forRoot(), AuthModule],
+  imports: [InfrastructureModule, AuthModule],
   controllers: [
     AppController,
     UserController,

@@ -3,7 +3,10 @@ import { DataSource, Repository } from "typeorm";
 import { join, basename } from "path";
 import { TypeormLike } from "../like/typeorm-like.entity";
 import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
-import { InfrastructureModule } from "../../../../../di/infrastructure.module";
+import {
+  InfrastructureModule,
+  typeormSqliteOptions,
+} from "../../../../../di/infrastructure.module";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -17,15 +20,20 @@ describe("TypeormLike", () => {
   let testDatabaseHandler: DummyDatabaseHandler;
 
   beforeAll(async () => {
+    const testDataSource = new DataSource({
+      ...typeormSqliteOptions,
+      database: parameters.testDbPath,
+      synchronize: false,
+      dropSchema: false,
+    });
+    await testDataSource.initialize();
+
     module = await Test.createTestingModule({
-      imports: [
-        InfrastructureModule.forRoot({
-          database: parameters.testDbPath,
-          synchronize: false,
-          dropSchema: false,
-        }),
-      ],
-    }).compile();
+      imports: [InfrastructureModule],
+    })
+      .overrideProvider(DataSource)
+      .useValue(testDataSource)
+      .compile();
 
     dataSource = module.get<DataSource>(DataSource);
     repository = dataSource.getRepository(TypeormLike);

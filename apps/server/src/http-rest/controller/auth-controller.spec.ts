@@ -8,11 +8,15 @@ import { Code } from "@repo/be-core";
 import { JwtService } from "@nestjs/jwt";
 import { AppController } from "../../app.controller";
 import { AppService } from "../../app.service";
-import { InfrastructureModule } from "../../di/infrastructure.module";
+import {
+  InfrastructureModule,
+  typeormSqliteOptions,
+} from "../../di/infrastructure.module";
 import { AuthModule } from "../../di/auth.module";
 import { OauthUserPayload } from "../auth/type/oauth-user-payload";
 import { DiTokens } from "../../di/di-tokens";
 import { IAuthService } from "../auth/auth-service.interface";
+import { DataSource } from "typeorm";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -25,16 +29,17 @@ describe("AuthController", () => {
   let jwtService: JwtService;
 
   beforeEach(async () => {
+    const testDataSource = new DataSource({
+      ...typeormSqliteOptions,
+      database: parameters.testDbPath,
+      synchronize: true,
+    });
+    await testDataSource.initialize();
+
     testingModule = await Test.createTestingModule({
       controllers: [AppController],
       providers: [AppService],
-      imports: [
-        InfrastructureModule.forRoot({
-          database: parameters.testDbPath,
-          synchronize: true,
-        }),
-        AuthModule,
-      ],
+      imports: [InfrastructureModule, AuthModule],
     }).compile();
 
     authService = testingModule.get<IAuthService>(DiTokens.AuthService);

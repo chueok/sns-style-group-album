@@ -13,7 +13,10 @@ import { ContentTypeEnum } from "@repo/be-core";
 import { TypeormComment } from "../comment/typeorm-comment.entity";
 import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
 import { TypeormLike } from "../like/typeorm-like.entity";
-import { InfrastructureModule } from "../../../../../di/infrastructure.module";
+import {
+  InfrastructureModule,
+  typeormSqliteOptions,
+} from "../../../../../di/infrastructure.module";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -27,15 +30,20 @@ describe("TypeormContent", () => {
   let testDatabaseHandler: DummyDatabaseHandler;
 
   beforeAll(async () => {
+    const testDataSource = new DataSource({
+      ...typeormSqliteOptions,
+      database: parameters.testDbPath,
+      synchronize: false,
+      dropSchema: false,
+    });
+    await testDataSource.initialize();
+
     module = await Test.createTestingModule({
-      imports: [
-        InfrastructureModule.forRoot({
-          database: parameters.testDbPath,
-          synchronize: false,
-          dropSchema: false,
-        }),
-      ],
-    }).compile();
+      imports: [InfrastructureModule],
+    })
+      .overrideProvider(DataSource)
+      .useValue(testDataSource)
+      .compile();
 
     dataSource = module.get<DataSource>(DataSource);
     repository = dataSource.getRepository(TypeormContent);

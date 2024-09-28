@@ -5,7 +5,10 @@ import { TypeormUser } from "../../../entity/user/typeorm-user.entity";
 import { UserMapper } from "./user-mapper";
 import { User } from "@repo/be-core";
 import { Test, TestingModule } from "@nestjs/testing";
-import { InfrastructureModule } from "../../../../../../di/infrastructure.module";
+import {
+  InfrastructureModule,
+  typeormSqliteOptions,
+} from "../../../../../../di/infrastructure.module";
 import { TypeormUserGroupProfile } from "../../../entity/user-group-profile/typeorm-user-group-profile.entity";
 
 const parameters = {
@@ -18,15 +21,20 @@ describe("UserMapper", () => {
   let dataSource: DataSource;
   let testDatabaseHandler: DummyDatabaseHandler;
   beforeAll(async () => {
+    const testDataSource = new DataSource({
+      ...typeormSqliteOptions,
+      database: parameters.testDbPath,
+      synchronize: false,
+      dropSchema: false,
+    });
+    await testDataSource.initialize();
+
     module = await Test.createTestingModule({
-      imports: [
-        InfrastructureModule.forRoot({
-          database: parameters.testDbPath,
-          synchronize: false,
-          dropSchema: false,
-        }),
-      ],
-    }).compile();
+      imports: [InfrastructureModule],
+    })
+      .overrideProvider(DataSource)
+      .useValue(testDataSource)
+      .compile();
     dataSource = module.get<DataSource>(DataSource);
 
     testDatabaseHandler = new DummyDatabaseHandler(dataSource);

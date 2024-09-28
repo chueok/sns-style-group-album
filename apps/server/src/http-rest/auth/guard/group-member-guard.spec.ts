@@ -1,7 +1,10 @@
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { Test, TestingModule } from "@nestjs/testing";
 import { HttpGroupMemberGuard } from "./group-member-guard";
-import { InfrastructureModule } from "../../../di/infrastructure.module";
+import {
+  InfrastructureModule,
+  typeormSqliteOptions,
+} from "../../../di/infrastructure.module";
 import { AuthModule } from "../../../di/auth.module";
 import { basename, join } from "path";
 import { Controller, Get, UseGuards } from "@nestjs/common";
@@ -40,17 +43,21 @@ describe(`${HttpGroupMemberGuard.name}`, () => {
   let fixture: AuthFixture;
 
   beforeAll(async () => {
+    const testDataSource = new DataSource({
+      ...typeormSqliteOptions,
+      database: parameters.testDbPath,
+      synchronize: true,
+    });
+    await testDataSource.initialize();
+
     testingModule = await Test.createTestingModule({
       controllers: [TestController],
       providers: [],
-      imports: [
-        InfrastructureModule.forRoot({
-          database: parameters.testDbPath,
-          synchronize: true,
-        }),
-        AuthModule,
-      ],
-    }).compile();
+      imports: [InfrastructureModule, AuthModule],
+    })
+      .overrideProvider(DataSource)
+      .useValue(testDataSource)
+      .compile();
 
     testingServer = testingModule.createNestApplication();
     await testingServer.init();
