@@ -2,7 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IObjectStoragePort, User } from "@repo/be-core";
 import { ObjectStorageKeyFactory } from "../../../../infrastructure/persistence/object-storage/key-factory/object-storage-key-factory";
 
-export class UserGroupProfileResponseDto {
+export class UserGroupProfileResponseDTO {
   @ApiProperty({ type: "string" })
   groupId!: string;
 
@@ -13,7 +13,7 @@ export class UserGroupProfileResponseDto {
   profileImagePath!: string;
 }
 
-export class UserResponseDto {
+export class UserResponseDTO {
   @ApiProperty({ type: "string" })
   id: string;
 
@@ -32,8 +32,8 @@ export class UserResponseDto {
   @ApiProperty({ type: "string", isArray: true })
   ownGroups: string[];
 
-  @ApiProperty({ type: UserGroupProfileResponseDto, isArray: true })
-  userGroupProfiles: UserGroupProfileResponseDto[];
+  @ApiProperty({ type: UserGroupProfileResponseDTO, isArray: true })
+  userGroupProfiles: UserGroupProfileResponseDTO[];
 
   @ApiProperty({ type: "number" })
   createdTimestamp: number;
@@ -41,7 +41,7 @@ export class UserResponseDto {
   @ApiPropertyOptional({ type: "number" })
   updatedTimestamp?: number;
 
-  constructor(payload: UserResponseDto) {
+  constructor(payload: UserResponseDTO) {
     this.id = payload.id;
     this.username = payload.username;
     this.email = payload.email;
@@ -56,7 +56,7 @@ export class UserResponseDto {
   public static async newFromUser(
     user: User,
     mediaObjectStorage: IObjectStoragePort,
-  ): Promise<UserResponseDto> {
+  ): Promise<UserResponseDTO> {
     let profileImagePath: string | undefined = undefined;
     if (user.hasProfile) {
       profileImagePath = await mediaObjectStorage.getPresignedUrlForDownload(
@@ -82,7 +82,7 @@ export class UserResponseDto {
       },
     );
 
-    const userGroupProfiles: UserGroupProfileResponseDto[] = [];
+    const userGroupProfiles: UserGroupProfileResponseDTO[] = [];
     const error: Error[] = []; // TODO : error logging 필요
     await Promise.allSettled(userGroupProfilesPromises).then((results) => {
       results.forEach((result) => {
@@ -94,7 +94,7 @@ export class UserResponseDto {
       });
     });
 
-    const payload: UserResponseDto = {
+    const payload: UserResponseDTO = {
       id: user.id,
       username: user.username,
       email: user.email || undefined,
@@ -106,16 +106,16 @@ export class UserResponseDto {
       updatedTimestamp: user.updatedDateTime?.getTime(),
     };
 
-    return new UserResponseDto(payload);
+    return new UserResponseDTO(payload);
   }
 
   public static async newListFromUsers(
     users: User[],
     mediaObjectStorage: IObjectStoragePort,
-  ): Promise<UserResponseDto[]> {
+  ): Promise<UserResponseDTO[]> {
     const dtos = await Promise.all(
       users.map(async (user) =>
-        UserResponseDto.newFromUser(user, mediaObjectStorage),
+        UserResponseDTO.newFromUser(user, mediaObjectStorage),
       ),
     );
     return dtos;

@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 
-export class EditProfileImageResponse {
+export class EditProfileImageResponseDTO {
   @ApiProperty({ type: "string" })
   presignedUrl!: string;
 }

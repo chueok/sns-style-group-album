@@ -10,7 +10,7 @@ import {
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { RestResponse } from "./dto/common/rest-response";
-import { UserResponseDto } from "./dto/user/user-response";
+import { UserResponseDTO } from "./dto/user/user-response-dto";
 import {
   Code,
   DeleteUserAdapter,
@@ -23,7 +23,7 @@ import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
 import { RestEditUserBody } from "./dto/user/edit-user-body";
 import { DiTokens } from "../../di/di-tokens";
 import { HttpJwtAuthGuard } from "../auth/guard/jwt-auth-guard";
-import { EditProfileImageResponse } from "./dto/user/edit-profile-image-response";
+import { EditProfileImageResponseDTO } from "./dto/user/edit-profile-image-response-dto";
 
 @Controller("users")
 @ApiTags("users")
@@ -39,15 +39,15 @@ export class UserController {
 
   @Get(":userId")
   @UseGuards(HttpJwtAuthGuard)
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDto })
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDTO })
   async getUser(
     @Param("userId") userId: string,
-  ): Promise<RestResponse<UserResponseDto>> {
+  ): Promise<RestResponse<UserResponseDTO>> {
     const adapter = await GetUserAdaptor.new({ id: userId });
 
     const user = await this.getUserUsecase.execute(adapter);
 
-    const userDto = await UserResponseDto.newFromUser(
+    const userDto = await UserResponseDTO.newFromUser(
       user,
       this.mediaObjectStorage,
     );
@@ -68,21 +68,21 @@ export class UserController {
   }
 
   @Patch(":userId")
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDto })
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDTO })
   async editUser(
     @Param("userId") userId: string,
     @Body() body: RestEditUserBody,
-  ): Promise<RestResponse<UserResponseDto | null>> {
+  ): Promise<RestResponse<UserResponseDTO | null>> {
     throw new Error("Not implemented");
   }
 
   // TODO : profile 사진 변경은 별도 API로 분리 (presigned url 제공)
   @Patch(":userId/profile-image")
   @UseGuards(HttpJwtAuthGuard)
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: EditProfileImageResponse })
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: EditProfileImageResponseDTO })
   async editProfileImage(
     @Param("userId") userId: string,
-  ): Promise<RestResponse<EditProfileImageResponse>> {
+  ): Promise<RestResponse<EditProfileImageResponseDTO>> {
     throw new Error("Not implemented");
   }
 }

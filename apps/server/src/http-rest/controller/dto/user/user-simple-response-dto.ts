@@ -2,7 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IObjectStoragePort, User } from "@repo/be-core";
 import { ObjectStorageKeyFactory } from "../../../../infrastructure/persistence/object-storage/key-factory/object-storage-key-factory";
 
-export class UserSimpleResponse {
+export class UserSimpleResponseDTO {
   @ApiProperty({ type: "string" })
   id: string;
 
@@ -12,7 +12,7 @@ export class UserSimpleResponse {
   @ApiPropertyOptional({ type: "string" })
   profileImagePath?: string;
 
-  constructor(payload: UserSimpleResponse) {
+  constructor(payload: UserSimpleResponseDTO) {
     this.id = payload.id;
     this.username = payload.username;
     this.profileImagePath = payload.profileImagePath;
@@ -22,7 +22,7 @@ export class UserSimpleResponse {
     user: User;
     groupId: string;
     mediaObjectStorage: IObjectStoragePort;
-  }): Promise<UserSimpleResponse> {
+  }): Promise<UserSimpleResponseDTO> {
     const { user, groupId, mediaObjectStorage } = payload;
     let profileImagePath: string | undefined = undefined;
     const userGroupProfile = user.userGroupProfiles.find(
@@ -33,7 +33,7 @@ export class UserSimpleResponse {
         ObjectStorageKeyFactory.getUserGroupProfilePath(groupId, user.id),
       );
     }
-    const dto: UserSimpleResponse = new UserSimpleResponse({
+    const dto: UserSimpleResponseDTO = new UserSimpleResponseDTO({
       id: user.id,
       username: user.username,
       profileImagePath,

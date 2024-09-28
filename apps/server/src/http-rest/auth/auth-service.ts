@@ -31,7 +31,7 @@ import { JwtSignupModel, JwtSignupPayload } from "./type/jwt-signup-payload";
 import { JwtUserPayload } from "./type/jwt-user-payload";
 
 @Injectable()
-export class HttpAuthService implements IAuthService {
+export class AuthService implements IAuthService {
   private readonly typeormUserRepository: Repository<TypeormUser>;
   private readonly typeormOauthRepository: Repository<TypeormOauth>;
   private readonly typeormGroupRepository: Repository<TypeormGroup>;
@@ -49,7 +49,7 @@ export class HttpAuthService implements IAuthService {
     this.typeormUserRepository = dataSource.getRepository(TypeormUser);
     this.typeormGroupRepository = dataSource.getRepository(TypeormGroup);
 
-    this.logger = logger || new Logger(HttpAuthService.name);
+    this.logger = logger || new Logger(AuthService.name);
   }
 
   /**
