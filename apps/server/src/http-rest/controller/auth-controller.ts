@@ -51,10 +51,6 @@ export class AuthController {
     code: Code.WRONG_CREDENTIALS_ERROR,
     data: RestResponseSignupJwt,
   })
-  @ApiResponseGeneric({
-    code: Code.UNAUTHORIZED_ERROR,
-    data: null,
-  })
   async googleAuthCallback(
     @VerifiedUser() user: VerifiedUserPayload | OauthUserPayload,
   ): Promise<RestResponse<RestResponseSignupJwt | RestResponseJwt | null>> {
@@ -74,16 +70,6 @@ export class AuthController {
 
   @Post("signup")
   @ApiResponseGeneric({ code: Code.CREATED, data: RestResponseJwt })
-  @ApiResponseGeneric({
-    code: Code.UNAUTHORIZED_ERROR,
-    data: null,
-    description: "invalid signup-token",
-  })
-  @ApiResponseGeneric({
-    code: Code.BAD_REQUEST_ERROR,
-    data: null,
-    description: "invalid body",
-  })
   async signup(
     @Req() req: Request,
     @Body() body: RestAuthSignupBody,
