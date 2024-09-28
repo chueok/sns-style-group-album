@@ -23,7 +23,9 @@ import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
 import { RestEditUserBody } from "./dto/user/edit-user-body";
 import { DiTokens } from "../../di/di-tokens";
 import { HttpJwtAuthGuard } from "../auth/guard/jwt-auth-guard";
-import { EditProfileImageResponseDTO } from "./dto/user/edit-profile-image-response-dto";
+import { HttpGroupMemberGuard } from "../auth/guard/group-member-guard";
+import { GetUserGroupProfileImageUploadUrlResponseDTO } from "./dto/user/get-user-group-profile-image-upload-url-response-dto";
+import { GetProfileImageUploadUrlResponseDTO } from "./dto/user/get-profile-image-upload-url-response-dto copy";
 
 @Controller("users")
 @ApiTags("users")
@@ -68,6 +70,7 @@ export class UserController {
   }
 
   @Patch(":userId")
+  @UseGuards(HttpJwtAuthGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDTO })
   async editUser(
     @Param("userId") userId: string,
@@ -76,13 +79,46 @@ export class UserController {
     throw new Error("Not implemented");
   }
 
-  // TODO : profile 사진 변경은 별도 API로 분리 (presigned url 제공)
-  @Patch(":userId/profile-image")
+  // TODO : email 변경 구현 (email 인증 구현 필요)
+  @Patch(":userId/email")
   @UseGuards(HttpJwtAuthGuard)
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: EditProfileImageResponseDTO })
-  async editProfileImage(
+  async editEmail() {}
+
+  @Get(":userId/profile-image")
+  @UseGuards(HttpJwtAuthGuard)
+  @ApiResponseGeneric({
+    code: Code.SUCCESS,
+    data: GetProfileImageUploadUrlResponseDTO,
+  })
+  async getProfileImageUploadURL(
     @Param("userId") userId: string,
-  ): Promise<RestResponse<EditProfileImageResponseDTO>> {
-    throw new Error("Not implemented");
+  ): Promise<RestResponse<GetProfileImageUploadUrlResponseDTO>> {
+    const adapter = await GetUserAdaptor.new({ id: userId });
+    const user = await this.getUserUsecase.execute(adapter);
+    const response = await GetProfileImageUploadUrlResponseDTO.newFromUser(
+      user,
+      this.mediaObjectStorage,
+    );
+
+    return RestResponse.success(response);
   }
+
+  @Patch(":userId/profile-image")
+  async editProfileImage() {}
+
+  @Patch(":userId/profile/:groupId")
+  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
+  async editUserGroupProfile() {}
+
+  @Get(":userId/profile/:groupId/profile-image")
+  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
+  @ApiResponseGeneric({
+    code: Code.SUCCESS,
+    data: GetUserGroupProfileImageUploadUrlResponseDTO,
+  })
+  async getUserGroupProfileImageUploadURL() {}
+
+  @Patch(":userId/profile/:groupId/profile-image")
+  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
+  async editUserGroupProfileImage() {}
 }

@@ -11,6 +11,7 @@ import { AuthFixture } from "@test-utils/fixture/auth-fixture";
 import { IAuthService } from "../auth/auth-service.interface";
 import { DiTokens } from "../../di/di-tokens";
 import { UserResponseDTO } from "./dto/user/user-response-dto";
+import { GetProfileImageUploadUrlResponseDTO } from "./dto/user/get-profile-image-upload-url-response-dto copy";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -76,5 +77,17 @@ describe(`${UserController.name} e2e`, () => {
       .delete(`/users/${user.id}`)
       .auth(accessToken, { type: "bearer" })
       .expect(200);
+  });
+
+  it("/users/:userId/profile-image (GET)", async () => {
+    const { accessToken, user } = await authFixtrue.get_validUser_accessToken();
+
+    const result = await request(app.getHttpServer())
+      .get(`/users/${user.id}/profile-image`)
+      .auth(accessToken, { type: "bearer" })
+      .expect(200);
+
+    const data = result.body.data as GetProfileImageUploadUrlResponseDTO;
+    expect(typeof data.presignedUrl).toBe("string");
   });
 });
