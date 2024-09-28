@@ -28,6 +28,7 @@ import { plainToInstance } from "class-transformer";
 import { validateSync } from "class-validator";
 import { IAuthService } from "./auth-service.interface";
 import { JwtSignupModel, JwtSignupPayload } from "./type/jwt-signup-payload";
+import { ISignupPort } from "./port/signup-port";
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -86,11 +87,7 @@ export class AuthService implements IAuthService {
     };
   }
 
-  async signup(payload: {
-    signupToken: string;
-    username: string;
-    email: string;
-  }): Promise<RestResponseJwt> {
+  async signup(payload: ISignupPort): Promise<RestResponseJwt> {
     const signupPayload = await this.validateSignupToken(payload.signupToken);
     if (!signupPayload) {
       throw Exception.new({

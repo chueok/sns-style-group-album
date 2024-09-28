@@ -26,6 +26,7 @@ import { HttpGoogleAuthGuard } from "../auth/guard/google-auth-guard";
 import { ExtractJwt } from "passport-jwt";
 import { DiTokens } from "../../di/di-tokens";
 import { IAuthService } from "../auth/auth-service.interface";
+import { SignupAdaptor } from "../auth/port/signup-port";
 
 const AUTH_PATH_NAME = "auth";
 const googleCallbackPath = validateCallbackPath();
@@ -92,11 +93,13 @@ export class AuthController {
       throw Exception.new({ code: Code.UNAUTHORIZED_ERROR });
     }
 
-    const loginToken = await this.authService.signup({
+    const adapter = await SignupAdaptor.new({
       signupToken: jwt,
       username: body.username,
       email: body.email,
     });
+
+    const loginToken = await this.authService.signup(adapter);
 
     return RestResponse.success(loginToken);
   }

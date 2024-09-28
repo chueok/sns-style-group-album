@@ -8,9 +8,8 @@ import { TypeormCommentRepository } from "../infrastructure/persistence/typeorm/
 import { TypeormGroupRepository } from "../infrastructure/persistence/typeorm/repository/group/group-repository";
 import { TypeormContentRepository } from "../infrastructure/persistence/typeorm/repository/content/content-repository";
 import { TYPEORM_DIRECTORY } from "../infrastructure/persistence/typeorm/typeorm-directory";
-import { APP_FILTER, APP_PIPE } from "@nestjs/core";
+import { APP_FILTER } from "@nestjs/core";
 import { NestHttpExceptionFilter } from "../http-rest/exception-filter/NestHttpExceptionFilter";
-import { ClassValidationPipe } from "../http-rest/pipe/class-validation.pipe";
 import {
   DeleteUserUsecase,
   GetGroupMembersUsecase,
@@ -74,10 +73,6 @@ const providers: Provider[] = [
   {
     provide: APP_FILTER,
     useClass: NestHttpExceptionFilter,
-  },
-  {
-    provide: APP_PIPE,
-    useClass: ClassValidationPipe,
   },
 ];
 
