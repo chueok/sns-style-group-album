@@ -5,9 +5,8 @@ import { TypeormGroup } from "../../src/infrastructure/persistence/typeorm/entit
 import assert from "assert";
 import { TypeormUser } from "../../src/infrastructure/persistence/typeorm/entity/user/typeorm-user.entity";
 import { JwtService } from "@nestjs/jwt";
-import { HttpJwtUserPayload } from "../../src/http-rest/auth/type/http-jwt";
+import { JwtUserPayload } from "../../src/http-rest/auth/type/jwt-user-payload";
 import { v4 } from "uuid";
-import { faker } from "@faker-js/faker";
 
 export class AuthFixture {
   private readonly dbHandler: DummyDatabaseHandler;
@@ -68,7 +67,7 @@ export class AuthFixture {
       .at(0);
     assert(!!validUser, "user list is empty");
 
-    const payload: HttpJwtUserPayload = {
+    const payload: JwtUserPayload = {
       id: validUser.id,
     };
     const accessToken = this.jwtService.sign(payload, {
@@ -82,11 +81,11 @@ export class AuthFixture {
 
   public async get_invalidAccessToken_invalidUser_validScretKey(): Promise<{
     accessToken: string;
-    payload: HttpJwtUserPayload;
+    payload: JwtUserPayload;
   }> {
     assert(!!this.jwtService, "jwtService is not exist");
 
-    const payload: HttpJwtUserPayload = {
+    const payload: JwtUserPayload = {
       id: v4(),
     };
     const accessToken = this.jwtService.sign(payload);

@@ -5,7 +5,7 @@ import {
   LoggerService,
   Optional as OptionalInject,
 } from "@nestjs/common";
-import { HttpUserPayload } from "./type/http-user";
+import { VerifiedUserPayload } from "./type/verified-user-payload";
 import {
   Code,
   CreateUserEntityPayload,
@@ -18,16 +18,17 @@ import {
 import { JwtService } from "@nestjs/jwt";
 import { DataSource, Repository } from "typeorm";
 import { TypeormOauth } from "../../infrastructure/persistence/typeorm/entity/oauth/typeorm-oauth.entity";
-import { HttpOauthUserPayload } from "./type/http-oauth-user";
+import { OauthUserPayload } from "./type/oauth-user-payload";
 import { RestResponseJwt } from "../controller/dto/auth/rest-response-jwt";
 import { RestResponseSignupJwt } from "../controller/dto/auth/rest-response-signup-jwt";
 import { DiTokens } from "../../di/di-tokens";
 import { TypeormUser } from "../../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity";
 import { TypeormGroup } from "../../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity";
-import { HttpJwtSignupModel, HttpJwtSignupPayload } from "./type/http-jwt";
 import { plainToInstance } from "class-transformer";
 import { validateSync } from "class-validator";
 import { IAuthService } from "./auth-service.interface";
+import { JwtSignupModel, JwtSignupPayload } from "./type/jwt-signup-payload";
+import { JwtUserPayload } from "./type/jwt-user-payload";
 
 @Injectable()
 export class HttpAuthService implements IAuthService {
@@ -54,7 +55,7 @@ export class HttpAuthService implements IAuthService {
   /**
    * 유저 정보를 통해 로그인 토큰을 발급
    */
-  async getLoginToken(user: HttpUserPayload): Promise<RestResponseJwt> {
+  async getLoginToken(user: JwtUserPayload): Promise<RestResponseJwt> {
     return {
       accessToken: this.jwtService.sign(user),
     };
@@ -63,10 +64,8 @@ export class HttpAuthService implements IAuthService {
   /**
    * 회원가입 토큰을 발급
    */
-  async getSignupToken(
-    user: HttpOauthUserPayload,
-  ): Promise<RestResponseSignupJwt> {
-    const signupPayload: HttpJwtSignupPayload = {
+  async getSignupToken(user: OauthUserPayload): Promise<RestResponseSignupJwt> {
+    const signupPayload: JwtSignupPayload = {
       ...user,
       createdTimestamp: Date.now(),
     };
@@ -127,7 +126,7 @@ export class HttpAuthService implements IAuthService {
   async getOauthUser(
     provider: string,
     providerId: string,
-  ): Promise<Nullable<HttpUserPayload>> {
+  ): Promise<Nullable<VerifiedUserPayload>> {
     const user = await this.userRepository.findUserByOauth({
       provider,
       providerId,
@@ -135,19 +134,21 @@ export class HttpAuthService implements IAuthService {
     if (!user) {
       return null;
     }
-    const userPayload: HttpUserPayload = {
+    const userPayload: VerifiedUserPayload = {
       id: user.id,
     };
     return userPayload;
   }
 
-  async getUser(payload: { id: string }): Promise<Nullable<HttpUserPayload>> {
+  async getUser(payload: {
+    id: string;
+  }): Promise<Nullable<VerifiedUserPayload>> {
     const user = await this.userRepository.findUserById(payload.id as UserId);
     if (!user) {
       this.logger.log(`user not found: ${payload}`);
       return null;
     }
-    const userPayload: HttpUserPayload = {
+    const userPayload: VerifiedUserPayload = {
       id: user.id,
     };
     return userPayload;
@@ -177,15 +178,15 @@ export class HttpAuthService implements IAuthService {
 
   private async validateSignupToken(
     jwt: string,
-  ): Promise<Nullable<HttpJwtSignupPayload>> {
-    let jwtPayload: HttpJwtSignupPayload;
+  ): Promise<Nullable<JwtSignupPayload>> {
+    let jwtPayload: JwtSignupPayload;
     try {
       jwtPayload = this.jwtService.verify(jwt);
     } catch (error) {
       return null;
     }
 
-    const signupModel = plainToInstance(HttpJwtSignupModel, jwtPayload);
+    const signupModel = plainToInstance(JwtSignupModel, jwtPayload);
 
     const errors = validateSync(signupModel);
     if (errors.length > 0) {

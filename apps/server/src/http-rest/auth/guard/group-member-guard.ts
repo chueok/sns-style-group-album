@@ -4,7 +4,7 @@ import {
   Inject,
   Injectable,
 } from "@nestjs/common";
-import { HttpRequestWithUser } from "../type/http-user";
+import { HttpRequestWithUser } from "../type/verified-user-payload";
 import { IAuthService } from "../auth-service.interface";
 import { DiTokens } from "../../../di/di-tokens";
 

@@ -1,16 +1,12 @@
 import {
+  IsString,
+  IsOptional,
+  IsUrl,
   IsEmail,
   IsNumber,
-  IsOptional,
-  IsString,
-  IsUrl,
 } from "class-validator";
-import { HttpUserModel, HttpUserPayload } from "./http-user";
 
-export class HttpJwtUserModel extends HttpUserModel {}
-export type HttpJwtUserPayload = HttpUserPayload;
-
-export class HttpJwtSignupModel {
+export class JwtSignupModel {
   @IsString()
   provider!: string;
 
@@ -28,7 +24,7 @@ export class HttpJwtSignupModel {
   @IsNumber()
   createdTimestamp!: number;
 
-  toObject(): HttpJwtSignupPayload {
+  toObject(): JwtSignupPayload {
     return {
       provider: this.provider,
       providerId: this.providerId,
@@ -38,7 +34,7 @@ export class HttpJwtSignupModel {
     };
   }
 }
-export type HttpJwtSignupPayload = {
+export type JwtSignupPayload = {
   provider: string;
   providerId: string;
   profileUrl?: string;
@@ -46,12 +42,8 @@ export type HttpJwtSignupPayload = {
   createdTimestamp: number;
 };
 
-export function isHttpUserPayload(input: object): input is HttpUserPayload {
-  return "id" in input;
-}
-
 export function isHttpJwtOauthPayload(
   input: object,
-): input is HttpJwtSignupPayload {
+): input is JwtSignupPayload {
   return "provider" in input;
 }

@@ -1,13 +1,14 @@
-import { HttpUserPayload } from "./type/http-user";
-import { HttpOauthUserPayload } from "./type/http-oauth-user";
+import { VerifiedUserPayload } from "./type/verified-user-payload";
+import { OauthUserPayload } from "./type/oauth-user-payload";
 import { RestResponseJwt } from "../controller/dto/auth/rest-response-jwt";
 import { RestResponseSignupJwt } from "../controller/dto/auth/rest-response-signup-jwt";
 import { Nullable } from "@repo/be-core";
+import { JwtUserPayload } from "./type/jwt-user-payload";
 
 export interface IAuthService {
-  getLoginToken(user: HttpUserPayload): Promise<RestResponseJwt>;
+  getLoginToken(user: JwtUserPayload): Promise<RestResponseJwt>;
 
-  getSignupToken(user: HttpOauthUserPayload): Promise<RestResponseSignupJwt>;
+  getSignupToken(user: OauthUserPayload): Promise<RestResponseSignupJwt>;
 
   signup(payload: {
     signupToken: string;
@@ -19,9 +20,9 @@ export interface IAuthService {
   getOauthUser(
     provider: string,
     providerId: string,
-  ): Promise<Nullable<HttpUserPayload>>;
+  ): Promise<Nullable<VerifiedUserPayload>>;
 
-  getUser(payload: { id: string }): Promise<Nullable<HttpUserPayload>>;
+  getUser(payload: { id: string }): Promise<Nullable<VerifiedUserPayload>>;
 
   isUserInGroup(userId: string, groupId: string): Promise<boolean>;
 

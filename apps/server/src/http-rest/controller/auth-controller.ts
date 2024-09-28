@@ -8,14 +8,14 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { HttpUser } from "../auth/decorator/http-user";
+import { VerifiedUser } from "../auth/decorator/verified-user";
 import { ServerConfig } from "../../config/server-config";
 import assert from "assert";
-import { HttpUserPayload } from "../auth/type/http-user";
+import { VerifiedUserPayload } from "../auth/type/verified-user-payload";
 import {
-  HttpOauthUserPayload,
+  OauthUserPayload,
   isHttpOauthUserPayload,
-} from "../auth/type/http-oauth-user";
+} from "../auth/type/oauth-user-payload";
 import { RestAuthSignupBody } from "./dto/auth/rest-auth-signup-body";
 import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
 import { RestResponseSignupJwt } from "./dto/auth/rest-response-signup-jwt";
@@ -55,7 +55,7 @@ export class AuthController {
     data: null,
   })
   async googleAuthCallback(
-    @HttpUser() user: HttpUserPayload | HttpOauthUserPayload,
+    @VerifiedUser() user: VerifiedUserPayload | OauthUserPayload,
   ): Promise<RestResponse<RestResponseSignupJwt | RestResponseJwt | null>> {
     if (isHttpOauthUserPayload(user)) {
       const token: RestResponseSignupJwt =

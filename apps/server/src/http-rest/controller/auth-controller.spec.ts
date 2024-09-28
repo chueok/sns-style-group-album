@@ -10,7 +10,7 @@ import { AppController } from "../../app.controller";
 import { AppService } from "../../app.service";
 import { InfrastructureModule } from "../../di/infrastructure.module";
 import { AuthModule } from "../../di/auth.module";
-import { HttpOauthUserPayload } from "../auth/type/http-oauth-user";
+import { OauthUserPayload } from "../auth/type/oauth-user-payload";
 import { DiTokens } from "../../di/di-tokens";
 import { IAuthService } from "../auth/auth-service.interface";
 
@@ -59,7 +59,7 @@ describe("AuthController", () => {
 
   describe("POST /auth/signup", () => {
     it("should return 201", async () => {
-      const signupUser: HttpOauthUserPayload = {
+      const signupUser: OauthUserPayload = {
         provider: "google",
         providerId: v4(),
         profileUrl: faker.internet.url(),
@@ -79,7 +79,7 @@ describe("AuthController", () => {
     });
 
     it("[stale signup-token] should return 401", async () => {
-      const signupUser: HttpOauthUserPayload = {
+      const signupUser: OauthUserPayload = {
         provider: "google",
         providerId: v4(),
         profileUrl: faker.internet.url(),
@@ -114,7 +114,7 @@ describe("AuthController", () => {
     });
 
     it("[fake jwt] should return 401", async () => {
-      const signupUser: HttpOauthUserPayload = {
+      const signupUser: OauthUserPayload = {
         provider: "google",
         providerId: v4(),
         profileUrl: faker.internet.url(),
@@ -136,7 +136,7 @@ describe("AuthController", () => {
     });
 
     it("[invalid body] should return 400", async () => {
-      const signupUser: HttpOauthUserPayload = {
+      const signupUser: OauthUserPayload = {
         provider: "google",
         providerId: v4(),
         profileUrl: faker.internet.url(),

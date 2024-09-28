@@ -3,12 +3,9 @@ import { PassportStrategy } from "@nestjs/passport";
 import { Profile, Strategy, VerifyCallback } from "passport-google-oauth20";
 import { ServerConfig } from "../../../config/server-config";
 import { AuthProviderEnum } from "../auth-provider-enum";
-import { HttpUserPayload } from "../type/http-user";
+import { VerifiedUserPayload } from "../type/verified-user-payload";
 import { Code, Exception, Optional } from "@repo/be-core";
-import {
-  HttpOauthUserModel,
-  HttpOauthUserPayload,
-} from "../type/http-oauth-user";
+import { OauthUserModel, OauthUserPayload } from "../type/oauth-user-payload";
 import { validateSync } from "class-validator";
 import { IAuthService } from "../auth-service.interface";
 import { DiTokens } from "../../../di/di-tokens";
@@ -34,14 +31,14 @@ export class HttpGoogleStrategy extends PassportStrategy(
     refreshToken: string,
     profile: Profile,
     done: VerifyCallback,
-  ): Promise<Optional<HttpOauthUserPayload | HttpUserPayload>> {
+  ): Promise<Optional<OauthUserPayload | VerifiedUserPayload>> {
     try {
       const { provider, id, profileUrl, displayName, name, emails } = profile;
 
       const user = await this.authService.getOauthUser(provider, id);
       // 신규 유저
       if (!user) {
-        const oauthUser = new HttpOauthUserModel();
+        const oauthUser = new OauthUserModel();
         oauthUser.provider = provider;
         oauthUser.providerId = id;
         oauthUser.profileUrl = profileUrl;

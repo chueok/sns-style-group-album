@@ -3,8 +3,8 @@ import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { ServerConfig } from "../../../config/server-config";
 import { Optional } from "@repo/be-core";
-import { HttpUserPayload } from "../type/http-user";
-import { HttpJwtUserPayload } from "../type/http-jwt";
+import { VerifiedUserPayload } from "../type/verified-user-payload";
+import { JwtUserPayload } from "../type/jwt-user-payload";
 import { AuthProviderEnum } from "../auth-provider-enum";
 import { DiTokens } from "../../../di/di-tokens";
 import { IAuthService } from "../auth-service.interface";
@@ -25,8 +25,8 @@ export class HttpJwtStrategy extends PassportStrategy(
   }
 
   public async validate(
-    payload: HttpJwtUserPayload,
-  ): Promise<Optional<HttpUserPayload>> {
+    payload: JwtUserPayload,
+  ): Promise<Optional<VerifiedUserPayload>> {
     const user = await this.authService.getUser({ id: payload.id });
     if (!user) {
       return undefined;

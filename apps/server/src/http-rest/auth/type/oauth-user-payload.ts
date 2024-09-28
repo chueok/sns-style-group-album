@@ -1,6 +1,6 @@
 import { IsEmail, IsOptional, IsString, IsUrl } from "class-validator";
 
-export class HttpOauthUserModel {
+export class OauthUserModel {
   @IsString()
   provider!: string;
 
@@ -15,7 +15,7 @@ export class HttpOauthUserModel {
   @IsEmail()
   email?: string;
 
-  toObject(): HttpOauthUserPayload {
+  toObject(): OauthUserPayload {
     return {
       provider: this.provider,
       providerId: this.providerId,
@@ -25,7 +25,7 @@ export class HttpOauthUserModel {
   }
 }
 
-export type HttpOauthUserPayload = {
+export type OauthUserPayload = {
   provider: string;
   providerId: string;
   profileUrl?: string;
@@ -34,10 +34,10 @@ export type HttpOauthUserPayload = {
 
 export function isHttpOauthUserPayload(
   payload: object,
-): payload is HttpOauthUserPayload {
+): payload is OauthUserPayload {
   return "provider" in payload && "providerId" in payload;
 }
 
 export type HttpRequestWithOauthUser = Request & {
-  oauthUser: HttpOauthUserPayload;
+  oauthUser: OauthUserPayload;
 };
