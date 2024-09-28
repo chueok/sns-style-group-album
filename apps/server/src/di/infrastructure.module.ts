@@ -9,7 +9,7 @@ import { TypeormGroupRepository } from "../infrastructure/persistence/typeorm/re
 import { TypeormContentRepository } from "../infrastructure/persistence/typeorm/repository/content/content-repository";
 import { TYPEORM_DIRECTORY } from "../infrastructure/persistence/typeorm/typeorm-directory";
 import { APP_FILTER } from "@nestjs/core";
-import { NestHttpExceptionFilter } from "../http-rest/exception-filter/NestHttpExceptionFilter";
+import { NestHttpExceptionFilter } from "../http-rest/exception-filter/nest-http-exception-filter";
 import {
   DeleteUserUsecase,
   GetGroupMembersUsecase,
