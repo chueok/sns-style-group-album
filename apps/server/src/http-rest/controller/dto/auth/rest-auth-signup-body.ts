@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsOptional, IsString } from "class-validator";
+import { IsEmail, IsString } from "class-validator";
 
 export class RestAuthSignupBody {
   @ApiProperty({ type: "string" })
@@ -9,9 +9,4 @@ export class RestAuthSignupBody {
   @ApiProperty({ type: "string" })
   @IsEmail()
   email!: string;
-
-  @ApiProperty({ type: "string", required: false })
-  @IsOptional()
-  @IsString()
-  thumbnailRelativePath?: string;
 }

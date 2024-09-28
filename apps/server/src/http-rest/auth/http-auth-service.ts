@@ -7,7 +7,9 @@ import {
 } from "@nestjs/common";
 import { HttpUserPayload } from "./type/http-user";
 import {
+  Code,
   CreateUserEntityPayload,
+  Exception,
   IUserRepository,
   Nullable,
   User,
@@ -50,26 +52,6 @@ export class HttpAuthService implements IAuthService {
   }
 
   /**
-   * provider와 providerId로 회원 정보를 조회
-   */
-  async getOauthUser(
-    provider: string,
-    providerId: string,
-  ): Promise<Nullable<HttpUserPayload>> {
-    const user = await this.userRepository.findUserByOauth({
-      provider,
-      providerId,
-    });
-    if (!user) {
-      return null;
-    }
-    const userPayload: HttpUserPayload = {
-      id: user.id,
-    };
-    return userPayload;
-  }
-
-  /**
    * 유저 정보를 통해 로그인 토큰을 발급
    */
   async getLoginToken(user: HttpUserPayload): Promise<RestResponseJwt> {
@@ -106,44 +88,21 @@ export class HttpAuthService implements IAuthService {
     };
   }
 
-  async validateSignupToken(
-    jwt: string,
-  ): Promise<Nullable<HttpJwtSignupPayload>> {
-    let jwtPayload: HttpJwtSignupPayload;
-    try {
-      jwtPayload = this.jwtService.verify(jwt);
-    } catch (error) {
-      return null;
-    }
-
-    const signupModel = plainToInstance(HttpJwtSignupModel, jwtPayload);
-
-    const errors = validateSync(signupModel);
-    if (errors.length > 0) {
-      null;
-    }
-
-    const oauth = await this.typeormOauthRepository.findOneBy({
-      provider: signupModel.provider,
-      providerId: signupModel.providerId,
-      secretToken: jwt,
-      userId: undefined,
-    });
-    if (!oauth) {
-      return null;
-    }
-
-    return signupModel.toObject();
-  }
-
   async signup(payload: {
     signupToken: string;
-    provider: string;
-    providerId: string; // TODO : provider 정보 필요한지 확인
     username: string;
-    thumbnailRelativePath: Nullable<string>; // TODO : 회원가입 시 profile image 추가는 유저가? 서버가?
     email: string;
-  }): Promise<Nullable<HttpUserPayload>> {
+  }): Promise<RestResponseJwt> {
+    const signupPayload = await this.validateSignupToken(payload.signupToken);
+    if (!signupPayload) {
+      throw Exception.new({
+        code: Code.UNAUTHORIZED_ERROR,
+        overrideMessage: "invalid signup token",
+      });
+    }
+
+    // TODO hasProfile만 가지고 있으니, default profile image 처리가 필요함
+    // signupPayload.profileUrl 외부 이미지를 서버로 저장 필요
     const newUserPayload: CreateUserEntityPayload<"new"> = {
       username: payload.username,
       email: payload.email,
@@ -153,11 +112,33 @@ export class HttpAuthService implements IAuthService {
     const result = await this.userRepository.createUser(newUser);
     if (!result) {
       this.logger.log(`createUser failed: ${newUserPayload}`);
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: "create user failed",
+      });
+    }
+
+    return this.getLoginToken({ id: newUser.id });
+  }
+
+  /**
+   * provider와 providerId로 회원 정보를 조회
+   */
+  async getOauthUser(
+    provider: string,
+    providerId: string,
+  ): Promise<Nullable<HttpUserPayload>> {
+    const user = await this.userRepository.findUserByOauth({
+      provider,
+      providerId,
+    });
+    if (!user) {
       return null;
     }
-    return {
-      id: newUser.id,
+    const userPayload: HttpUserPayload = {
+      id: user.id,
     };
+    return userPayload;
   }
 
   async getUser(payload: { id: string }): Promise<Nullable<HttpUserPayload>> {
@@ -192,5 +173,35 @@ export class HttpAuthService implements IAuthService {
         .andWhere("group.ownerId = :userId", { userId })
         .getCount()) > 0;
     return isOwner;
+  }
+
+  private async validateSignupToken(
+    jwt: string,
+  ): Promise<Nullable<HttpJwtSignupPayload>> {
+    let jwtPayload: HttpJwtSignupPayload;
+    try {
+      jwtPayload = this.jwtService.verify(jwt);
+    } catch (error) {
+      return null;
+    }
+
+    const signupModel = plainToInstance(HttpJwtSignupModel, jwtPayload);
+
+    const errors = validateSync(signupModel);
+    if (errors.length > 0) {
+      null;
+    }
+
+    const oauth = await this.typeormOauthRepository.findOneBy({
+      provider: signupModel.provider,
+      providerId: signupModel.providerId,
+      secretToken: jwt,
+      userId: undefined,
+    });
+    if (!oauth) {
+      return null;
+    }
+
+    return signupModel.toObject();
   }
 }

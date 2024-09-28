@@ -86,34 +86,19 @@ export class AuthController {
   async signup(
     @Req() req: Request,
     @Body() body: RestAuthSignupBody,
-  ): Promise<RestResponse<RestResponseJwt | null>> {
+  ): Promise<RestResponse<RestResponseJwt>> {
     const jwt = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
     if (!jwt) {
       throw Exception.new({ code: Code.UNAUTHORIZED_ERROR });
     }
 
-    // TODO : 토큰 인증 후 사인업 하는 로직을 전부 AuthService로 이동
-    const signupPayload = await this.authService.validateSignupToken(jwt);
-    if (!signupPayload) {
-      throw Exception.new({ code: Code.UNAUTHORIZED_ERROR });
-    }
-
-    const user = await this.authService.signup({
+    const loginToken = await this.authService.signup({
       signupToken: jwt,
-      provider: signupPayload.provider,
-      providerId: signupPayload.providerId,
       username: body.username,
       email: body.email,
-      thumbnailRelativePath:
-        body.thumbnailRelativePath || signupPayload.profileUrl || null,
     });
 
-    if (!user) {
-      throw Exception.new({ code: Code.BAD_REQUEST_ERROR });
-    }
-
-    const token: RestResponseJwt = await this.authService.getLoginToken(user);
-    return RestResponse.success(token);
+    return RestResponse.success(loginToken);
   }
 }
 
