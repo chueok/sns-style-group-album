@@ -201,20 +201,4 @@ describe("UserRepository", () => {
       expect(foundUser).toEqual(domainUser);
     });
   });
-
-  describe("deleteUserById", () => {
-    it("should delete a user by id", async () => {
-      const user = await userFixture.getValidUser();
-      const result = await userRepository.deleteUserById(user.id);
-      expect(result).toBeTruthy();
-
-      const foundUser = await userRepository.findUserById(user.id);
-      expect(foundUser).toBeNull();
-    });
-
-    it("should not delete a user by id when an error occurs", async () => {
-      const result = await userRepository.deleteUserById("invalid" as UserId);
-      expect(result).toBeFalsy();
-    });
-  });
 });

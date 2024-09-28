@@ -19,7 +19,4 @@ export interface IUserRepository {
     provider: string;
     providerId: string;
   }): Promise<Nullable<User>>;
-
-  // TODO : delete 는 user entity 에서 수행되어야 함.
-  deleteUserById(id: string): Promise<boolean>;
 }

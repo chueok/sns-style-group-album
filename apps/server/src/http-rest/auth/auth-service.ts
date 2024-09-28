@@ -100,8 +100,8 @@ export class AuthService implements IAuthService {
       });
     }
 
-    // TODO hasProfile만 가지고 있으니, default profile image 처리가 필요함
-    // signupPayload.profileUrl 외부 이미지를 서버로 저장 필요
+    // NOTE : 현재는 signup 시에는 profile image등록이 불가 함.
+    // 필요시 변경 필요
     const newUserPayload: CreateUserEntityPayload<"new"> = {
       username: payload.username,
       email: payload.email,
