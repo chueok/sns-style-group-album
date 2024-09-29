@@ -132,7 +132,6 @@ export class GroupController {
     @Param("groupId") groupId: string,
     @Body() body: RestEditGroupBody,
   ): Promise<RestResponse<GroupResponseDTO>> {
-    // TODO adapter 로 옮기자.
     const trueCount = Object.keys(body)
       .map((key) => !!body[key])
       .filter(Boolean).length;
@@ -143,13 +142,7 @@ export class GroupController {
       });
     }
 
-    if (body?.invitedUserList && Array.isArray(body.invitedUserList)) {
-      if (body.invitedUserList.length === 0) {
-        throw Exception.new({
-          code: Code.BAD_REQUEST_ERROR,
-          overrideMessage: "invitedUserList should not be empty",
-        });
-      }
+    if (body?.invitedUserList) {
       const adapter = await InviteUserAdapter.new({
         groupId,
         invitedUserList: body.invitedUserList,

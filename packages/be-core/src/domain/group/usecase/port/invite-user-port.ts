@@ -1,4 +1,4 @@
-import { IsString } from "class-validator";
+import { ArrayNotEmpty, IsArray, IsNotEmpty, IsString } from "class-validator";
 import { UseCaseValidatableAdapter } from "../../../../common/usecase/usecase-validatable-adapter";
 
 export interface IInviteUserPort {
@@ -13,6 +13,7 @@ export class InviteUserAdapter
   @IsString()
   groupId!: string;
 
+  @ArrayNotEmpty()
   @IsString({ each: true })
   invitedUserList!: string[];
 
