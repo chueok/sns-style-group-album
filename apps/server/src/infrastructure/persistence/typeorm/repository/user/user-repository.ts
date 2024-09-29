@@ -5,6 +5,7 @@ import { UserMapper } from "./mapper/user-mapper";
 import { Logger, LoggerService, Optional } from "@nestjs/common";
 import { TypeormUserGroupProfile } from "../../entity/user-group-profile/typeorm-user-group-profile.entity";
 
+// TODO : 전체 Repository Promise 최적화 필요
 export class TypeormUserRepository implements IUserRepository {
   private typeormUserRepository: Repository<TypeormUser>;
   private typeormUserGroupProfileRepository: Repository<TypeormUserGroupProfile>;
@@ -81,6 +82,7 @@ export class TypeormUserRepository implements IUserRepository {
       .leftJoinAndSelect("user.groups", "group")
       .leftJoinAndSelect("user.ownGroups", "ownGroup")
       .leftJoinAndSelect("user.userGroupProfiles", "userGroupProfiles")
+      .leftJoinAndSelect("user.invitedGroups", "invitedGroups")
       .where("user.id = :id", { id })
       .andWhere("user.deletedDateTime is null")
       .getOne();
@@ -91,6 +93,7 @@ export class TypeormUserRepository implements IUserRepository {
     const groups = await ormUser.groups;
     const ownGroups = await ormUser.ownGroups;
     const userGroupProfile = await ormUser.userGroupProfiles;
+    const invitedGroups = await ormUser.invitedGroups;
     const { results, errors } = await UserMapper.toDomainEntity({
       elements: [
         {
@@ -98,6 +101,7 @@ export class TypeormUserRepository implements IUserRepository {
           groups,
           ownGroups,
           userGroupProfiles: userGroupProfile,
+          invitedGroupList: invitedGroups,
         },
       ],
     });
@@ -116,6 +120,7 @@ export class TypeormUserRepository implements IUserRepository {
       .innerJoinAndSelect("user.groups", "group")
       .leftJoinAndSelect("user.ownGroups", "ownGroup")
       .leftJoinAndSelect("user.userGroupProfiles", "userGroupProfiles")
+      .leftJoinAndSelect("user.invitedGroups", "invitedGroups")
       .where("group.id = :groupId", { groupId: payload.groupId })
       .andWhere("user.username = :username", { username: payload.username })
       .andWhere("user.deletedDateTime is null")
@@ -126,6 +131,7 @@ export class TypeormUserRepository implements IUserRepository {
     const groups = await ormUser.groups;
     const ownGroups = await ormUser.ownGroups;
     const userGroupProfiles = await ormUser.userGroupProfiles;
+    const invitedGroups = await ormUser.invitedGroups;
 
     const { results, errors } = await UserMapper.toDomainEntity({
       elements: [
@@ -134,6 +140,7 @@ export class TypeormUserRepository implements IUserRepository {
           groups,
           ownGroups,
           userGroupProfiles,
+          invitedGroupList: invitedGroups,
         },
       ],
     });
@@ -149,6 +156,7 @@ export class TypeormUserRepository implements IUserRepository {
       .innerJoinAndSelect("user.groups", "group")
       .leftJoinAndSelect("user.ownGroups", "ownGroup")
       .leftJoinAndSelect("user.userGroupProfiles", "userGroupProfiles")
+      .leftJoinAndSelect("user.invitedGroups", "invitedGroups")
       .where("group.id = :groupId", { groupId })
       .andWhere("user.deletedDateTime is null")
       .getMany();
@@ -160,6 +168,7 @@ export class TypeormUserRepository implements IUserRepository {
           groups: await ormUser.groups,
           ownGroups: await ormUser.ownGroups,
           userGroupProfiles: await ormUser.userGroupProfiles,
+          invitedGroupList: await ormUser.invitedGroups,
         };
       }),
     );
@@ -182,6 +191,7 @@ export class TypeormUserRepository implements IUserRepository {
       .leftJoinAndSelect("user.groups", "group")
       .leftJoinAndSelect("user.ownGroups", "ownGroup")
       .leftJoinAndSelect("user.userGroupProfiles", "userGroupProfiles")
+      .leftJoinAndSelect("user.invitedGroups", "invitedGroups")
       .where("oauths.provider = :provider", { provider: payload.provider })
       .andWhere("oauths.providerId = :providerId", {
         providerId: payload.providerId,
@@ -196,9 +206,18 @@ export class TypeormUserRepository implements IUserRepository {
     const groups = await ormUser.groups;
     const ownGroups = await ormUser.ownGroups;
     const userGroupProfiles = await ormUser.userGroupProfiles;
+    const invitedGroups = await ormUser.invitedGroups;
 
     const { results, errors } = await UserMapper.toDomainEntity({
-      elements: [{ user: ormUser, groups, ownGroups, userGroupProfiles }],
+      elements: [
+        {
+          user: ormUser,
+          groups,
+          ownGroups,
+          userGroupProfiles,
+          invitedGroupList: invitedGroups,
+        },
+      ],
     });
     errors.forEach((error) => {
       this.logger.error(error);

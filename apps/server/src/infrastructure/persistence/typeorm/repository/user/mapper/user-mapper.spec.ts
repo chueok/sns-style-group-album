@@ -62,6 +62,7 @@ describe("UserMapper", () => {
             groups: await user.groups,
             ownGroups: await user.ownGroups,
             userGroupProfiles: await user.userGroupProfiles,
+            invitedGroupList: await user.invitedGroups,
           };
         }),
       );
@@ -83,6 +84,7 @@ describe("UserMapper", () => {
             groups: await user.groups,
             ownGroups: await user.ownGroups,
             userGroupProfiles: await user.userGroupProfiles,
+            invitedGroupList: await user.invitedGroups,
           };
         }),
       );

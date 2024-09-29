@@ -55,6 +55,12 @@ export class User extends EntityWithCUDTime<UserId> {
     return this._userGroupProfiles;
   }
 
+  @IsUUID("all", { each: true })
+  private _invitedGroupList: GroupId[];
+  get invitedGroupList(): GroupId[] {
+    return this._invitedGroupList;
+  }
+
   async deleteUser(): Promise<boolean> {
     if (this.ownGroups.length !== 0) {
       return false;
@@ -126,6 +132,7 @@ export class User extends EntityWithCUDTime<UserId> {
       this._groups = payload.groups;
       this._ownGroups = payload.ownGroups;
       this._userGroupProfiles = payload.userGroupProfiles;
+      this._invitedGroupList = payload.invitedGroupList;
 
       this._createdDateTime = payload.createdDateTime;
       this._updatedDateTime = payload.updatedDateTime;
@@ -139,6 +146,7 @@ export class User extends EntityWithCUDTime<UserId> {
       this._ownGroups = [];
 
       this._userGroupProfiles = [];
+      this._invitedGroupList = [];
 
       this._createdDateTime = new Date();
       this._updatedDateTime = null;

@@ -18,6 +18,7 @@ type CreateExistingUserPayload = CommonCreateUserPayload & {
   groups: GroupId[];
   ownGroups: GroupId[];
   userGroupProfiles: UserGroupProfile[];
+  invitedGroupList: GroupId[];
 
   createdDateTime: Date;
   updatedDateTime: Nullable<Date>;

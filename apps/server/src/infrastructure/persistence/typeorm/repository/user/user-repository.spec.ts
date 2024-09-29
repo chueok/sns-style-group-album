@@ -156,6 +156,7 @@ describe("UserRepository", () => {
             ownGroups: [],
             groups: [],
             userGroupProfiles: [],
+            invitedGroupList: [],
           },
         ],
       }))!;
@@ -179,6 +180,7 @@ describe("UserRepository", () => {
             ownGroups: [],
             groups: [],
             userGroupProfiles: [],
+            invitedGroupList: [],
           },
         ],
       }))!;
@@ -197,8 +199,17 @@ describe("UserRepository", () => {
       const groups = await user.groups;
       const ownGroups = await user.ownGroups;
       const userGroupProfiles = await user.userGroupProfiles;
+      const invitedGroups = await user.invitedGroups;
       const { results, errors } = (await UserMapper.toDomainEntity({
-        elements: [{ user, groups, ownGroups, userGroupProfiles }],
+        elements: [
+          {
+            user,
+            groups,
+            ownGroups,
+            userGroupProfiles,
+            invitedGroupList: invitedGroups,
+          },
+        ],
       }))!;
       const domainUser = results[0]!;
       await domainUser.changeUsername("new-username");

@@ -9,6 +9,7 @@ type ToDomainPayloadType = {
     groups: TypeormGroup[];
     ownGroups: TypeormGroup[];
     userGroupProfiles: UserGroupProfile[];
+    invitedGroupList: TypeormGroup[];
   }[];
 };
 
@@ -37,6 +38,7 @@ export class UserMapper {
         groups,
         ownGroups,
         userGroupProfiles: userGroupProfile,
+        invitedGroupList,
       } = item;
 
       const userPayload: CreateUserEntityPayload<"existing"> = {
@@ -53,6 +55,7 @@ export class UserMapper {
             hasProfileImage: profile.hasProfileImage,
           });
         }),
+        invitedGroupList: invitedGroupList.map((group) => group.id),
 
         id: user.id,
         createdDateTime: user.createdDateTime,

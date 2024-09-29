@@ -39,7 +39,9 @@ export class TypeormUser {
   @OneToMany(() => TypeormUserGroupProfile, (profile) => profile.user)
   userGroupProfiles!: Promise<TypeormUserGroupProfile[]>;
 
-  @ManyToMany(() => TypeormGroup, (group) => group.invitedUsers)
+  @ManyToMany(() => TypeormGroup, (group) => group.invitedUsers, {
+    cascade: false,
+  })
   @JoinTable({ name: "GroupInvitedUsersRelation" })
   invitedGroups!: Promise<TypeormGroup[]>;
 
