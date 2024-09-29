@@ -53,6 +53,39 @@ describe(`${GroupController.name} e2e`, () => {
     await authFixtrue.init(parameters.dummyDbPath);
   });
 
+  it("/groups/own (GET)", async () => {
+    Error.stackTraceLimit = 100;
+    const { user, group, accessToken } =
+      await authFixtrue.get_group_owner_accessToken();
+    assert(!group.deletedDateTime, "group was deleted");
+
+    const result = await request(app.getHttpServer())
+      .get("/groups/own")
+      .auth(accessToken, { type: "bearer" })
+      .expect(200);
+
+    const expectedGroupList = (await user.ownGroups).filter(
+      (group) => !group.deletedDateTime,
+    );
+
+    const data = result.body.data as GroupSimpleResponseDTO[];
+    expect(data.length).toBe(expectedGroupList.length);
+  });
+
+  it("/groups/:groupId/members (GET)", async () => {
+    const { accessToken, user, group } =
+      await authFixtrue.get_group_member_accessToken();
+    assert(!group.deletedDateTime, "group was deleted");
+
+    const result = await request(app.getHttpServer())
+      .get(`/groups/${group.id}/members`)
+      .auth(accessToken, { type: "bearer" })
+      .expect(200);
+
+    const data = result.body.data as UserSimpleResponseDTO[];
+    expect(data.length).toBe((await group.members).length);
+  });
+
   it("/groups/:groupId (GET)", async () => {
     const { accessToken, user, group } =
       await authFixtrue.get_group_member_accessToken();
@@ -87,38 +120,5 @@ describe(`${GroupController.name} e2e`, () => {
 
     const data = result.body.data as GroupSimpleResponseDTO[];
     expect(data.length).toBe(expectGroupList.length);
-  });
-
-  it("/groups/own (GET)", async () => {
-    Error.stackTraceLimit = 100;
-    const { user, group, accessToken } =
-      await authFixtrue.get_group_owner_accessToken();
-    assert(!group.deletedDateTime, "group was deleted");
-
-    const result = await request(app.getHttpServer())
-      .get("/groups/own")
-      .auth(accessToken, { type: "bearer" })
-      .expect(200);
-
-    const expectedGroupList = (await user.ownGroups).filter(
-      (group) => !group.deletedDateTime,
-    );
-
-    const data = result.body.data as GroupSimpleResponseDTO[];
-    expect(data.length).toBe(expectedGroupList.length);
-  });
-
-  it("/groups/:groupId/members (GET)", async () => {
-    const { accessToken, user, group } =
-      await authFixtrue.get_group_member_accessToken();
-    assert(!group.deletedDateTime, "group was deleted");
-
-    const result = await request(app.getHttpServer())
-      .get(`/groups/${group.id}/members`)
-      .auth(accessToken, { type: "bearer" })
-      .expect(200);
-
-    const data = result.body.data as UserSimpleResponseDTO[];
-    expect(data.length).toBe((await group.members).length);
   });
 });

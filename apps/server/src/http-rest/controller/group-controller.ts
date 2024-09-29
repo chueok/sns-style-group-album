@@ -73,23 +73,23 @@ export class GroupController {
     return RestResponse.success(dtos);
   }
 
-  @Get()
-  @UseGuards(HttpJwtAuthGuard)
+  @Get(":groupId/members")
+  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
-    data: GroupSimpleResponseDTO,
+    data: UserSimpleResponseDTO,
     isArray: true,
   })
-  async getGroupList(
-    @VerifiedUser() verifiedUser: VerifiedUserPayload,
-  ): Promise<RestResponse<GroupSimpleResponseDTO[]>> {
-    const adapter = await GetGroupListAdapter.new({ userId: verifiedUser.id });
+  async getGroupMembers(
+    @Param("groupId") groupId: string,
+  ): Promise<RestResponse<UserSimpleResponseDTO[]>> {
+    const adapter = await GetGroupMembersAdaptor.new({
+      groupId: groupId,
+    });
 
-    const groupList = await this.getGroupListUsecase.execute(adapter);
+    const userList = await this.getGroupMemberUsecase.execute(adapter);
 
-    const dtos = GroupSimpleResponseDTO.newListFromGroups(groupList);
-
-    return RestResponse.success(dtos);
+    return RestResponse.success(userList);
   }
 
   @Get(":groupId")
@@ -109,20 +109,20 @@ export class GroupController {
     return RestResponse.success(dto);
   }
 
-  @Delete(":groupId")
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
-  async deleteGroup(
-    @Param("groupId") groupId: string,
-  ): Promise<RestResponse<null>> {
-    throw new Error("Not implemented");
-  }
-
   @Patch(":groupId")
   @ApiResponseGeneric({ code: Code.SUCCESS, data: GroupResponseDTO })
   async editGroup(
     @Param("groupId") groupId: string,
     @Body() body: RestEditGroupBody,
   ): Promise<RestResponse<GroupResponseDTO | null>> {
+    throw new Error("Not implemented");
+  }
+
+  @Delete(":groupId")
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
+  async deleteGroup(
+    @Param("groupId") groupId: string,
+  ): Promise<RestResponse<null>> {
     throw new Error("Not implemented");
   }
 
@@ -134,22 +134,22 @@ export class GroupController {
     throw new Error("Not implemented");
   }
 
-  @Get(":groupId/members")
-  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
+  @Get()
+  @UseGuards(HttpJwtAuthGuard)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
-    data: UserSimpleResponseDTO,
+    data: GroupSimpleResponseDTO,
     isArray: true,
   })
-  async getGroupMembers(
-    @Param("groupId") groupId: string,
-  ): Promise<RestResponse<UserSimpleResponseDTO[]>> {
-    const adapter = await GetGroupMembersAdaptor.new({
-      groupId: groupId,
-    });
+  async getGroupList(
+    @VerifiedUser() verifiedUser: VerifiedUserPayload,
+  ): Promise<RestResponse<GroupSimpleResponseDTO[]>> {
+    const adapter = await GetGroupListAdapter.new({ userId: verifiedUser.id });
 
-    const userList = await this.getGroupMemberUsecase.execute(adapter);
+    const groupList = await this.getGroupListUsecase.execute(adapter);
 
-    return RestResponse.success(userList);
+    const dtos = GroupSimpleResponseDTO.newListFromGroups(groupList);
+
+    return RestResponse.success(dtos);
   }
 }
