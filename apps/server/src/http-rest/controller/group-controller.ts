@@ -19,6 +19,8 @@ import {
   GetGroupMembersAdaptor,
   GetGroupMembersUsecase,
   GetGroupUsecase,
+  GetOwnGroupListAdapter,
+  GetOwnGroupListUsecase,
 } from "@repo/be-core";
 import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
 import { GroupSimpleResponseDTO } from "./dto/group/group-simple-response";
@@ -29,37 +31,46 @@ import { HttpJwtAuthGuard } from "../auth/guard/jwt-auth-guard";
 import { HttpGroupMemberGuard } from "../auth/guard/group-member-guard";
 import { UserSimpleResponseDTO } from "./dto/user/user-simple-response-dto";
 import { DiTokens } from "../../di/di-tokens";
-import { HttpGroupOwnerGuard } from "../auth/guard/group-owner-guard";
 import { VerifiedUser } from "../auth/decorator/verified-user";
 import { VerifiedUserPayload } from "../auth/type/verified-user-payload";
 
+// TODO : 구체적인 path가 먼저 오도록 리펙토링 필요함
 @Controller("groups")
 @ApiTags("groups")
 export class GroupController {
   constructor(
-    @Inject(DiTokens.GetGroupMemberUsecase)
-    private readonly getGroupMemberUsecase: GetGroupMembersUsecase,
-
     @Inject(DiTokens.GetGroupUsecase)
     private readonly getGroupUsecase: GetGroupUsecase,
 
     @Inject(DiTokens.GetGroupListUsecase)
     private readonly getGroupListUsecase: GetGroupListUsecase,
+
+    @Inject(DiTokens.GetOwnGroupListUsecase)
+    private readonly getOwnGroupListUsecase: GetOwnGroupListUsecase,
+
+    @Inject(DiTokens.GetGroupMemberUsecase)
+    private readonly getGroupMemberUsecase: GetGroupMembersUsecase,
   ) {}
 
-  @Get(":groupId")
-  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: GroupResponseDTO })
-  async getGroup(
-    @Param("groupId") groupId: string,
-  ): Promise<RestResponse<GroupResponseDTO>> {
-    const adapter = await GetGroupAdapter.new({
-      groupId,
+  @Get("own")
+  @UseGuards(HttpJwtAuthGuard)
+  @ApiResponseGeneric({
+    code: Code.SUCCESS,
+    data: GroupSimpleResponseDTO,
+    isArray: true,
+  })
+  async getOwnGroupList(
+    @VerifiedUser() verifiedUser: VerifiedUserPayload,
+  ): Promise<RestResponse<GroupSimpleResponseDTO[]>> {
+    const adapter = await GetOwnGroupListAdapter.new({
+      userId: verifiedUser.id,
     });
-    const group = await this.getGroupUsecase.execute(adapter);
-    const dto = GroupResponseDTO.newFromGroup(group);
 
-    return RestResponse.success(dto);
+    const groupList = await this.getOwnGroupListUsecase.execute(adapter);
+
+    const dtos = GroupSimpleResponseDTO.newListFromGroups(groupList);
+
+    return RestResponse.success(dtos);
   }
 
   @Get()
@@ -81,15 +92,21 @@ export class GroupController {
     return RestResponse.success(dtos);
   }
 
-  @Get("own")
-  @UseGuards(HttpJwtAuthGuard, HttpGroupOwnerGuard)
-  @ApiResponseGeneric({
-    code: Code.SUCCESS,
-    data: GroupSimpleResponseDTO,
-    isArray: true,
-  })
-  async getOwnGroupList(): Promise<GroupSimpleResponseDTO[]> {
-    throw new Error("Not implemented");
+  @Get(":groupId")
+  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: GroupResponseDTO })
+  async getGroup(
+    @Param("groupId") groupId: string,
+  ): Promise<RestResponse<GroupResponseDTO>> {
+    const adapter = await GetGroupAdapter.new({
+      groupId,
+    });
+
+    const group = await this.getGroupUsecase.execute(adapter);
+
+    const dto = GroupResponseDTO.newFromGroup(group);
+
+    return RestResponse.success(dto);
   }
 
   @Delete(":groupId")

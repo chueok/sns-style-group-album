@@ -136,7 +136,7 @@ export class AuthFixture {
     group: TypeormGroup;
   }> {
     const groupList = this.dbHandler.getDbCacheList(TypeormGroup);
-    const group = groupList.at(0);
+    const group = groupList.filter((group) => !group.deletedDateTime).at(0);
     assert(group, "group not found");
     const user = await group.owner;
     assert(user, "user not found");

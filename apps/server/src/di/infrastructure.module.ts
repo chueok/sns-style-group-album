@@ -17,6 +17,7 @@ import {
   GetGroupListUsecase,
   GetGroupMembersUsecase,
   GetGroupUsecase,
+  GetOwnGroupListUsecase,
   GetUserUsecase,
   IGroupRepository,
   IUserRepository,
@@ -97,6 +98,12 @@ const groupUsecaseProviders: Provider[] = [
     provide: DiTokens.GetGroupListUsecase,
     useFactory: (groupRepository: IGroupRepository) =>
       new GetGroupListUsecase(groupRepository),
+    inject: [DiTokens.GroupRepository],
+  },
+  {
+    provide: DiTokens.GetOwnGroupListUsecase,
+    useFactory: (groupRepository: IGroupRepository) =>
+      new GetOwnGroupListUsecase(groupRepository),
     inject: [DiTokens.GroupRepository],
   },
 ];
