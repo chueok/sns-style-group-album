@@ -188,10 +188,7 @@ describe(`${GroupController.name} e2e`, () => {
         .patch(`/groups/${group.id}`)
         .auth(accessToken, { type: "bearer" })
         .send({ dropOutUserList: [group.ownerId] })
-        .expect(200);
-
-      const data = result.body.data as GroupResponseDTO;
-      expect(data.members.includes(group.ownerId)).toBeTruthy();
+        .expect(400);
     });
 
     it("should return 400 if you pass multiple parameter", async () => {

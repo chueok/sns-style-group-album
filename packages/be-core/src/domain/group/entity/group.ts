@@ -34,10 +34,15 @@ export class Group extends EntityWithCUDTime<GroupId> {
     return this._invitedUserList;
   }
 
-  public async changeName(name: string): Promise<void> {
+  public async changeName(name: string): Promise<boolean> {
+    if (this._name === name) {
+      return false;
+    }
     this._name = name;
+
     this._updatedDateTime = new Date();
-    return this.validate();
+    await this.validate();
+    return true;
   }
 
   public async changeOwner(ownerId: UserId): Promise<boolean> {
@@ -50,18 +55,28 @@ export class Group extends EntityWithCUDTime<GroupId> {
     return true;
   }
 
-  public async inviteUsers(userList: UserId[]): Promise<void> {
-    _.difference(userList, this._invitedUserList).forEach((userId) => {
-      this._invitedUserList.push(userId);
-    });
+  public async inviteUsers(userList: UserId[]): Promise<boolean> {
+    const invitedUserList = _.difference(userList, this._invitedUserList);
+    if (invitedUserList.length === 0) {
+      return false;
+    }
+
+    this._invitedUserList.push(...invitedUserList);
+
+    this._updatedDateTime = new Date();
     await this.validate();
+    return true;
   }
 
-  // TODO : boolean return 으로 바꾸어 db 부담 해소 할 것
-  public async cancelInvitation(userList: UserId[]): Promise<void> {
+  public async cancelInvitation(userList: UserId[]): Promise<boolean> {
     const toBeCanceledUserList = _.difference(userList, this._invitedUserList);
+    if (toBeCanceledUserList.length === 0) {
+      return false;
+    }
     _.pull(this._invitedUserList, ...toBeCanceledUserList);
+    this._updatedDateTime = new Date();
     await this.validate();
+    return true;
   }
 
   public async acceptInvitation(userId: UserId): Promise<boolean> {
@@ -78,12 +93,16 @@ export class Group extends EntityWithCUDTime<GroupId> {
     return true;
   }
 
-  public async dropOutMembers(userIdList: UserId[]): Promise<void> {
+  public async dropOutMembers(userIdList: UserId[]): Promise<boolean> {
     userIdList = userIdList.filter((userId) => userId !== this._ownerId);
+    if (userIdList.length === 0) {
+      return false;
+    }
     _.pull(this._members, ...userIdList);
 
     this._updatedDateTime = new Date();
     await this.validate();
+    return true;
   }
 
   public async deleteGroup(): Promise<boolean> {

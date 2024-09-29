@@ -19,9 +19,18 @@ export class InviteUserUsecase implements IUsecase<IInviteUserPort, Group> {
       });
     }
 
-    await group.inviteUsers(port.invitedUserList as UserId[]);
-    const result = await this.groupRepository.updateGroup(group);
-    if (!result) {
+    const domainResult = await group.inviteUsers(
+      port.invitedUserList as UserId[],
+    );
+    if (!domainResult) {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: "Failed to invite user",
+      });
+    }
+
+    const repositoryResult = await this.groupRepository.updateGroup(group);
+    if (!repositoryResult) {
       throw Exception.new({
         code: Code.INTERNAL_ERROR,
         overrideMessage: "Failed to invite user",

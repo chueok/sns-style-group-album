@@ -27,9 +27,23 @@ export class EditGroupUsecase implements IUsecase<IEditGroupPort, Group> {
         });
       }
     } else if (port.name) {
-      await group.changeName(port.name);
+      const result = await group.changeName(port.name);
+      if (!result) {
+        throw Exception.new({
+          code: Code.BAD_REQUEST_ERROR,
+          overrideMessage: "Can't change to same name",
+        });
+      }
     } else if (port.dropOutUserList) {
-      await group.dropOutMembers(port.dropOutUserList as UserId[]);
+      const result = await group.dropOutMembers(
+        port.dropOutUserList as UserId[],
+      );
+      if (!result) {
+        throw Exception.new({
+          code: Code.BAD_REQUEST_ERROR,
+          overrideMessage: "can't drop out owner",
+        });
+      }
     }
 
     const repositoryResult = await this.groupRepository.updateGroup(group);
