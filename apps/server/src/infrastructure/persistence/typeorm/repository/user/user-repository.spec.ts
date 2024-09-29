@@ -156,7 +156,7 @@ describe("UserRepository", () => {
             ownGroups: [],
             groups: [],
             userGroupProfiles: [],
-            invitedGroupList: [],
+            invitedGroupsElements: [],
           },
         ],
       }))!;
@@ -180,7 +180,7 @@ describe("UserRepository", () => {
             ownGroups: [],
             groups: [],
             userGroupProfiles: [],
-            invitedGroupList: [],
+            invitedGroupsElements: [],
           },
         ],
       }))!;
@@ -199,7 +199,15 @@ describe("UserRepository", () => {
       const groups = await user.groups;
       const ownGroups = await user.ownGroups;
       const userGroupProfiles = await user.userGroupProfiles;
+
       const invitedGroups = await user.invitedGroups;
+      const invitedGroupsElements = await Promise.all(
+        invitedGroups.map(async (invitedGroup) => {
+          const memberProfiles = await invitedGroup.memberProfiles;
+          const owner = await invitedGroup.owner;
+          return { group: invitedGroup, memberProfiles, owner };
+        }),
+      );
       const { results, errors } = (await UserMapper.toDomainEntity({
         elements: [
           {
@@ -207,7 +215,7 @@ describe("UserRepository", () => {
             groups,
             ownGroups,
             userGroupProfiles,
-            invitedGroupList: invitedGroups,
+            invitedGroupsElements,
           },
         ],
       }))!;

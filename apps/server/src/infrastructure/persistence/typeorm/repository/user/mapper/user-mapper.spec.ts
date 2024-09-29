@@ -57,12 +57,20 @@ describe("UserMapper", () => {
       const ormUserList = testDatabaseHandler.getDbCacheList(TypeormUser);
       const elements = await Promise.all(
         ormUserList.map(async (user) => {
+          const invitedGroups = await user.invitedGroups;
+          const invitedGroupsElements = await Promise.all(
+            invitedGroups.map(async (invitedGroup) => {
+              const memberProfiles = await invitedGroup.memberProfiles;
+              const owner = await invitedGroup.owner;
+              return { group: invitedGroup, memberProfiles, owner };
+            }),
+          );
           return {
             user,
             groups: await user.groups,
             ownGroups: await user.ownGroups,
             userGroupProfiles: await user.userGroupProfiles,
-            invitedGroupList: await user.invitedGroups,
+            invitedGroupsElements,
           };
         }),
       );
@@ -79,12 +87,20 @@ describe("UserMapper", () => {
       const ormUserList = testDatabaseHandler.getDbCacheList(TypeormUser);
       const elements = await Promise.all(
         ormUserList.map(async (user) => {
+          const invitedGroups = await user.invitedGroups;
+          const invitedGroupsElements = await Promise.all(
+            invitedGroups.map(async (invitedGroup) => {
+              const memberProfiles = await invitedGroup.memberProfiles;
+              const owner = await invitedGroup.owner;
+              return { group: invitedGroup, memberProfiles, owner };
+            }),
+          );
           return {
             user,
             groups: await user.groups,
             ownGroups: await user.ownGroups,
             userGroupProfiles: await user.userGroupProfiles,
-            invitedGroupList: await user.invitedGroups,
+            invitedGroupsElements,
           };
         }),
       );

@@ -13,6 +13,7 @@ import { Nullable } from "../../../common/type/common-types";
 import { UserId } from "./type/user-id";
 import { GroupId } from "../../group/entity/type/group-id";
 import { UserGroupProfile } from "./user-group-profile";
+import { GroupInfo } from "./group-info";
 
 export class User extends EntityWithCUDTime<UserId> {
   @IsUUID()
@@ -56,8 +57,8 @@ export class User extends EntityWithCUDTime<UserId> {
   }
 
   @IsUUID("all", { each: true })
-  private _invitedGroupList: GroupId[];
-  get invitedGroupList(): GroupId[] {
+  private _invitedGroupList: GroupInfo[];
+  get invitedGroupList(): GroupInfo[] {
     return this._invitedGroupList;
   }
 

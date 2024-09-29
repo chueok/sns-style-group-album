@@ -79,10 +79,12 @@ export class TypeormUserRepository implements IUserRepository {
   async findUserById(id: UserId): Promise<Nullable<User>> {
     const ormUser = await this.typeormUserRepository
       .createQueryBuilder("user")
-      .leftJoinAndSelect("user.groups", "group")
+      .leftJoinAndSelect("user.groups", "groups")
       .leftJoinAndSelect("user.ownGroups", "ownGroup")
       .leftJoinAndSelect("user.userGroupProfiles", "userGroupProfiles")
       .leftJoinAndSelect("user.invitedGroups", "invitedGroups")
+      .leftJoinAndSelect("invitedGroups.memberProfiles", "memberProfiles")
+      .leftJoinAndSelect("invitedGroups.owner", "owner")
       .where("user.id = :id", { id })
       .andWhere("user.deletedDateTime is null")
       .getOne();
@@ -93,7 +95,16 @@ export class TypeormUserRepository implements IUserRepository {
     const groups = await ormUser.groups;
     const ownGroups = await ormUser.ownGroups;
     const userGroupProfile = await ormUser.userGroupProfiles;
+
     const invitedGroups = await ormUser.invitedGroups;
+    const invitedGroupsElements = await Promise.all(
+      invitedGroups.map(async (invitedGroup) => {
+        const memberProfiles = await invitedGroup.memberProfiles;
+        const owner = await invitedGroup.owner;
+        return { group: invitedGroup, memberProfiles, owner };
+      }),
+    );
+
     const { results, errors } = await UserMapper.toDomainEntity({
       elements: [
         {
@@ -101,7 +112,7 @@ export class TypeormUserRepository implements IUserRepository {
           groups,
           ownGroups,
           userGroupProfiles: userGroupProfile,
-          invitedGroupList: invitedGroups,
+          invitedGroupsElements,
         },
       ],
     });
@@ -117,11 +128,13 @@ export class TypeormUserRepository implements IUserRepository {
   }): Promise<Nullable<User>> {
     const ormUser = await this.typeormUserRepository
       .createQueryBuilder("user")
-      .innerJoinAndSelect("user.groups", "group")
+      .innerJoinAndSelect("user.groups", "groups")
       .leftJoinAndSelect("user.ownGroups", "ownGroup")
       .leftJoinAndSelect("user.userGroupProfiles", "userGroupProfiles")
       .leftJoinAndSelect("user.invitedGroups", "invitedGroups")
-      .where("group.id = :groupId", { groupId: payload.groupId })
+      .leftJoinAndSelect("invitedGroups.memberProfiles", "memberProfiles")
+      .leftJoinAndSelect("invitedGroups.owner", "owner")
+      .where("groups.id = :groupId", { groupId: payload.groupId })
       .andWhere("user.username = :username", { username: payload.username })
       .andWhere("user.deletedDateTime is null")
       .getOne();
@@ -132,6 +145,13 @@ export class TypeormUserRepository implements IUserRepository {
     const ownGroups = await ormUser.ownGroups;
     const userGroupProfiles = await ormUser.userGroupProfiles;
     const invitedGroups = await ormUser.invitedGroups;
+    const invitedGroupsElements = await Promise.all(
+      invitedGroups.map(async (invitedGroup) => {
+        const memberProfiles = await invitedGroup.memberProfiles;
+        const owner = await invitedGroup.owner;
+        return { group: invitedGroup, memberProfiles, owner };
+      }),
+    );
 
     const { results, errors } = await UserMapper.toDomainEntity({
       elements: [
@@ -140,7 +160,7 @@ export class TypeormUserRepository implements IUserRepository {
           groups,
           ownGroups,
           userGroupProfiles,
-          invitedGroupList: invitedGroups,
+          invitedGroupsElements,
         },
       ],
     });
@@ -153,22 +173,32 @@ export class TypeormUserRepository implements IUserRepository {
   async findUserListByGroupId(groupId: string): Promise<User[]> {
     const ormUsers = await this.typeormUserRepository
       .createQueryBuilder("user")
-      .innerJoinAndSelect("user.groups", "group")
+      .innerJoinAndSelect("user.groups", "groups")
       .leftJoinAndSelect("user.ownGroups", "ownGroup")
       .leftJoinAndSelect("user.userGroupProfiles", "userGroupProfiles")
       .leftJoinAndSelect("user.invitedGroups", "invitedGroups")
-      .where("group.id = :groupId", { groupId })
+      .leftJoinAndSelect("invitedGroups.memberProfiles", "memberProfiles")
+      .leftJoinAndSelect("invitedGroups.owner", "owner")
+      .where("groups.id = :groupId", { groupId })
       .andWhere("user.deletedDateTime is null")
       .getMany();
 
     const elements = await Promise.all(
       ormUsers.map(async (ormUser) => {
+        const invitedGroups = await ormUser.invitedGroups;
+        const invitedGroupsElements = await Promise.all(
+          invitedGroups.map(async (invitedGroup) => {
+            const memberProfiles = await invitedGroup.memberProfiles;
+            const owner = await invitedGroup.owner;
+            return { group: invitedGroup, memberProfiles, owner };
+          }),
+        );
         return {
           user: ormUser,
           groups: await ormUser.groups,
           ownGroups: await ormUser.ownGroups,
           userGroupProfiles: await ormUser.userGroupProfiles,
-          invitedGroupList: await ormUser.invitedGroups,
+          invitedGroupsElements,
         };
       }),
     );
@@ -188,10 +218,12 @@ export class TypeormUserRepository implements IUserRepository {
     const ormUser = await this.typeormUserRepository
       .createQueryBuilder("user")
       .innerJoinAndSelect("user.oauths", "oauths")
-      .leftJoinAndSelect("user.groups", "group")
+      .leftJoinAndSelect("user.groups", "groups")
       .leftJoinAndSelect("user.ownGroups", "ownGroup")
       .leftJoinAndSelect("user.userGroupProfiles", "userGroupProfiles")
       .leftJoinAndSelect("user.invitedGroups", "invitedGroups")
+      .leftJoinAndSelect("invitedGroups.memberProfiles", "memberProfiles")
+      .leftJoinAndSelect("invitedGroups.owner", "owner")
       .where("oauths.provider = :provider", { provider: payload.provider })
       .andWhere("oauths.providerId = :providerId", {
         providerId: payload.providerId,
@@ -207,6 +239,13 @@ export class TypeormUserRepository implements IUserRepository {
     const ownGroups = await ormUser.ownGroups;
     const userGroupProfiles = await ormUser.userGroupProfiles;
     const invitedGroups = await ormUser.invitedGroups;
+    const invitedGroupsElements = await Promise.all(
+      invitedGroups.map(async (invitedGroup) => {
+        const memberProfiles = await invitedGroup.memberProfiles;
+        const owner = await invitedGroup.owner;
+        return { group: invitedGroup, memberProfiles, owner };
+      }),
+    );
 
     const { results, errors } = await UserMapper.toDomainEntity({
       elements: [
@@ -215,7 +254,7 @@ export class TypeormUserRepository implements IUserRepository {
           groups,
           ownGroups,
           userGroupProfiles,
-          invitedGroupList: invitedGroups,
+          invitedGroupsElements,
         },
       ],
     });

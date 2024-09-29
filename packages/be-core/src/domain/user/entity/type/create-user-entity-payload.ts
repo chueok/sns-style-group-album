@@ -1,5 +1,6 @@
 import { Nullable } from "../../../../common/type/common-types";
 import { GroupId } from "../../../group/entity/type/group-id";
+import { GroupInfo } from "../group-info";
 import { UserGroupProfile } from "../user-group-profile";
 import { UserId } from "./user-id";
 
@@ -18,7 +19,7 @@ type CreateExistingUserPayload = CommonCreateUserPayload & {
   groups: GroupId[];
   ownGroups: GroupId[];
   userGroupProfiles: UserGroupProfile[];
-  invitedGroupList: GroupId[];
+  invitedGroupList: GroupInfo[];
 
   createdDateTime: Date;
   updatedDateTime: Nullable<Date>;

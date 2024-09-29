@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IObjectStoragePort, User } from "@repo/be-core";
 import { ObjectStorageKeyFactory } from "../../../../infrastructure/persistence/object-storage/key-factory/object-storage-key-factory";
+import { plainToInstance } from "class-transformer";
 
 export class UserGroupProfileResponseDTO {
   @ApiProperty({ type: "string" })
@@ -11,6 +12,20 @@ export class UserGroupProfileResponseDTO {
 
   @ApiProperty({ type: "string" })
   profileImagePath!: string;
+}
+
+export class GroupInfoResponseDTO {
+  @ApiProperty({ type: "string" })
+  groupId!: string;
+
+  @ApiProperty({ type: "string" })
+  name!: string;
+
+  @ApiProperty({ type: "string" })
+  ownerId!: string;
+
+  @ApiProperty({ type: "string" })
+  ownerNickname!: string;
 }
 
 export class UserResponseDTO {
@@ -35,6 +50,9 @@ export class UserResponseDTO {
   @ApiProperty({ type: UserGroupProfileResponseDTO, isArray: true })
   userGroupProfiles: UserGroupProfileResponseDTO[];
 
+  @ApiProperty({ type: GroupInfoResponseDTO, isArray: true })
+  invitedGroups: GroupInfoResponseDTO[];
+
   @ApiProperty({ type: "number" })
   createdTimestamp: number;
 
@@ -49,6 +67,7 @@ export class UserResponseDTO {
     this.groups = payload.groups;
     this.ownGroups = payload.ownGroups;
     this.userGroupProfiles = payload.userGroupProfiles;
+    this.invitedGroups = payload.invitedGroups;
     this.createdTimestamp = payload.createdTimestamp;
     this.updatedTimestamp = payload.updatedTimestamp;
   }
@@ -102,6 +121,10 @@ export class UserResponseDTO {
       groups: user.groups,
       ownGroups: user.ownGroups,
       userGroupProfiles,
+      invitedGroups: plainToInstance(
+        GroupInfoResponseDTO,
+        user.invitedGroupList,
+      ),
       createdTimestamp: user.createdDateTime.getTime(),
       updatedTimestamp: user.updatedDateTime?.getTime(),
     };

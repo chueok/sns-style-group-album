@@ -5,10 +5,12 @@ import {
   ManyToMany,
   ManyToOne,
   JoinTable,
+  OneToMany,
 } from "typeorm";
 import { GroupId, Nullable, UserId } from "@repo/be-core";
 import { TypeormUser } from "../user/typeorm-user.entity";
 import { TableAlias } from "../table-alias";
+import { TypeormUserGroupProfile } from "../user-group-profile/typeorm-user-group-profile.entity";
 
 @Entity(TableAlias.GROUP)
 export class TypeormGroup {
@@ -21,6 +23,9 @@ export class TypeormGroup {
   @ManyToMany(() => TypeormUser, (user) => user.groups)
   @JoinTable({ name: "GroupMembersRelation" })
   members!: Promise<TypeormUser[]>;
+
+  @OneToMany(() => TypeormUserGroupProfile, (user) => user.group)
+  memberProfiles!: Promise<TypeormUserGroupProfile[]>;
 
   @ManyToOne(() => TypeormUser, {
     nullable: false,

@@ -1,15 +1,25 @@
-import { CreateUserEntityPayload, User, UserGroupProfile } from "@repo/be-core";
+import {
+  CreateUserEntityPayload,
+  GroupInfo,
+  User,
+  UserGroupProfile,
+} from "@repo/be-core";
 import { TypeormUser } from "../../../entity/user/typeorm-user.entity";
 import { TypeormGroup } from "../../../entity/group/typeorm-group.entity";
 import { TypeormUserGroupProfile } from "../../../entity/user-group-profile/typeorm-user-group-profile.entity";
 
+// TODO : 복잡성 낮출 방법을 고민해보자.
 type ToDomainPayloadType = {
   elements: {
     user: TypeormUser;
     groups: TypeormGroup[];
     ownGroups: TypeormGroup[];
     userGroupProfiles: UserGroupProfile[];
-    invitedGroupList: TypeormGroup[];
+    invitedGroupsElements: {
+      group: TypeormGroup;
+      memberProfiles: TypeormUserGroupProfile[];
+      owner: TypeormUser;
+    }[];
   }[];
 };
 
@@ -38,8 +48,25 @@ export class UserMapper {
         groups,
         ownGroups,
         userGroupProfiles: userGroupProfile,
-        invitedGroupList,
+        invitedGroupsElements: invitedGroups,
       } = item;
+
+      const invitedGroupInfoList: GroupInfo[] = invitedGroups.map(
+        (invitedGroupElement) => {
+          const { group, memberProfiles, owner } = invitedGroupElement;
+          const ownerNickname: string =
+            memberProfiles.filter(
+              (profile) => profile.userId === group.ownerId,
+            )[0]?.nickname || owner.username;
+
+          return new GroupInfo({
+            groupId: group.id,
+            name: group.name,
+            ownerId: group.ownerId,
+            ownerNickname,
+          });
+        },
+      );
 
       const userPayload: CreateUserEntityPayload<"existing"> = {
         username: user.username,
@@ -55,7 +82,7 @@ export class UserMapper {
             hasProfileImage: profile.hasProfileImage,
           });
         }),
-        invitedGroupList: invitedGroupList.map((group) => group.id),
+        invitedGroupList: invitedGroupInfoList,
 
         id: user.id,
         createdDateTime: user.createdDateTime,
