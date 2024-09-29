@@ -65,10 +65,14 @@ export class User extends EntityWithCUDTime<UserId> {
     return true;
   }
 
-  async changeUsername(username: string): Promise<void> {
+  async changeUsername(username: string): Promise<boolean> {
+    if (this.username === username) {
+      return false;
+    }
     this._username = username;
     this._updatedDateTime = new Date();
     await this.validate();
+    return true;
   }
 
   async changeUserGroupProfile(payload: {

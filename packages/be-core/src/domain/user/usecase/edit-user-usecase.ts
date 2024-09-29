@@ -18,12 +18,11 @@ export class EditUserUsecase implements IUsecase<IEditUserPort, User> {
     }
 
     if (port.username) {
-      await user.changeUsername(port.username);
-      const result = await this.userRepository.updateUser(user);
+      const result = await user.changeUsername(port.username);
       if (!result) {
         throw Exception.new({
           code: Code.INTERNAL_ERROR,
-          overrideMessage: "Failed to update user",
+          overrideMessage: "Failed to change username",
         });
       }
     }
