@@ -13,6 +13,9 @@ import { ApiTags } from "@nestjs/swagger";
 import { RestResponse } from "./dto/common/rest-response";
 import {
   Code,
+  EditGroupAdapter,
+  EditGroupUsecase,
+  Exception,
   GetGroupAdapter,
   GetGroupListAdapter,
   GetGroupListUsecase,
@@ -21,6 +24,8 @@ import {
   GetGroupUsecase,
   GetOwnGroupListAdapter,
   GetOwnGroupListUsecase,
+  InviteUserAdapter,
+  InviteUserUsecase,
 } from "@repo/be-core";
 import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
 import { GroupSimpleResponseDTO } from "./dto/group/group-simple-response";
@@ -33,8 +38,8 @@ import { UserSimpleResponseDTO } from "./dto/user/user-simple-response-dto";
 import { DiTokens } from "../../di/di-tokens";
 import { VerifiedUser } from "../auth/decorator/verified-user";
 import { VerifiedUserPayload } from "../auth/type/verified-user-payload";
+import { HttpGroupOwnerGuard } from "../auth/guard/group-owner-guard";
 
-// TODO : 구체적인 path가 먼저 오도록 리펙토링 필요함
 @Controller("groups")
 @ApiTags("groups")
 export class GroupController {
@@ -50,6 +55,12 @@ export class GroupController {
 
     @Inject(DiTokens.GetGroupMemberUsecase)
     private readonly getGroupMemberUsecase: GetGroupMembersUsecase,
+
+    @Inject(DiTokens.EditGroupUsecase)
+    private readonly editGroupUsecase: EditGroupUsecase,
+
+    @Inject(DiTokens.InviteUserUsecase)
+    private readonly inviteUserUsecase: InviteUserUsecase,
   ) {}
 
   @Get("own")
@@ -110,12 +121,52 @@ export class GroupController {
   }
 
   @Patch(":groupId")
+  @UseGuards(HttpJwtAuthGuard, HttpGroupOwnerGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: GroupResponseDTO })
   async editGroup(
     @Param("groupId") groupId: string,
     @Body() body: RestEditGroupBody,
-  ): Promise<RestResponse<GroupResponseDTO | null>> {
-    throw new Error("Not implemented");
+  ): Promise<RestResponse<GroupResponseDTO>> {
+    const trueCount = Object.keys(body)
+      .map((key) => !!body[key])
+      .filter(Boolean).length;
+    if (trueCount > 1) {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: "Only one field can be edited at a time",
+      });
+    }
+
+    if (body?.invitedUserList && Array.isArray(body.invitedUserList)) {
+      if (body.invitedUserList.length === 0) {
+        throw Exception.new({
+          code: Code.BAD_REQUEST_ERROR,
+          overrideMessage: "invitedUserList should not be empty",
+        });
+      }
+      const adapter = await InviteUserAdapter.new({
+        groupId,
+        invitedUserList: body.invitedUserList,
+      });
+
+      const group = await this.inviteUserUsecase.execute(adapter);
+
+      const dto = GroupResponseDTO.newFromGroup(group);
+
+      return RestResponse.success(dto);
+    }
+
+    const adapter = await EditGroupAdapter.new({
+      groupId,
+      ownerId: body.ownerId,
+      name: body.name,
+    });
+
+    const group = await this.editGroupUsecase.execute(adapter);
+
+    const dto = GroupResponseDTO.newFromGroup(group);
+
+    return RestResponse.success(dto);
   }
 
   @Delete(":groupId")

@@ -11,7 +11,7 @@ type CreateExistingGroupEntityPayload = CreateNewGroupEntityPayload & {
   id: GroupId;
   createdDateTime: Date;
   members: UserId[];
-  invitedUsers: UserId[];
+  invitedUserList: UserId[];
   updatedDateTime: Nullable<Date>;
   deletedDateTime: Nullable<Date>;
 };

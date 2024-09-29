@@ -29,9 +29,9 @@ export class Group extends EntityWithCUDTime<GroupId> {
   }
 
   @IsUUID("all", { each: true })
-  private _invitedUsers: UserId[];
-  get invitedUsers(): UserId[] {
-    return this._invitedUsers;
+  private _invitedUserList: UserId[];
+  get invitedUserList(): UserId[] {
+    return this._invitedUserList;
   }
 
   public async changeName(name: string): Promise<void> {
@@ -40,7 +40,7 @@ export class Group extends EntityWithCUDTime<GroupId> {
   }
 
   public async changeOwner(ownerId: UserId): Promise<boolean> {
-    if (!this._members.has(ownerId)) {
+    if (!this._members.has(ownerId) || this._ownerId === ownerId) {
       return false;
     }
     this._ownerId = ownerId;
@@ -58,20 +58,20 @@ export class Group extends EntityWithCUDTime<GroupId> {
   }
 
   public async inviteUsers(userList: UserId[]): Promise<void> {
-    _.difference(userList, this._invitedUsers).forEach((userId) => {
-      this._invitedUsers.push(userId);
+    _.difference(userList, this._invitedUserList).forEach((userId) => {
+      this._invitedUserList.push(userId);
     });
     await this.validate();
   }
 
   public async cancelInvitation(userList: UserId[]): Promise<void> {
-    const toBeCanceledUserList = _.difference(userList, this._invitedUsers);
-    _.pull(this._invitedUsers, ...toBeCanceledUserList);
+    const toBeCanceledUserList = _.difference(userList, this._invitedUserList);
+    _.pull(this._invitedUserList, ...toBeCanceledUserList);
     await this.validate();
   }
 
   public async acceptInvitation(userId: UserId): Promise<boolean> {
-    if (!this._invitedUsers.includes(userId)) {
+    if (!this._invitedUserList.includes(userId)) {
       return false;
     }
     const result = this._members.add(userId);
@@ -79,7 +79,7 @@ export class Group extends EntityWithCUDTime<GroupId> {
       return false;
     }
 
-    _.pull(this._invitedUsers, userId);
+    _.pull(this._invitedUserList, userId);
     await this.validate();
     return true;
   }
@@ -102,7 +102,7 @@ export class Group extends EntityWithCUDTime<GroupId> {
     if ("id" in payload) {
       this._id = payload.id;
       this._members = new Set(payload.members);
-      this._invitedUsers = payload.invitedUsers;
+      this._invitedUserList = payload.invitedUserList;
 
       this._createdDateTime = payload.createdDateTime;
       this._updatedDateTime = payload.updatedDateTime || null;
@@ -110,7 +110,7 @@ export class Group extends EntityWithCUDTime<GroupId> {
     } else {
       this._id = v4() as GroupId;
       this._members = new Set();
-      this._invitedUsers = [];
+      this._invitedUserList = [];
 
       this._createdDateTime = new Date();
       this._updatedDateTime = null;

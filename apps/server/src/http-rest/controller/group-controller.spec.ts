@@ -110,6 +110,77 @@ describe(`${GroupController.name} e2e`, () => {
     expect(data.createdTimestamp).toBe(group.createdDateTime.getTime());
   });
 
+  describe("/groups/:groupId (PATCH)", () => {
+    it("change group name", async () => {
+      const { accessToken, user, group } =
+        await authFixtrue.get_group_owner_accessToken();
+
+      const newName = "new name";
+      const result = await request(app.getHttpServer())
+        .patch(`/groups/${group.id}`)
+        .auth(accessToken, { type: "bearer" })
+        .send({ name: newName })
+        .expect(200);
+
+      const data = result.body.data as GroupResponseDTO;
+      expect(data.name).toBe(newName);
+    });
+
+    it("change group owner", async () => {
+      const { accessToken, user, group } =
+        await authFixtrue.get_group_owner_accessToken();
+
+      const newOwner = (await group.members).find(
+        (member) => member.id !== group.ownerId,
+      )!;
+      assert(newOwner, "new owner not found");
+
+      const result = await request(app.getHttpServer())
+        .patch(`/groups/${group.id}`)
+        .auth(accessToken, { type: "bearer" })
+        .send({ ownerId: newOwner.id })
+        .expect(200);
+
+      const data = result.body.data as GroupResponseDTO;
+      expect(data.ownerId).toBe(newOwner.id);
+    });
+
+    it("invite user", async () => {
+      const { accessToken, user, group } =
+        await authFixtrue.get_group_owner_accessToken();
+
+      const usersNotInGroup = await authFixtrue.getUsersNotInGroup(group.id);
+      const userIdListNotInGroup = usersNotInGroup.map((user) => user.id);
+      await request(app.getHttpServer())
+        .patch(`/groups/${group.id}`)
+        .auth(accessToken, { type: "bearer" })
+        .send({ invitedUserList: userIdListNotInGroup })
+        .expect(200);
+    });
+
+    it("should return 400 if you pass multiple parameter", async () => {
+      const { accessToken, user, group } =
+        await authFixtrue.get_group_owner_accessToken();
+
+      await request(app.getHttpServer())
+        .patch(`/groups/${group.id}`)
+        .auth(accessToken, { type: "bearer" })
+        .send({ name: "new name", ownerId: user.id })
+        .expect(400);
+    });
+
+    it("should return 400 if you pass empty array on invitedUserList", async () => {
+      const { accessToken, user, group } =
+        await authFixtrue.get_group_owner_accessToken();
+
+      await request(app.getHttpServer())
+        .patch(`/groups/${group.id}`)
+        .auth(accessToken, { type: "bearer" })
+        .send({ invitedUserList: [] })
+        .expect(400);
+    });
+  });
+
   it("/groups (GET)", async () => {
     const { accessToken, user, group } =
       await authFixtrue.get_group_member_accessToken();

@@ -139,9 +139,9 @@ export class AuthFixture {
   }> {
     const groupList = this.dbHandler.getDbCacheList(TypeormGroup);
     const group = groupList.filter((group) => !group.deletedDateTime).at(0);
-    assert(group, "group not found");
+    assert(group && !group.deletedDateTime, "group not found");
     const user = await group.owner;
-    assert(user, "user not found");
+    assert(user && !user.deletedDateTime, "user not found");
 
     const loginToken = await this.authService.getLoginToken({
       id: user.id,
@@ -163,7 +163,7 @@ export class AuthFixture {
     assert(!!unrelatedUser, "unrelatedUser is not exist");
 
     const newGroup = this.dbHandler.makeDummyGroup();
-    newGroup.members = Promise.resolve([]);
+    newGroup.members = Promise.resolve([unrelatedUser]);
     newGroup.ownerId = unrelatedUser.id;
     await this.dbHandler.commit();
 
@@ -173,5 +173,20 @@ export class AuthFixture {
 
     assert(!!targetGroup, `${userId} is exist in all groups`);
     return targetGroup;
+  }
+
+  public async getUsersNotInGroup(groupId: string): Promise<TypeormUser[]> {
+    const group = this.dbHandler
+      .getDbCacheList(TypeormGroup)
+      .filter((group) => group.id === groupId)
+      .at(0);
+    assert(!!group, "group not found");
+
+    const users = this.dbHandler.getDbCacheList(TypeormUser);
+    const members = await group.members;
+    const usersNotInGroup = users.filter(
+      (user) => !members.find((member) => member.id === user.id),
+    );
+    return usersNotInGroup;
   }
 }

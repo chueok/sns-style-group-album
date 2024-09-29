@@ -29,7 +29,7 @@ export class GroupMapper {
         name: item.group.name,
         id: item.group.id,
         members: item.members,
-        invitedUsers: item.invitedUsers,
+        invitedUserList: item.invitedUsers,
         createdDateTime: item.group.createdDateTime,
         updatedDateTime: item.group.updatedDateTime,
         deletedDateTime: item.group.deletedDateTime,

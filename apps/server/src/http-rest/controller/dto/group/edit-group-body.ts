@@ -6,4 +6,11 @@ export class RestEditGroupBody {
 
   @ApiPropertyOptional({ type: "string", description: "change group owner" })
   ownerId?: string;
+
+  @ApiPropertyOptional({
+    type: "string",
+    isArray: true,
+    description: "invite user",
+  })
+  invitedUserList?: string[];
 }

@@ -12,6 +12,7 @@ import { APP_FILTER } from "@nestjs/core";
 import { NestHttpExceptionFilter } from "../http-rest/exception-filter/nest-http-exception-filter";
 import {
   DeleteUserUsecase,
+  EditGroupUsecase,
   EditUserGroupProfileUsecase,
   EditUserUsecase,
   GetGroupListUsecase,
@@ -20,6 +21,7 @@ import {
   GetOwnGroupListUsecase,
   GetUserUsecase,
   IGroupRepository,
+  InviteUserUsecase,
   IUserRepository,
 } from "@repo/be-core";
 import { MinioObjectStorageFactory } from "../infrastructure/persistence/object-storage/minio/minio-adapter";
@@ -104,6 +106,18 @@ const groupUsecaseProviders: Provider[] = [
     provide: DiTokens.GetOwnGroupListUsecase,
     useFactory: (groupRepository: IGroupRepository) =>
       new GetOwnGroupListUsecase(groupRepository),
+    inject: [DiTokens.GroupRepository],
+  },
+  {
+    provide: DiTokens.EditGroupUsecase,
+    useFactory: (groupRepository: IGroupRepository) =>
+      new EditGroupUsecase(groupRepository),
+    inject: [DiTokens.GroupRepository],
+  },
+  {
+    provide: DiTokens.InviteUserUsecase,
+    useFactory: (groupRepository: IGroupRepository) =>
+      new InviteUserUsecase(groupRepository),
     inject: [DiTokens.GroupRepository],
   },
 ];
