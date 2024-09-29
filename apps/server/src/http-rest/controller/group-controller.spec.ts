@@ -181,6 +181,21 @@ describe(`${GroupController.name} e2e`, () => {
     });
   });
 
+  it("/groups (POST)", async () => {
+    const { accessToken, user } = await authFixtrue.get_validUser_accessToken();
+
+    const groupName = "new group";
+    const result = await request(app.getHttpServer())
+      .post("/groups")
+      .auth(accessToken, { type: "bearer" })
+      .send({ name: groupName })
+      .expect(201);
+
+    const data = result.body.data as GroupResponseDTO;
+    expect(data.name).toBe(groupName);
+    expect(data.ownerId).toBe(user.id);
+  });
+
   it("/groups (GET)", async () => {
     const { accessToken, user, group } =
       await authFixtrue.get_group_member_accessToken();

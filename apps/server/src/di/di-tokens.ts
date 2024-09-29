@@ -23,6 +23,7 @@ export class DiTokens {
   static readonly GetOwnGroupListUsecase = Symbol("GetOwnGroupListUsecase");
   static readonly EditGroupUsecase = Symbol("EditGroupUsecase");
   static readonly InviteUserUsecase = Symbol("InviteUserUsecase");
+  static readonly CreateGroupUsecase = Symbol("CreateGroupUsecase");
 
   // storage
   static readonly ObjectStorageFactory = Symbol("ObjectStorageFactory");

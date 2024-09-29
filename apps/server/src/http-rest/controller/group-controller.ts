@@ -13,6 +13,8 @@ import { ApiTags } from "@nestjs/swagger";
 import { RestResponse } from "./dto/common/rest-response";
 import {
   Code,
+  CreateGroupAdapter,
+  CreateGroupUsecase,
   EditGroupAdapter,
   EditGroupUsecase,
   Exception,
@@ -61,6 +63,9 @@ export class GroupController {
 
     @Inject(DiTokens.InviteUserUsecase)
     private readonly inviteUserUsecase: InviteUserUsecase,
+
+    @Inject(DiTokens.CreateGroupUsecase)
+    private readonly createGroupUsecase: CreateGroupUsecase,
   ) {}
 
   @Get("own")
@@ -127,6 +132,7 @@ export class GroupController {
     @Param("groupId") groupId: string,
     @Body() body: RestEditGroupBody,
   ): Promise<RestResponse<GroupResponseDTO>> {
+    // TODO adapter 로 옮기자.
     const trueCount = Object.keys(body)
       .map((key) => !!body[key])
       .filter(Boolean).length;
@@ -178,11 +184,22 @@ export class GroupController {
   }
 
   @Post()
+  @UseGuards(HttpJwtAuthGuard)
   @ApiResponseGeneric({ code: Code.CREATED, data: GroupResponseDTO })
   async createGroup(
+    @VerifiedUser() verifiedUser: VerifiedUserPayload,
     @Body() body: RestCreateGroupBody,
   ): Promise<RestResponse<GroupResponseDTO | null>> {
-    throw new Error("Not implemented");
+    const adapter = await CreateGroupAdapter.new({
+      ownerId: verifiedUser.id,
+      name: body.name,
+    });
+
+    const group = await this.createGroupUsecase.execute(adapter);
+
+    const dto = GroupResponseDTO.newFromGroup(group);
+
+    return RestResponse.success(dto);
   }
 
   @Get()
