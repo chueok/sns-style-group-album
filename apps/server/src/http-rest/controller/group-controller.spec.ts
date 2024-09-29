@@ -61,6 +61,16 @@ describe(`${GroupController.name} e2e`, () => {
     await moduleFixture.close();
   });
 
+  it("/groups/groupId/accept-invitation (PATCH)", async () => {
+    const { user, group, accessToken } =
+      await authFixtrue.getInvitedUserAndGroup();
+
+    const result = await request(app.getHttpServer())
+      .patch(`/groups/${group.id}/accept-invitation`)
+      .auth(accessToken, { type: "bearer" })
+      .expect(200);
+  });
+
   it("/groups/own (GET)", async () => {
     Error.stackTraceLimit = 100;
     const { user, group, accessToken } =

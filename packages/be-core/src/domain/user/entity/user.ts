@@ -56,7 +56,7 @@ export class User extends EntityWithCUDTime<UserId> {
     return this._userGroupProfiles;
   }
 
-  @IsUUID("all", { each: true })
+  @IsInstance(GroupInfo, { each: true })
   private _invitedGroupList: GroupInfo[];
   get invitedGroupList(): GroupInfo[] {
     return this._invitedGroupList;

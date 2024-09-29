@@ -12,6 +12,8 @@ import {
 import { ApiTags } from "@nestjs/swagger";
 import { RestResponse } from "./dto/common/rest-response";
 import {
+  AcceptInvitationAdapter,
+  AcceptInvitationUsecase,
   Code,
   CreateGroupAdapter,
   CreateGroupUsecase,
@@ -48,6 +50,9 @@ import { HttpGroupOwnerGuard } from "../auth/guard/group-owner-guard";
 @ApiTags("groups")
 export class GroupController {
   constructor(
+    @Inject(DiTokens.AcceptInvitationUsecase)
+    private readonly acceptInvitationUsecase: AcceptInvitationUsecase,
+
     @Inject(DiTokens.GetGroupUsecase)
     private readonly getGroupUsecase: GetGroupUsecase,
 
@@ -72,6 +77,23 @@ export class GroupController {
     @Inject(DiTokens.DeleteGroupUsecase)
     private readonly deleteGroupUsecase: DeleteGroupUsecase,
   ) {}
+
+  @Patch(":groupId/accept-invitation")
+  @UseGuards(HttpJwtAuthGuard)
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
+  async acceptInvitation(
+    @VerifiedUser() verifiedUser: VerifiedUserPayload,
+    @Param("groupId") groupId: string,
+  ): Promise<RestResponse<null>> {
+    const adapter = await AcceptInvitationAdapter.new({
+      groupId,
+      userId: verifiedUser.id,
+    });
+
+    await this.acceptInvitationUsecase.execute(adapter);
+
+    return RestResponse.success(null);
+  }
 
   @Get("own")
   @UseGuards(HttpJwtAuthGuard)

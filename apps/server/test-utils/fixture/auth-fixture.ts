@@ -165,6 +165,7 @@ export class AuthFixture {
     const newGroup = this.dbHandler.makeDummyGroup();
     newGroup.members = Promise.resolve([unrelatedUser]);
     newGroup.ownerId = unrelatedUser.id;
+    newGroup.deletedDateTime = null;
     await this.dbHandler.commit();
 
     const targetGroup = this.dbHandler
@@ -188,5 +189,21 @@ export class AuthFixture {
       (user) => !members.find((member) => member.id === user.id),
     );
     return usersNotInGroup;
+  }
+
+  public async getInvitedUserAndGroup(): Promise<{
+    user: TypeormUser;
+    group: TypeormGroup;
+    accessToken: string;
+  }> {
+    const { user, accessToken } = await this.get_validUser_accessToken();
+    const group = await this.getGroupUserNotIn(user.id);
+    await this.dataSource
+      .getRepository(TypeormGroup)
+      .createQueryBuilder("group")
+      .relation("invitedUsers")
+      .of(group)
+      .add(user);
+    return { user, group, accessToken };
   }
 }

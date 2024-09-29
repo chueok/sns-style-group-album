@@ -11,6 +11,7 @@ import { TYPEORM_DIRECTORY } from "../infrastructure/persistence/typeorm/typeorm
 import { APP_FILTER } from "@nestjs/core";
 import { NestHttpExceptionFilter } from "../http-rest/exception-filter/nest-http-exception-filter";
 import {
+  AcceptInvitationUsecase,
   CreateGroupUsecase,
   DeleteGroupUsecase,
   DeleteUserUsecase,
@@ -132,6 +133,12 @@ const groupUsecaseProviders: Provider[] = [
     provide: DiTokens.DeleteGroupUsecase,
     useFactory: (groupRepository: IGroupRepository) =>
       new DeleteGroupUsecase(groupRepository),
+    inject: [DiTokens.GroupRepository],
+  },
+  {
+    provide: DiTokens.AcceptInvitationUsecase,
+    useFactory: (groupRepository: IGroupRepository) =>
+      new AcceptInvitationUsecase(groupRepository),
     inject: [DiTokens.GroupRepository],
   },
 ];

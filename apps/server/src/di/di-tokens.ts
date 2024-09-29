@@ -25,6 +25,7 @@ export class DiTokens {
   static readonly InviteUserUsecase = Symbol("InviteUserUsecase");
   static readonly CreateGroupUsecase = Symbol("CreateGroupUsecase");
   static readonly DeleteGroupUsecase = Symbol("DeleteGroupUsecase");
+  static readonly AcceptInvitationUsecase = Symbol("AcceptInvitationUsecase");
 
   // storage
   static readonly ObjectStorageFactory = Symbol("ObjectStorageFactory");
