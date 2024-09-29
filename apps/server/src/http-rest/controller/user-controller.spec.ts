@@ -13,6 +13,7 @@ import { DiTokens } from "../../di/di-tokens";
 import { UserResponseDTO } from "./dto/user/user-response-dto";
 import { GetProfileImageUploadUrlResponseDTO } from "./dto/user/get-profile-image-upload-url-response-dto copy";
 import { GetUserGroupProfileImageUploadUrlResponseDTO } from "./dto/user/get-user-group-profile-image-upload-url-response-dto";
+import { TypeormGroup } from "../../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -24,9 +25,10 @@ describe(`${UserController.name} e2e`, () => {
   let moduleFixture: TestingModule;
   let userFixture: UserFixture;
   let authFixtrue: AuthFixture;
+  let testDataSource: DataSource;
 
   beforeEach(async () => {
-    const testDataSource = new DataSource({
+    testDataSource = new DataSource({
       ...typeormSqliteOptions,
       database: parameters.testDbPath,
       synchronize: false,
@@ -81,6 +83,12 @@ describe(`${UserController.name} e2e`, () => {
 
   it("/users (DELETE)", async () => {
     const { accessToken, user } = await authFixtrue.get_validUser_accessToken();
+
+    // own group 삭제
+    const ownGroups = await user.ownGroups;
+    await testDataSource
+      .getRepository(TypeormGroup)
+      .delete(ownGroups.map((group) => group.id));
 
     await request(app.getHttpServer())
       .delete(`/users`)

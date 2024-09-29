@@ -55,9 +55,14 @@ export class User extends EntityWithCUDTime<UserId> {
     return this._userGroupProfiles;
   }
 
-  async deleteUser(): Promise<void> {
+  async deleteUser(): Promise<boolean> {
+    if (this.ownGroups.length !== 0) {
+      return false;
+    }
+
     this._deletedDateTime = new Date();
     await this.validate();
+    return true;
   }
 
   async changeUsername(username: string): Promise<void> {

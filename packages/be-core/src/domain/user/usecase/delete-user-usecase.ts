@@ -16,11 +16,17 @@ export class DeleteUserUsecase implements IUsecase<IDeleteUserPort, void> {
       });
     }
 
-    await user.deleteUser();
+    const domainResult = await user.deleteUser();
+    if (!domainResult) {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: "user is owner of any group",
+      });
+    }
 
-    const result = await this.userRepository.updateUser(user);
+    const repositoryResult = await this.userRepository.updateUser(user);
 
-    if (!result) {
+    if (!repositoryResult) {
       throw Exception.new({
         code: Code.INTERNAL_ERROR,
         overrideMessage: "update user error",
