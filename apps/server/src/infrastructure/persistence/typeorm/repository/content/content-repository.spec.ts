@@ -143,7 +143,7 @@ describe("ContentRepository", () => {
       expect(contentList).not.toBeNull();
       expect(contentList).toBeInstanceOf(Array);
       expect(contentList.length).toBeLessThanOrEqual(10);
-      expect(contentList.length).toEqual(numContents);
+      expect(contentList.length).toEqual(Math.min(numContents, 10));
     });
     it("(desc) should find a content list by group id and type", async () => {
       const targetContentList = testDatabaseHandler
@@ -178,7 +178,7 @@ describe("ContentRepository", () => {
       expect(contentList).not.toBeNull();
       expect(contentList).toBeInstanceOf(Array);
       expect(contentList.length).toBeLessThanOrEqual(10);
-      expect(contentList.length).toEqual(filterFromCache.length);
+      expect(contentList.length).toEqual(Math.min(filterFromCache.length, 10));
     });
   });
 

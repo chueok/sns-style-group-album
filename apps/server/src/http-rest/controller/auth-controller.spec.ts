@@ -28,7 +28,7 @@ describe("AuthController", () => {
   let authService: IAuthService;
   let jwtService: JwtService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const testDataSource = new DataSource({
       ...typeormSqliteOptions,
       database: parameters.testDbPath,
@@ -40,7 +40,10 @@ describe("AuthController", () => {
       controllers: [AppController],
       providers: [AppService],
       imports: [InfrastructureModule, AuthModule],
-    }).compile();
+    })
+      .overrideProvider(DataSource)
+      .useValue(testDataSource)
+      .compile();
 
     authService = testingModule.get<IAuthService>(DiTokens.AuthService);
     jwtService = testingModule.get(JwtService);

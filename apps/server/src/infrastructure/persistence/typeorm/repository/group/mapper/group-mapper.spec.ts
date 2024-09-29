@@ -58,9 +58,13 @@ describe("GroupMapper", () => {
       const groupElements = await Promise.all(
         ormGroupList.map(async (ormGroup) => {
           const members = (await ormGroup.members).map((member) => member.id);
+          const invitedUsers = (await ormGroup.invitedUsers).map(
+            (user) => user.id,
+          );
           return {
             group: ormGroup,
             members,
+            invitedUsers,
           };
         }),
       );
@@ -79,9 +83,13 @@ describe("GroupMapper", () => {
       const groupElements = await Promise.all(
         ormGroupList.map(async (ormGroup) => {
           const members = (await ormGroup.members).map((member) => member.id);
+          const invitedUsers = (await ormGroup.invitedUsers).map(
+            (user) => user.id,
+          );
           return {
             group: ormGroup,
             members,
+            invitedUsers,
           };
         }),
       );

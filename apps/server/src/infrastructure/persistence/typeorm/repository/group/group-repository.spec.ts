@@ -1,9 +1,13 @@
 import { join, basename } from "path";
 import { DataSource } from "typeorm";
-import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
 import { TypeormGroup } from "../../entity/group/typeorm-group.entity";
 import { TypeormGroupRepository } from "./group-repository";
-import { Group, GroupId, UserId } from "@repo/be-core";
+import {
+  CreateGroupEntityPayload,
+  Group,
+  GroupId,
+  UserId,
+} from "@repo/be-core";
 import { TypeormUser } from "../../entity/user/typeorm-user.entity";
 import { GroupMapper } from "./mapper/group-mapper";
 import { Test, TestingModule } from "@nestjs/testing";
@@ -11,6 +15,8 @@ import {
   InfrastructureModule,
   typeormSqliteOptions,
 } from "../../../../../di/infrastructure.module";
+import { GroupFixture } from "@test-utils/fixture/group-fixture";
+import { v4 } from "uuid";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -20,8 +26,8 @@ const parameters = {
 describe("GroupRepository", () => {
   let module: TestingModule;
   let dataSource: DataSource;
-  let testDatabaseHandler: DummyDatabaseHandler;
   let groupRepository: TypeormGroupRepository;
+  let groupFixture: GroupFixture;
 
   beforeAll(async () => {
     const testDataSource = new DataSource({
@@ -39,11 +45,11 @@ describe("GroupRepository", () => {
       .useValue(testDataSource)
       .compile();
     dataSource = module.get<DataSource>(DataSource);
-    testDatabaseHandler = new DummyDatabaseHandler(dataSource);
 
     groupRepository = new TypeormGroupRepository(dataSource);
 
-    await testDatabaseHandler.load(parameters.dummyDbPath);
+    groupFixture = new GroupFixture(dataSource);
+    await groupFixture.init(parameters.dummyDbPath);
   });
 
   afterAll(async () => {
@@ -53,7 +59,6 @@ describe("GroupRepository", () => {
 
   it("should be defined", () => {
     expect(dataSource).toBeDefined();
-    expect(testDatabaseHandler).toBeDefined();
     expect(groupRepository).toBeDefined();
   });
 
@@ -61,7 +66,7 @@ describe("GroupRepository", () => {
     let targetOrmGroup: TypeormGroup;
 
     beforeAll(async () => {
-      targetOrmGroup = testDatabaseHandler.getDbCacheList(TypeormGroup).at(-1)!;
+      targetOrmGroup = await groupFixture.getExistingGroup();
     });
 
     it("should find a group by id", async () => {
@@ -79,7 +84,9 @@ describe("GroupRepository", () => {
   describe("findGroupListByOwnerId", () => {
     let targetOrmUser: TypeormUser;
     beforeAll(async () => {
-      targetOrmUser = testDatabaseHandler.getDbCacheList(TypeormUser).at(-1)!;
+      const { owner, group } =
+        await groupFixture.getGroupHavingMembersAndContents();
+      targetOrmUser = owner;
     });
 
     it("should find a group list by owner id", async () => {
@@ -103,8 +110,12 @@ describe("GroupRepository", () => {
   });
   describe("findGroupListByUserId", () => {
     let targetOrmUser: TypeormUser;
+    let targetOrmGroups: TypeormGroup[];
     beforeAll(async () => {
-      targetOrmUser = testDatabaseHandler.getDbCacheList(TypeormUser).at(-1)!;
+      const { user, groups } = await groupFixture.getUserAnsGroups();
+      targetOrmUser = user;
+      targetOrmGroups = groups;
+      console.log("targetOrmUser", targetOrmUser);
     });
 
     it("should find a group list by user id", async () => {
@@ -114,7 +125,7 @@ describe("GroupRepository", () => {
 
       expect(groups).not.toBeNull();
       expect(groups).toBeInstanceOf(Array);
-      expect(groups.length).toEqual((await targetOrmUser.groups).length);
+      expect(groups.length).toEqual(targetOrmGroups.length);
     });
 
     it("should not find a group list by user id when an error occurs", async () => {
@@ -129,46 +140,38 @@ describe("GroupRepository", () => {
 
   describe("createGroup", () => {
     it("should create a group", async () => {
-      const dummyOrmGroup = testDatabaseHandler
-        .getDbCacheList(TypeormGroup)
-        .at(-1)!;
+      const { user, groups } = await groupFixture.getUserAnsGroups();
+      const payload: CreateGroupEntityPayload<"new"> = {
+        ownerId: user.id,
+        name: "new group",
+      };
+      const newGroup = new Group(payload);
 
-      const members = (await dummyOrmGroup.members).map((member) => member.id);
-      const mapResult = await GroupMapper.toDomainEntity({
-        elements: [{ group: dummyOrmGroup, members }],
-      });
-      const dummyDomainGroup = mapResult.results[0]!;
-      expect(dummyDomainGroup).toBeInstanceOf(Group);
-
-      const result = await groupRepository.createGroup(dummyDomainGroup);
+      const result = await groupRepository.createGroup(newGroup);
       expect(result).toBeTruthy();
     });
 
     it("should not create a group when an error occurs", async () => {
-      const dummyOrmGroup = testDatabaseHandler
-        .getDbCacheList(TypeormGroup)
-        .at(-1)!;
-      const members = (await dummyOrmGroup.members).map((member) => member.id);
-      const mapResult = await GroupMapper.toDomainEntity({
-        elements: [{ group: dummyOrmGroup, members }],
-      });
-      const dummyDomainGroup = mapResult.results[0]!;
+      const payload: CreateGroupEntityPayload<"new"> = {
+        ownerId: v4() as UserId,
+        name: "new group",
+      };
+      const newGroup = new Group(payload);
 
-      (dummyDomainGroup as any)._createdDateTime = null;
-
-      const result = await groupRepository.createGroup(dummyDomainGroup);
+      const result = await groupRepository.createGroup(newGroup);
       expect(result).toBeFalsy();
     });
   });
 
   describe("updateGroup", () => {
     it("should update a group", async () => {
-      const targetOrmGroup = testDatabaseHandler
-        .getDbCacheList(TypeormGroup)
-        .at(-1)!;
+      const targetOrmGroup = await groupFixture.getExistingGroup();
       const members = (await targetOrmGroup.members).map((member) => member.id);
+      const invitedUsers = (await targetOrmGroup.invitedUsers).map(
+        (user) => user.id,
+      );
       const mapResult = (await GroupMapper.toDomainEntity({
-        elements: [{ group: targetOrmGroup, members }],
+        elements: [{ group: targetOrmGroup, members, invitedUsers }],
       }))!;
       const targetDomainGroup = mapResult.results[0]!;
       await targetDomainGroup.changeName("updated name");

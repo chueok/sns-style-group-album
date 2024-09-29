@@ -4,6 +4,7 @@ import { CreateGroupEntityPayload } from "./type/create-group-entity-payload";
 import { v4 } from "uuid";
 import { GroupId } from "./type/group-id";
 import { UserId } from "../../user/entity/type/user-id";
+import _ from "lodash";
 
 export class Group extends EntityWithCUDTime<GroupId> {
   @IsUUID()
@@ -25,6 +26,12 @@ export class Group extends EntityWithCUDTime<GroupId> {
   private _members: Set<UserId>; // User ID의 집합으로 저장
   get members(): UserId[] {
     return Array.from(this._members);
+  }
+
+  @IsUUID("all", { each: true })
+  private _invitedUsers: UserId[];
+  get invitedUsers(): UserId[] {
+    return this._invitedUsers;
   }
 
   public async changeName(name: string): Promise<void> {
@@ -50,6 +57,33 @@ export class Group extends EntityWithCUDTime<GroupId> {
     return true;
   }
 
+  public async inviteUsers(userList: UserId[]): Promise<void> {
+    _.difference(userList, this._invitedUsers).forEach((userId) => {
+      this._invitedUsers.push(userId);
+    });
+    await this.validate();
+  }
+
+  public async cancelInvitation(userList: UserId[]): Promise<void> {
+    const toBeCanceledUserList = _.difference(userList, this._invitedUsers);
+    _.pull(this._invitedUsers, ...toBeCanceledUserList);
+    await this.validate();
+  }
+
+  public async acceptInvitation(userId: UserId): Promise<boolean> {
+    if (!this._invitedUsers.includes(userId)) {
+      return false;
+    }
+    const result = this._members.add(userId);
+    if (!result) {
+      return false;
+    }
+
+    _.pull(this._invitedUsers, userId);
+    await this.validate();
+    return true;
+  }
+
   public async removeMember(userId: UserId): Promise<boolean> {
     const ret = this._members.delete(userId);
     await this.validate();
@@ -68,6 +102,7 @@ export class Group extends EntityWithCUDTime<GroupId> {
     if ("id" in payload) {
       this._id = payload.id;
       this._members = new Set(payload.members);
+      this._invitedUsers = payload.invitedUsers;
 
       this._createdDateTime = payload.createdDateTime;
       this._updatedDateTime = payload.updatedDateTime || null;
@@ -75,6 +110,7 @@ export class Group extends EntityWithCUDTime<GroupId> {
     } else {
       this._id = v4() as GroupId;
       this._members = new Set();
+      this._invitedUsers = [];
 
       this._createdDateTime = new Date();
       this._updatedDateTime = null;

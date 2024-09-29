@@ -178,12 +178,12 @@ export class TypeormUserRepository implements IUserRepository {
   }): Promise<Nullable<User>> {
     const ormUser = await this.typeormUserRepository
       .createQueryBuilder("user")
-      .innerJoinAndSelect("user.oauths", "oauth")
+      .innerJoinAndSelect("user.oauths", "oauths")
       .leftJoinAndSelect("user.groups", "group")
       .leftJoinAndSelect("user.ownGroups", "ownGroup")
       .leftJoinAndSelect("user.userGroupProfiles", "userGroupProfiles")
-      .where("oauth.provider = :provider", { provider: payload.provider })
-      .andWhere("oauth.providerId = :providerId", {
+      .where("oauths.provider = :provider", { provider: payload.provider })
+      .andWhere("oauths.providerId = :providerId", {
         providerId: payload.providerId,
       })
       .andWhere("user.deletedDateTime is null")

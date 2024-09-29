@@ -29,7 +29,7 @@ export class AuthFixture {
   }> {
     const user = this.dbHandler
       .getDbCacheList(TypeormUser)
-      .filter((user) => user.deletedDateTime === null)
+      .filter((user) => !user.deletedDateTime)
       .at(0);
     assert(!!user, "there is no valid user");
 
@@ -105,6 +105,9 @@ export class AuthFixture {
 
     let targetGroup: TypeormGroup | null = null;
     for (const group of groupList) {
+      if (group.deletedDateTime) {
+        continue;
+      }
       if ((await group.members).length > 1) {
         targetGroup = group;
       }
@@ -113,11 +116,10 @@ export class AuthFixture {
 
     const user = (await targetGroup.members)
       .filter((member) => {
-        const result: boolean = member.id !== targetGroup.ownerId;
-        return result;
+        return member.id !== targetGroup.ownerId && !member.deletedDateTime;
       })
       .at(0);
-    assert(user, "user not found");
+    assert(user && !user.deletedDateTime, "user not found");
 
     const loginToken = await this.authService.getLoginToken({
       id: user.id,

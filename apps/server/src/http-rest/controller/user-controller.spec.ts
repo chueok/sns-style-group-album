@@ -1,9 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { basename, join } from "path";
-import {
-  InfrastructureModule,
-  typeormSqliteOptions,
-} from "../../di/infrastructure.module";
+import { typeormSqliteOptions } from "../../di/infrastructure.module";
 import { INestApplication } from "@nestjs/common";
 import { AppModule } from "../../app.module";
 import request from "supertest";
@@ -24,6 +21,7 @@ const parameters = {
 
 describe(`${UserController.name} e2e`, () => {
   let app: INestApplication;
+  let moduleFixture: TestingModule;
   let userFixture: UserFixture;
   let authFixtrue: AuthFixture;
 
@@ -36,11 +34,9 @@ describe(`${UserController.name} e2e`, () => {
     });
     await testDataSource.initialize();
 
-    const moduleFixture: TestingModule = await Test.createTestingModule({
+    moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideModule(InfrastructureModule)
-      .useModule(InfrastructureModule)
       .overrideProvider(DataSource)
       .useValue(testDataSource)
       .compile();
@@ -55,6 +51,11 @@ describe(`${UserController.name} e2e`, () => {
     const authService = moduleFixture.get<IAuthService>(DiTokens.AuthService);
     authFixtrue = new AuthFixture(dataSource, authService);
     await authFixtrue.init(parameters.dummyDbPath);
+  });
+
+  afterEach(async () => {
+    await app.close();
+    await moduleFixture.close();
   });
 
   it("/users (GET)", async () => {

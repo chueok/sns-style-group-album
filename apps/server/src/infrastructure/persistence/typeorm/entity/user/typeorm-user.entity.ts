@@ -1,4 +1,11 @@
-import { PrimaryColumn, Column, ManyToMany, Entity, OneToMany } from "typeorm";
+import {
+  PrimaryColumn,
+  Column,
+  ManyToMany,
+  Entity,
+  OneToMany,
+  JoinTable,
+} from "typeorm";
 import { TypeormGroup } from "../group/typeorm-group.entity";
 import { Nullable, UserId } from "@repo/be-core";
 import { TableAlias } from "../table-alias";
@@ -31,6 +38,10 @@ export class TypeormUser {
 
   @OneToMany(() => TypeormUserGroupProfile, (profile) => profile.user)
   userGroupProfiles!: Promise<TypeormUserGroupProfile[]>;
+
+  @ManyToMany(() => TypeormGroup, (group) => group.invitedUsers)
+  @JoinTable({ name: "GroupInvitedUsersRelation" })
+  invitedGroups!: Promise<TypeormGroup[]>;
 
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;

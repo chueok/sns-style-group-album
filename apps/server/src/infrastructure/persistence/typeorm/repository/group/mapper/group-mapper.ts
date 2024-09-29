@@ -6,6 +6,7 @@ type ToDomainPayloadType = {
   elements: {
     group: TypeormGroup;
     members: UserId[];
+    invitedUsers: UserId[];
   }[];
 };
 
@@ -28,6 +29,7 @@ export class GroupMapper {
         name: item.group.name,
         id: item.group.id,
         members: item.members,
+        invitedUsers: item.invitedUsers,
         createdDateTime: item.group.createdDateTime,
         updatedDateTime: item.group.updatedDateTime,
         deletedDateTime: item.group.deletedDateTime,

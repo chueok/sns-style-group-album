@@ -29,6 +29,9 @@ export class TypeormGroup {
   @Column()
   ownerId!: UserId;
 
+  @ManyToMany(() => TypeormUser, (user) => user.invitedGroups)
+  invitedUsers!: Promise<TypeormUser[]>;
+
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;
 

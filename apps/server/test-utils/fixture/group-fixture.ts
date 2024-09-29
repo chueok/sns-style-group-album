@@ -17,6 +17,15 @@ export class GroupFixture {
     await this.dbHandler.load(dbLoadPath);
   }
 
+  async getExistingGroup(): Promise<TypeormGroup> {
+    const groupList = this.dbHandler.getDbCacheList(TypeormGroup);
+    const filteredGroupList = groupList.filter(
+      (group) => !group.deletedDateTime,
+    );
+    assert(filteredGroupList.length > 0, "there is no existing group");
+    return filteredGroupList[0]!;
+  }
+
   async getGroupHavingMembersAndContents(): Promise<{
     group: TypeormGroup;
     owner: TypeormUser;
@@ -30,6 +39,9 @@ export class GroupFixture {
 
     const groupList = this.dbHandler.getDbCacheList(TypeormGroup);
     for (const g of groupList) {
+      if (g.deletedDateTime) {
+        continue;
+      }
       const m = await g.members;
       const c = await this.getGroupContents(g.id);
       if (m.length > 0 && c.length > 0) {
@@ -53,5 +65,29 @@ export class GroupFixture {
       .createQueryBuilder("content")
       .where("content.groupId = :groupId", { groupId })
       .getMany();
+  }
+
+  public async getUserAnsGroups(): Promise<{
+    user: TypeormUser;
+    groups: TypeormGroup[];
+  }> {
+    let user: TypeormUser | null = null;
+    let groups: TypeormGroup[] | null = null;
+
+    const userList = this.dbHandler.getDbCacheList(TypeormUser);
+    for (const u of userList) {
+      if (u.deletedDateTime) {
+        continue;
+      }
+      const gList = await u.groups;
+      if (gList.length > 0) {
+        user = u;
+        groups = gList.filter((g) => !g.deletedDateTime);
+        break;
+      }
+    }
+    assert(!!user, "there is no user");
+    assert(!!groups, "there is no groups");
+    return { user, groups };
   }
 }

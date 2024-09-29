@@ -22,10 +22,11 @@ const parameters = {
 
 describe(`${GroupController.name} e2e`, () => {
   let app: INestApplication;
+  let moduleFixture: TestingModule;
   let userFixture: UserFixture;
   let authFixtrue: AuthFixture;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const testDataSource = new DataSource({
       ...typeormSqliteOptions,
       database: parameters.testDbPath,
@@ -34,7 +35,7 @@ describe(`${GroupController.name} e2e`, () => {
     });
     await testDataSource.initialize();
 
-    const moduleFixture: TestingModule = await Test.createTestingModule({
+    moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
     })
       .overrideProvider(DataSource)
@@ -51,6 +52,11 @@ describe(`${GroupController.name} e2e`, () => {
     const authService = moduleFixture.get<IAuthService>(DiTokens.AuthService);
     authFixtrue = new AuthFixture(dataSource, authService);
     await authFixtrue.init(parameters.dummyDbPath);
+  });
+
+  afterAll(async () => {
+    await app.close();
+    await moduleFixture.close();
   });
 
   it("/groups/own (GET)", async () => {
