@@ -13,4 +13,11 @@ export class RestEditGroupBody {
     description: "invite user",
   })
   invitedUserList?: string[];
+
+  @ApiPropertyOptional({
+    type: "string",
+    isArray: true,
+    description: "drop out members",
+  })
+  dropOutUserList?: string[];
 }

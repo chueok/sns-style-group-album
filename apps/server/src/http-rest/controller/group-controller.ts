@@ -164,6 +164,7 @@ export class GroupController {
       groupId,
       ownerId: body.ownerId,
       name: body.name,
+      dropOutUserList: body.dropOutUserList,
     });
 
     const group = await this.editGroupUsecase.execute(adapter);

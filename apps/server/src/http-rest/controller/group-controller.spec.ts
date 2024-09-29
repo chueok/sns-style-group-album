@@ -160,6 +160,40 @@ describe(`${GroupController.name} e2e`, () => {
         .expect(200);
     });
 
+    it("drop out members", async () => {
+      const { accessToken, user, group } =
+        await authFixtrue.get_group_owner_accessToken();
+
+      const dropOutUserList: string[] = (await group.members)
+        .filter((member) => member.id !== user.id)
+        .map((member) => member.id);
+
+      const result = await request(app.getHttpServer())
+        .patch(`/groups/${group.id}`)
+        .auth(accessToken, { type: "bearer" })
+        .send({ dropOutUserList })
+        .expect(200);
+
+      const data = result.body.data as GroupResponseDTO;
+      data.members.forEach((member) => {
+        expect(dropOutUserList.includes(member)).toBeFalsy();
+      });
+    });
+
+    it("can't drop out owner", async () => {
+      const { accessToken, user, group } =
+        await authFixtrue.get_group_owner_accessToken();
+
+      const result = await request(app.getHttpServer())
+        .patch(`/groups/${group.id}`)
+        .auth(accessToken, { type: "bearer" })
+        .send({ dropOutUserList: [group.ownerId] })
+        .expect(200);
+
+      const data = result.body.data as GroupResponseDTO;
+      expect(data.members.includes(group.ownerId)).toBeTruthy();
+    });
+
     it("should return 400 if you pass multiple parameter", async () => {
       const { accessToken, user, group } =
         await authFixtrue.get_group_owner_accessToken();

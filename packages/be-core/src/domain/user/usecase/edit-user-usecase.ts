@@ -28,6 +28,14 @@ export class EditUserUsecase implements IUsecase<IEditUserPort, User> {
       }
     }
 
+    const repositoryResult = await this.userRepository.updateUser(user);
+    if (!repositoryResult) {
+      throw Exception.new({
+        code: Code.INTERNAL_ERROR,
+        overrideMessage: "Failed to update user",
+      });
+    }
+
     return user;
   }
 }

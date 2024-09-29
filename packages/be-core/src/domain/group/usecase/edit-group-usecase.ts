@@ -26,9 +26,18 @@ export class EditGroupUsecase implements IUsecase<IEditGroupPort, Group> {
           overrideMessage: "Owner not found",
         });
       }
-    }
-    if (port.name) {
+    } else if (port.name) {
       await group.changeName(port.name);
+    } else if (port.dropOutUserList) {
+      await group.dropOutMembers(port.dropOutUserList as UserId[]);
+    }
+
+    const repositoryResult = await this.groupRepository.updateGroup(group);
+    if (!repositoryResult) {
+      throw Exception.new({
+        code: Code.INTERNAL_ERROR,
+        overrideMessage: "Failed to update group",
+      });
     }
 
     return group;

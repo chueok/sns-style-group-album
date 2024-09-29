@@ -23,9 +23,9 @@ export class Group extends EntityWithCUDTime<GroupId> {
   }
 
   @IsUUID("all", { each: true })
-  private _members: Set<UserId>; // User ID의 집합으로 저장
+  private _members: UserId[]; // User ID의 집합으로 저장
   get members(): UserId[] {
-    return Array.from(this._members);
+    return this._members;
   }
 
   @IsUUID("all", { each: true })
@@ -41,22 +41,11 @@ export class Group extends EntityWithCUDTime<GroupId> {
   }
 
   public async changeOwner(ownerId: UserId): Promise<boolean> {
-    if (!this._members.has(ownerId) || this._ownerId === ownerId) {
+    if (!this._members.includes(ownerId) || this._ownerId === ownerId) {
       return false;
     }
     this._ownerId = ownerId;
     this._updatedDateTime = new Date();
-    await this.validate();
-    return true;
-  }
-
-  public async addMember(userId: UserId): Promise<boolean> {
-    if (this._members.has(userId)) {
-      return false;
-    }
-    this._members.add(userId);
-    this._updatedDateTime = new Date();
-
     await this.validate();
     return true;
   }
@@ -68,6 +57,7 @@ export class Group extends EntityWithCUDTime<GroupId> {
     await this.validate();
   }
 
+  // TODO : boolean return 으로 바꾸어 db 부담 해소 할 것
   public async cancelInvitation(userList: UserId[]): Promise<void> {
     const toBeCanceledUserList = _.difference(userList, this._invitedUserList);
     _.pull(this._invitedUserList, ...toBeCanceledUserList);
@@ -75,29 +65,25 @@ export class Group extends EntityWithCUDTime<GroupId> {
   }
 
   public async acceptInvitation(userId: UserId): Promise<boolean> {
-    if (!this._invitedUserList.includes(userId)) {
-      return false;
-    }
-    const result = this._members.add(userId);
-    if (!result) {
+    const prevLength = this._invitedUserList.length;
+    _.pull(this._invitedUserList, userId);
+    const postLength = this._invitedUserList.length;
+    if (prevLength === postLength) {
       return false;
     }
 
-    _.pull(this._invitedUserList, userId);
+    this._members.push(userId);
+
     await this.validate();
     return true;
   }
 
-  public async removeMember(userId: UserId): Promise<boolean> {
-    const ret = this._members.delete(userId);
+  public async dropOutMembers(userIdList: UserId[]): Promise<void> {
+    userIdList = userIdList.filter((userId) => userId !== this._ownerId);
+    _.pull(this._members, ...userIdList);
 
     this._updatedDateTime = new Date();
     await this.validate();
-    return ret;
-  }
-
-  public hasMember(userId: UserId): boolean {
-    return this._members.has(userId);
   }
 
   public async deleteGroup(): Promise<boolean> {
@@ -117,7 +103,7 @@ export class Group extends EntityWithCUDTime<GroupId> {
     this._name = payload.name;
     if ("id" in payload) {
       this._id = payload.id;
-      this._members = new Set(payload.members);
+      this._members = payload.members;
       this._invitedUserList = payload.invitedUserList;
 
       this._createdDateTime = payload.createdDateTime;
@@ -125,7 +111,7 @@ export class Group extends EntityWithCUDTime<GroupId> {
       this._deletedDateTime = payload.deletedDateTime || null;
     } else {
       this._id = v4() as GroupId;
-      this._members = new Set();
+      this._members = [];
       this._invitedUserList = [];
 
       this._createdDateTime = new Date();
