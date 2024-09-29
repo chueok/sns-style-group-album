@@ -15,6 +15,8 @@ import {
   Code,
   CreateGroupAdapter,
   CreateGroupUsecase,
+  DeleteGroupAdapter,
+  DeleteGroupUsecase,
   EditGroupAdapter,
   EditGroupUsecase,
   Exception,
@@ -66,6 +68,9 @@ export class GroupController {
 
     @Inject(DiTokens.CreateGroupUsecase)
     private readonly createGroupUsecase: CreateGroupUsecase,
+
+    @Inject(DiTokens.DeleteGroupUsecase)
+    private readonly deleteGroupUsecase: DeleteGroupUsecase,
   ) {}
 
   @Get("own")
@@ -169,11 +174,16 @@ export class GroupController {
   }
 
   @Delete(":groupId")
+  @UseGuards(HttpJwtAuthGuard, HttpGroupOwnerGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
   async deleteGroup(
     @Param("groupId") groupId: string,
   ): Promise<RestResponse<null>> {
-    throw new Error("Not implemented");
+    const adapter = await DeleteGroupAdapter.new({ groupId });
+
+    await this.deleteGroupUsecase.execute(adapter);
+
+    return RestResponse.success(null);
   }
 
   @Post()

@@ -36,6 +36,7 @@ export class Group extends EntityWithCUDTime<GroupId> {
 
   public async changeName(name: string): Promise<void> {
     this._name = name;
+    this._updatedDateTime = new Date();
     return this.validate();
   }
 
@@ -44,6 +45,7 @@ export class Group extends EntityWithCUDTime<GroupId> {
       return false;
     }
     this._ownerId = ownerId;
+    this._updatedDateTime = new Date();
     await this.validate();
     return true;
   }
@@ -53,6 +55,8 @@ export class Group extends EntityWithCUDTime<GroupId> {
       return false;
     }
     this._members.add(userId);
+    this._updatedDateTime = new Date();
+
     await this.validate();
     return true;
   }
@@ -86,12 +90,24 @@ export class Group extends EntityWithCUDTime<GroupId> {
 
   public async removeMember(userId: UserId): Promise<boolean> {
     const ret = this._members.delete(userId);
+
+    this._updatedDateTime = new Date();
     await this.validate();
     return ret;
   }
 
   public hasMember(userId: UserId): boolean {
     return this._members.has(userId);
+  }
+
+  public async deleteGroup(): Promise<boolean> {
+    if (this.members.length !== 0) {
+      return false;
+    }
+
+    this._deletedDateTime = new Date();
+    await this.validate();
+    return true;
   }
 
   constructor(payload: CreateGroupEntityPayload<"all">) {

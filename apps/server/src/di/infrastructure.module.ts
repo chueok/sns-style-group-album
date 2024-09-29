@@ -12,6 +12,7 @@ import { APP_FILTER } from "@nestjs/core";
 import { NestHttpExceptionFilter } from "../http-rest/exception-filter/nest-http-exception-filter";
 import {
   CreateGroupUsecase,
+  DeleteGroupUsecase,
   DeleteUserUsecase,
   EditGroupUsecase,
   EditUserGroupProfileUsecase,
@@ -125,6 +126,12 @@ const groupUsecaseProviders: Provider[] = [
     provide: DiTokens.InviteUserUsecase,
     useFactory: (groupRepository: IGroupRepository) =>
       new InviteUserUsecase(groupRepository),
+    inject: [DiTokens.GroupRepository],
+  },
+  {
+    provide: DiTokens.DeleteGroupUsecase,
+    useFactory: (groupRepository: IGroupRepository) =>
+      new DeleteGroupUsecase(groupRepository),
     inject: [DiTokens.GroupRepository],
   },
 ];

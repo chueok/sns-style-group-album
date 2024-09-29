@@ -14,6 +14,7 @@ import { GroupController } from "./group-controller";
 import { GroupSimpleResponseDTO } from "./dto/group/group-simple-response";
 import { assert } from "console";
 import { UserSimpleResponseDTO } from "./dto/user/user-simple-response-dto";
+import { TypeormGroup } from "../../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -25,9 +26,10 @@ describe(`${GroupController.name} e2e`, () => {
   let moduleFixture: TestingModule;
   let userFixture: UserFixture;
   let authFixtrue: AuthFixture;
+  let testDataSource: DataSource;
 
-  beforeAll(async () => {
-    const testDataSource = new DataSource({
+  beforeEach(async () => {
+    testDataSource = new DataSource({
       ...typeormSqliteOptions,
       database: parameters.testDbPath,
       synchronize: false,
@@ -54,7 +56,7 @@ describe(`${GroupController.name} e2e`, () => {
     await authFixtrue.init(parameters.dummyDbPath);
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     await app.close();
     await moduleFixture.close();
   });
@@ -178,6 +180,31 @@ describe(`${GroupController.name} e2e`, () => {
         .auth(accessToken, { type: "bearer" })
         .send({ invitedUserList: [] })
         .expect(400);
+    });
+  });
+
+  describe("/groups/:groupId (DELETE)", () => {
+    it("if group is not empty [fail]", async () => {
+      const { accessToken, user, group } =
+        await authFixtrue.get_group_owner_accessToken();
+
+      await request(app.getHttpServer())
+        .delete(`/groups/${group.id}`)
+        .auth(accessToken, { type: "bearer" })
+        .expect(400);
+    });
+    it("if group is empty [sucess]", async () => {
+      const { accessToken, user, group } =
+        await authFixtrue.get_group_owner_accessToken();
+
+      // make group members empty
+      group.members = Promise.resolve([]);
+      await testDataSource.getRepository(TypeormGroup).save(group);
+
+      await request(app.getHttpServer())
+        .delete(`/groups/${group.id}`)
+        .auth(accessToken, { type: "bearer" })
+        .expect(200);
     });
   });
 
