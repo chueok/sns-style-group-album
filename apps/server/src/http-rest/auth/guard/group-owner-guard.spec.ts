@@ -95,8 +95,8 @@ describe(`${HttpGroupOwnerGuard.name}`, () => {
   it("should return 403 when user is not a member of the group", async () => {
     const { accessToken, group, user } =
       await fixture.get_group_owner_accessToken();
-    console.log(group, user);
     const groupUserNotIn = await fixture.getGroupUserNotIn(user.id);
+
     const response = await supertest(testingServer.getHttpServer())
       .get(`/test/${groupUserNotIn.id}`)
       .auth(accessToken, { type: "bearer" })

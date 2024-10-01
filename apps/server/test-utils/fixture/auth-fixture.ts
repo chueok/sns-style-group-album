@@ -164,8 +164,10 @@ export class AuthFixture {
 
     const newGroup = this.dbHandler.makeDummyGroup();
     newGroup.members = Promise.resolve([unrelatedUser]);
+    newGroup.owner = Promise.resolve(unrelatedUser);
     newGroup.ownerId = unrelatedUser.id;
     newGroup.deletedDateTime = null;
+
     await this.dbHandler.commit();
 
     const targetGroup = this.dbHandler
