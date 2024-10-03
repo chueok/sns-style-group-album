@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IObjectStoragePort, User } from "@repo/be-core";
+import { IObjectStoragePort } from "@repo/be-core";
 import { ObjectStorageKeyFactory } from "../../../../infrastructure/persistence/object-storage/key-factory/object-storage-key-factory";
 
 export class GetProfileImageUploadUrlResponseDTO {

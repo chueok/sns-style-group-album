@@ -29,7 +29,7 @@ import { DiTokens } from "../../di/di-tokens";
 import { HttpJwtAuthGuard } from "../auth/guard/jwt-auth-guard";
 import { HttpGroupMemberGuard } from "../auth/guard/group-member-guard";
 import { GetUserGroupProfileImageUploadUrlResponseDTO } from "./dto/user/get-user-group-profile-image-upload-url-response-dto";
-import { GetProfileImageUploadUrlResponseDTO } from "./dto/user/get-profile-image-upload-url-response-dto copy";
+import { GetProfileImageUploadUrlResponseDTO } from "./dto/user/get-profile-image-upload-url-response-dto";
 import { EditUserGroupProfileBody } from "./dto/user/edit-user-group-profile-body";
 import { VerifiedUser } from "../auth/decorator/verified-user";
 import { VerifiedUserPayload } from "../auth/type/verified-user-payload";
