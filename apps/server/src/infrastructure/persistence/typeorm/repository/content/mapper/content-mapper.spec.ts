@@ -121,7 +121,7 @@ describe("ContentMapper", () => {
       ormContentList.forEach((ormContent, index) => {
         expect(ormContent).not.toBeNull();
         expect(ormContent.likeList.length).toEqual(
-          domainContentList.at(index)!.likeList.length,
+          domainContentList.at(index)!.topLikeList.length,
         );
       });
     });

@@ -57,9 +57,9 @@ export abstract class Content extends EntityWithCUDTime<ContentId> {
   }
 
   @IsInstance(ContentLike, { each: true })
-  protected _likeList: ContentLike[];
-  get likeList(): ContentLike[] {
-    return this._likeList;
+  protected _topLikeList: ContentLike[];
+  get topLikeList(): ContentLike[] {
+    return this._topLikeList;
   }
 
   // comment
@@ -70,7 +70,7 @@ export abstract class Content extends EntityWithCUDTime<ContentId> {
   }
 
   @IsArray()
-  readonly commentList: Comment[];
+  readonly topCommentList: Comment[];
 
   public async addLike(userId: string): Promise<void> {
     const newLike = new ContentLike({
@@ -78,7 +78,7 @@ export abstract class Content extends EntityWithCUDTime<ContentId> {
       userId: userId,
       createdDateTime: new Date(),
     });
-    this._likeList.push(newLike);
+    this._topLikeList.push(newLike);
     this._numLikes++;
     await this.validate();
   }
@@ -98,9 +98,9 @@ export abstract class Content extends EntityWithCUDTime<ContentId> {
       this._deletedDateTime = payload.deletedDateTime || null;
 
       this._numLikes = payload.numLikes;
-      this._likeList = payload.likeList;
+      this._topLikeList = payload.likeList;
       this._numComments = payload.numComments;
-      this.commentList = payload.commentList;
+      this.topCommentList = payload.commentList;
     } else {
       this._id = v4() as ContentId;
       this._createdDateTime = new Date();
@@ -108,9 +108,9 @@ export abstract class Content extends EntityWithCUDTime<ContentId> {
       this._deletedDateTime = null;
 
       this._numLikes = 0;
-      this._likeList = [];
+      this._topLikeList = [];
       this._numComments = 0;
-      this.commentList = [];
+      this.topCommentList = [];
     }
   }
 }

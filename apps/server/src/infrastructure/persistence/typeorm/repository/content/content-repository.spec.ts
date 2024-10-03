@@ -85,14 +85,14 @@ describe("ContentRepository", () => {
         (await targetOrmContent.referred).length,
       );
       expect(content?.numLikes).toEqual((await targetOrmContent.likes).length);
-      expect(content?.likeList.length).toBeLessThanOrEqual(
+      expect(content?.topLikeList.length).toBeLessThanOrEqual(
         TypeormContentRepository.likeLimit,
       );
 
       expect(content?.numComments).toEqual(
         (await targetOrmContent.comments).length,
       );
-      expect(content?.commentList.length).toBeLessThanOrEqual(
+      expect(content?.topCommentList.length).toBeLessThanOrEqual(
         TypeormContentRepository.commentLimit,
       );
     });
@@ -122,11 +122,11 @@ describe("ContentRepository", () => {
 
       const contentList = await contentRepository.findContentsByGroupIdAndType({
         groupId: targetOrmGroup.id,
-        contentType: ContentTypeEnum.POST,
+        contentTypeList: [ContentTypeEnum.POST],
         pagination: {
           cursor,
-          by: "createdDateTime",
-          direction: "asc",
+          sortBy: "createdDateTime",
+          sortOrder: "asc",
           limit: 10,
         },
       });
@@ -157,11 +157,11 @@ describe("ContentRepository", () => {
 
       const contentList = await contentRepository.findContentsByGroupIdAndType({
         groupId: targetOrmGroup.id,
-        contentType: ContentTypeEnum.POST,
+        contentTypeList: [ContentTypeEnum.POST],
         pagination: {
           cursor,
-          by: "createdDateTime",
-          direction: "desc",
+          sortBy: "createdDateTime",
+          sortOrder: "desc",
           limit: 10,
         },
       });

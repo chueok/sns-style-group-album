@@ -1,12 +1,13 @@
 import {
   Content,
+  ContentByContentType,
   ContentId,
-  ContentPagenationType,
+  ContentPaginationOptions,
   ContentTypeEnum,
   IContentRepository,
   Nullable,
 } from "@repo/be-core";
-import { DataSource, Repository } from "typeorm";
+import { Brackets, DataSource, Repository } from "typeorm";
 import { TypeormContent } from "../../entity/content/typeorm-content.entity";
 import { TypeormComment } from "../../entity/comment/typeorm-comment.entity";
 import { TypeormLike } from "../../entity/like/typeorm-like.entity";
@@ -126,21 +127,39 @@ export class TypeormContentRepository implements IContentRepository {
     return results[0] || null;
   }
 
-  async findContentsByGroupIdAndType(payload: {
+  async findContentsByGroupIdAndType<T extends ContentTypeEnum>(payload: {
     groupId: string;
-    contentType: ContentTypeEnum;
-    pagination: ContentPagenationType;
-  }): Promise<Content[]> {
+    contentTypeList: T[];
+    pagination: ContentPaginationOptions;
+  }): Promise<ContentByContentType<T>[]> {
+    const contentTypeSet = new Set(payload.contentTypeList);
+    const contentTypeList = Array.from(contentTypeSet); // 중복 제거
+
     const query = this.typeormContentRepository
       .createQueryBuilder("content")
       .innerJoin("content.group", "group")
       .where("group.id = :groupId", { groupId: payload.groupId })
-      .andWhere("content.contentType = :contentType", {
-        contentType: payload.contentType,
-      })
+      // .andWhere("content.contentType = :contentType", {
+      //   contentType: payload.contentType,
+      // })
+      .andWhere(
+        new Brackets((qb) => {
+          contentTypeList.forEach((contentType, index) => {
+            if (index === 0) {
+              qb.where(`content.contentType = :contentType${index}`, {
+                [`contentType${index}`]: contentType,
+              });
+            } else {
+              qb.orWhere(`content.contentType = :contentType${index}`, {
+                [`contentType${index}`]: contentType,
+              });
+            }
+          });
+        }),
+      )
       .orderBy(
-        `content.${payload.pagination.by}`,
-        payload.pagination.direction === "asc" ? "ASC" : "DESC",
+        `content.${payload.pagination.sortBy}`,
+        payload.pagination.sortOrder === "asc" ? "ASC" : "DESC",
       )
       /**
        * https://orkhan.gitbook.io/typeorm/docs/select-query-builder
@@ -149,12 +168,12 @@ export class TypeormContentRepository implements IContentRepository {
       .take(payload.pagination.limit);
 
     if (payload.pagination.cursor) {
-      if (payload.pagination.direction === "desc") {
-        query.andWhere(`content.${payload.pagination.by} < :cursor`, {
+      if (payload.pagination.sortOrder === "desc") {
+        query.andWhere(`content.${payload.pagination.sortBy} < :cursor`, {
           cursor: payload.pagination.cursor,
         });
       } else {
-        query.andWhere(`content.${payload.pagination.by} > :cursor`, {
+        query.andWhere(`content.${payload.pagination.sortBy} > :cursor`, {
           cursor: payload.pagination.cursor,
         });
       }
@@ -171,7 +190,9 @@ export class TypeormContentRepository implements IContentRepository {
       })),
     );
 
-    return this.ormEntityList2DomainEntityList({ elements: mapperPayload });
+    return this.ormEntityList2DomainEntityList({
+      elements: mapperPayload,
+    }) as unknown as ContentByContentType<T>[];
   }
 
   async findContentsByGroupMember(payload: {

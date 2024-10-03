@@ -92,7 +92,7 @@ export class ContentMapper {
     elements.forEach((item) => {
       try {
         const content = this.mapToOrmContentForUtil(item);
-        const likeList = item.likeList.map((like) => {
+        const likeList = item.topLikeList.map((like) => {
           const typeormLike = new TypeormLike();
           typeormLike.id = like.id;
           typeormLike.contentId = item.id;

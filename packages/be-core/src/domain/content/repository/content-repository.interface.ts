@@ -1,13 +1,8 @@
 import { Nullable } from "../../../common/type/common-types";
 import { Content } from "../entity/content.abstract";
 import { ContentTypeEnum } from "../enum/content-type-enum";
-
-export type ContentPagenationType = {
-  cursor?: Date;
-  by: "createdDateTime";
-  direction: "asc" | "desc";
-  limit: number;
-};
+import { ContentPaginationOptions } from "./type/content-pagination-options";
+import { ContentByContentType } from "./type/content-type-mapping";
 
 export interface IContentRepository {
   createContent(content: Content): Promise<boolean>;
@@ -16,11 +11,11 @@ export interface IContentRepository {
 
   findContentById(contentId: string): Promise<Nullable<Content>>;
 
-  findContentsByGroupIdAndType(payload: {
+  findContentsByGroupIdAndType<T extends ContentTypeEnum>(payload: {
     groupId: string;
-    contentType: ContentTypeEnum;
-    pagination: ContentPagenationType;
-  }): Promise<Content[]>;
+    contentTypeList: T[];
+    pagination: ContentPaginationOptions;
+  }): Promise<ContentByContentType<T>[]>;
 
   findContentsByGroupMember(payload: {
     userId: string;

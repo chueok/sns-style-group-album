@@ -18,11 +18,13 @@ import {
   EditGroupUsecase,
   EditUserGroupProfileUsecase,
   EditUserUsecase,
+  GetMediaContentListUsecase,
   GetGroupListUsecase,
   GetGroupMembersUsecase,
   GetGroupUsecase,
   GetOwnGroupListUsecase,
   GetUserUsecase,
+  IContentRepository,
   IGroupRepository,
   InviteUserUsecase,
   IUserRepository,
@@ -143,6 +145,15 @@ const groupUsecaseProviders: Provider[] = [
   },
 ];
 
+const contentUsecaseProviders: Provider[] = [
+  {
+    provide: DiTokens.GetMediaContentListUsecase,
+    useFactory: (contentRepository: IContentRepository) =>
+      new GetMediaContentListUsecase(contentRepository),
+    inject: [DiTokens.ContentRepository],
+  },
+];
+
 const globalProviders: Provider[] = [
   {
     provide: APP_FILTER,
@@ -179,6 +190,8 @@ const objectStorageProviders: Provider[] = [
 
     ...userUsecaseProviders,
     ...groupUsecaseProviders,
+    ...contentUsecaseProviders,
+
     ...objectStorageProviders,
 
     ...globalProviders,
@@ -188,6 +201,7 @@ const objectStorageProviders: Provider[] = [
 
     ...userUsecaseProviders,
     ...groupUsecaseProviders,
+    ...contentUsecaseProviders,
 
     ...objectStorageProviders,
   ],

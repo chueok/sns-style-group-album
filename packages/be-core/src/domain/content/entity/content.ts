@@ -44,20 +44,20 @@ export class SystemContent extends Content {
   }
 }
 
-export class ImageContent extends Content {
-  override _type: ContentTypeEnum.IMAGE = ContentTypeEnum.IMAGE;
+export class MediaContent extends Content {
+  protected override _type: ContentTypeEnum.VIDEO | ContentTypeEnum.IMAGE;
+  get type(): ContentTypeEnum.VIDEO | ContentTypeEnum.IMAGE {
+    return this._type;
+  }
 
   @IsOptional()
   @IsUrl()
-  // bucket/groups/groupId/contents/contentId/large.img
   protected _largeRelativePath: Nullable<string>;
   get largeRelativePath(): Nullable<string> {
     return this._largeRelativePath;
   }
 
-  @IsOptional()
   @IsUrl()
-  // bucket/groups/groupId/contents/contentId/original.img
   protected _originalRelativePath: string;
   get originalRelativePath(): string {
     return this._originalRelativePath;
@@ -81,13 +81,28 @@ export class ImageContent extends Content {
     return this._mimetype;
   }
 
-  constructor(payload: CreateContentEntityPayload<"image", "all">) {
+  constructor(payload: CreateContentEntityPayload<"media", "all">) {
     super(payload);
+    this._type = payload.type;
     this._largeRelativePath = payload.largeRelativePath;
     this._originalRelativePath = payload.originalRelativePath;
     this._size = payload.size;
     this._ext = payload.ext;
     this._mimetype = payload.mimeType;
+  }
+
+  static async new(payload: CreateContentEntityPayload<"media", "all">) {
+    const entity = new MediaContent(payload);
+    await entity.validate();
+    return entity;
+  }
+}
+
+export class ImageContent extends MediaContent {
+  override _type: ContentTypeEnum.IMAGE = ContentTypeEnum.IMAGE;
+
+  constructor(payload: CreateContentEntityPayload<"image", "all">) {
+    super({ ...payload, type: ContentTypeEnum.IMAGE });
   }
 
   static async new(payload: CreateContentEntityPayload<"image", "all">) {
@@ -97,30 +112,11 @@ export class ImageContent extends Content {
   }
 }
 
-export class VideoContent extends Content {
+export class VideoContent extends MediaContent {
   override _type: ContentTypeEnum.VIDEO = ContentTypeEnum.VIDEO;
 
-  // bucket/groups/groupId/contents/contentId/original.avi
-  protected _originalRelativePath: string;
-  get originalRelativePath(): string {
-    return this._originalRelativePath;
-  }
-
-  @IsNumber()
-  size!: number;
-
-  @IsString()
-  ext!: string;
-
-  @IsMimeType()
-  mimetype!: string;
-
   constructor(payload: CreateContentEntityPayload<"video", "all">) {
-    super(payload);
-    this._originalRelativePath = payload.originalRelativePath;
-    this.size = payload.size;
-    this.ext = payload.ext;
-    this.mimetype = payload.mimeType;
+    super({ ...payload, type: ContentTypeEnum.VIDEO, largeRelativePath: null });
   }
 
   static async new(payload: CreateContentEntityPayload<"video", "all">) {

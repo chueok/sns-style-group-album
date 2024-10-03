@@ -27,6 +27,11 @@ export class DiTokens {
   static readonly DeleteGroupUsecase = Symbol("DeleteGroupUsecase");
   static readonly AcceptInvitationUsecase = Symbol("AcceptInvitationUsecase");
 
+  // content usecase
+  static readonly GetMediaContentListUsecase = Symbol(
+    "GetMediaContentListUsecase",
+  );
+
   // storage
   static readonly ObjectStorageFactory = Symbol("ObjectStorageFactory");
   static readonly MediaObjectStorage = Symbol("MediaObjectStorage");

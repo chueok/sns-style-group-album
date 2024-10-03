@@ -6,6 +6,7 @@ import { Comment } from "../../../comment/entity/comment.abstract";
 import { GroupId } from "../../../group/entity/type/group-id";
 import { UserId } from "../../../user/entity/type/user-id";
 import { ContentId } from "./content-id";
+import { ContentTypeEnum } from "../../enum/content-type-enum";
 
 type CreateNewBaseContentEntityPayload = {
   groupId: GroupId;
@@ -40,7 +41,8 @@ type SystemContentAdditionalPayload = {
   subText: Nullable<string>;
 };
 
-type ImageContentAdditionalPayload = {
+type MediaContentAdditionalPayload = {
+  type: ContentTypeEnum.VIDEO | ContentTypeEnum.IMAGE;
   largeRelativePath: Nullable<string>;
   originalRelativePath: string;
   size: number;
@@ -48,12 +50,15 @@ type ImageContentAdditionalPayload = {
   mimeType: string;
 };
 
-type VideoContentAdditionalPayload = {
-  originalRelativePath: string;
-  size: number;
-  ext: string;
-  mimeType: string;
-};
+type ImageContentAdditionalPayload = Omit<
+  MediaContentAdditionalPayload,
+  "type"
+>;
+
+type VideoContentAdditionalPayload = Omit<
+  MediaContentAdditionalPayload,
+  "type" | "largeRelativePath"
+>;
 
 type PostContentAdditionalPayload = {
   title: string;
@@ -75,6 +80,7 @@ type ScheduleContentAdditionalPayload = {
 type ContentAdditionalPayload = {
   base: object;
   system: SystemContentAdditionalPayload;
+  media: MediaContentAdditionalPayload;
   image: ImageContentAdditionalPayload;
   video: VideoContentAdditionalPayload;
   post: PostContentAdditionalPayload;

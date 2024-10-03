@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Param,
   Patch,
   Post,
@@ -10,34 +11,63 @@ import {
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { RestResponse } from "./dto/common/rest-response";
-import { Code } from "@repo/be-core";
+import {
+  Code,
+  GetContentListAdapter,
+  GetMediaContentListUsecase,
+  IObjectStoragePort,
+} from "@repo/be-core";
 import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
-import { RestGetContentListQuery } from "./dto/content/get-content-list-query";
-import { RestContentResponse } from "./dto/content/content-response";
+import { GetContentListQuery } from "./dto/content/get-content-list-query";
 import { RestEditContentBody } from "./dto/content/edit-content-body";
 import { RestCreateContentBody } from "./dto/content/create-content-body";
+import { DiTokens } from "../../di/di-tokens";
+import { MediaContentResponseDTO } from "./dto/content/media-content-response-dto";
 
 @Controller("contents")
 @ApiTags("contents")
 export class ContentController {
-  @Get()
+  constructor(
+    @Inject(DiTokens.MediaObjectStorage)
+    private readonly mediaObjectStorage: IObjectStoragePort,
+
+    @Inject(DiTokens.GetMediaContentListUsecase)
+    private readonly getMediaContentListUsecase: GetMediaContentListUsecase,
+  ) {}
+
+  @Get("group/:groupId/medias")
   @ApiResponseGeneric({
     code: Code.SUCCESS,
-    data: RestContentResponse,
+    data: MediaContentResponseDTO,
     isArray: true,
   })
-  // TODO : pagenation 구현 필요
-  async getContentList(
-    @Query() query: RestGetContentListQuery,
-  ): Promise<RestResponse<RestContentResponse[] | null>> {
-    throw new Error("Not implemented");
+  async getMediaContentList(
+    @Param("groupId") groupId: string,
+    @Query() query: GetContentListQuery,
+  ): Promise<RestResponse<MediaContentResponseDTO[]>> {
+    const adapter = await GetContentListAdapter.new({
+      groupId,
+      limit: query.limit || 10,
+      cursor: query.cursor,
+      sortBy: query.sortBy || "createdDateTime",
+      sortOrder: query.sortOrder || "desc",
+    });
+
+    const contentList = await this.getMediaContentListUsecase.execute(adapter);
+
+    const dtos = await MediaContentResponseDTO.newListFromContents(
+      contentList,
+      this.mediaObjectStorage,
+    );
+
+    return RestResponse.success(dtos);
   }
 
   @Get(":contentId")
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestContentResponse })
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: MediaContentResponseDTO })
   async getContent(
     @Param("contentId") contentId: string,
-  ): Promise<RestResponse<RestContentResponse | null>> {
+  ): Promise<RestResponse<MediaContentResponseDTO | null>> {
     throw new Error("Not implemented");
   }
 
@@ -50,19 +80,19 @@ export class ContentController {
   }
 
   @Patch(":contentId")
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: RestContentResponse })
+  @ApiResponseGeneric({ code: Code.SUCCESS, data: MediaContentResponseDTO })
   async editContent(
     @Param("contentId") contentId: string,
     @Body() body: RestEditContentBody,
-  ): Promise<RestResponse<RestContentResponse>> {
+  ): Promise<RestResponse<MediaContentResponseDTO>> {
     throw new Error("Not implemented");
   }
 
   @Post()
-  @ApiResponseGeneric({ code: Code.CREATED, data: RestContentResponse })
+  @ApiResponseGeneric({ code: Code.CREATED, data: MediaContentResponseDTO })
   async createContent(
     @Body() body: RestCreateContentBody,
-  ): Promise<RestResponse<RestContentResponse>> {
+  ): Promise<RestResponse<MediaContentResponseDTO>> {
     throw new Error("Not implemented");
   }
 
