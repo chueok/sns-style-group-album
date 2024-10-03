@@ -11,6 +11,7 @@ import { DiTokens } from "../../di/di-tokens";
 import { ContentController } from "./content-controller";
 import { GetContentListQuery } from "./dto/content/get-content-list-query";
 import { MediaContentResponseDTO } from "./dto/content/media-content-response-dto";
+import { MockObjectStorage } from "@test-utils/mock/object-storage";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -37,6 +38,8 @@ describe(`${ContentController.name} e2e`, () => {
     })
       .overrideProvider(DataSource)
       .useValue(testDataSource)
+      .overrideProvider(DiTokens.MediaObjectStorage)
+      .useClass(MockObjectStorage)
       .compile();
 
     app = moduleFixture.createNestApplication();

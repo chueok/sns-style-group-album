@@ -14,6 +14,7 @@ import { UserResponseDTO } from "./dto/user/user-response-dto";
 import { GetProfileImageUploadUrlResponseDTO } from "./dto/user/get-profile-image-upload-url-response-dto copy";
 import { GetUserGroupProfileImageUploadUrlResponseDTO } from "./dto/user/get-user-group-profile-image-upload-url-response-dto";
 import { TypeormGroup } from "../../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity";
+import { MockObjectStorage } from "@test-utils/mock/object-storage";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -41,6 +42,8 @@ describe(`${UserController.name} e2e`, () => {
     })
       .overrideProvider(DataSource)
       .useValue(testDataSource)
+      .overrideProvider(DiTokens.MediaObjectStorage)
+      .useClass(MockObjectStorage)
       .compile();
 
     app = moduleFixture.createNestApplication();

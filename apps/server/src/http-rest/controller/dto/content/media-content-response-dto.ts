@@ -50,7 +50,11 @@ export class MediaContentResponseDTO {
     const dto = new MediaContentResponseDTO();
 
     const [thumbnailPath, largePath, originalPath] = await Promise.all(
-      [dto.thumbnailPath, dto.largePath, dto.originalPath].map(async (path) => {
+      [
+        content.thumbnailRelativePath,
+        content.largeRelativePath,
+        content.originalRelativePath,
+      ].map(async (path) => {
         if (path) {
           const presignedUrl =
             await mediaObjectStorage.getPresignedUrlForDownload(path);

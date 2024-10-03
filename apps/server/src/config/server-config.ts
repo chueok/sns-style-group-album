@@ -5,6 +5,8 @@ export class ServerConfig {
     .required()
     .asEnum(["development", "production", "test"]);
 
+  public static readonly isProduction = ServerConfig.NODE_ENV === "production";
+
   public static readonly DB_FILE = get("DB_FILE").required().asString();
 
   public static readonly DB_LOG_ENABLE = get("DB_LOG_ENABLE")

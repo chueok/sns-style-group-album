@@ -30,6 +30,7 @@ import {
   IUserRepository,
 } from "@repo/be-core";
 import { MinioObjectStorageFactory } from "../infrastructure/persistence/object-storage/minio/minio-adapter";
+import assert from "assert";
 
 export const typeormSqliteOptions = {
   type: "sqlite",
@@ -166,7 +167,14 @@ const objectStorageProviders: Provider[] = [
     provide: DiTokens.ObjectStorageFactory,
     useFactory: async () => {
       const objectStorage = new MinioObjectStorageFactory();
-      await objectStorage.init();
+      try {
+        await objectStorage.init();
+      } catch (error) {
+        if (ServerConfig.isProduction) {
+          console.error(error);
+          assert(false, "Object storage initialization failed");
+        }
+      }
       return objectStorage;
     },
   },
