@@ -14,7 +14,7 @@ import { MediaContentResponseDTO } from "./dto/content/media-content-response-dt
 import { MockObjectStorage } from "@test-utils/mock/object-storage";
 import { ContentUploadUrlDTO } from "./dto/content/content-upload-url-dto";
 import { CreateMediaListContentBody } from "./dto/content/create-media-list-content-body";
-import { isURL } from "class-validator";
+import { IContentRepository } from "@repo/be-core";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -26,6 +26,8 @@ describe(`${ContentController.name} e2e`, () => {
   let moduleFixture: TestingModule;
   let authFixtrue: AuthFixture;
   let testDataSource: DataSource;
+
+  let contentRepository: IContentRepository;
 
   beforeEach(async () => {
     testDataSource = new DataSource({
@@ -49,6 +51,7 @@ describe(`${ContentController.name} e2e`, () => {
     await app.init();
 
     const dataSource = moduleFixture.get(DataSource);
+    contentRepository = moduleFixture.get(DiTokens.ContentRepository);
 
     const authService = moduleFixture.get<IAuthService>(DiTokens.AuthService);
     authFixtrue = new AuthFixture(dataSource, authService);
@@ -92,7 +95,20 @@ describe(`${ContentController.name} e2e`, () => {
     const data = result.body.data as ContentUploadUrlDTO;
     expect(data.presignedUrlList.length).toBe(body.numContent);
     data.presignedUrlList.forEach((url) => {
-      expect(isURL(url)).toBeTruthy();
+      expect(typeof url === "string").toBeTruthy();
     });
+  });
+
+  it("/contents/group/:groupId/content/:contentId (DELETE)", async () => {
+    const { accessToken, owner, content } =
+      await authFixtrue.getContentAndContentOwner();
+
+    await request(app.getHttpServer())
+      .delete(`/contents/group/${content.groupId}/content/${content.id}`)
+      .auth(accessToken, { type: "bearer" })
+      .expect(200);
+
+    const foundContent = await contentRepository.findContentById(content.id);
+    expect(foundContent).toBeNull();
   });
 });

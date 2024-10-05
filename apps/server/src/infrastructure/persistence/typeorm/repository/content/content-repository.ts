@@ -83,10 +83,12 @@ export class TypeormContentRepository implements IContentRepository {
   async findContentById(contentId: ContentId): Promise<Nullable<Content>> {
     const [content, likeList, numLikes, commentList, numComments] =
       await Promise.all([
-        this.typeormContentRepository.findOne({
-          where: { id: contentId },
-          relations: { referred: true },
-        }),
+        this.typeormContentRepository
+          .createQueryBuilder("content")
+          .leftJoinAndSelect("content.referred", "referred")
+          .where("content.id = :contentId", { contentId })
+          .andWhere("content.deletedDateTime is null")
+          .getOne(),
         this.getRecentLikeList(contentId, TypeormContentRepository.likeLimit),
         this.getNumLikes(contentId),
         this.getRecentCommentList(
@@ -139,6 +141,7 @@ export class TypeormContentRepository implements IContentRepository {
       .createQueryBuilder("content")
       .innerJoin("content.group", "group")
       .where("group.id = :groupId", { groupId: payload.groupId })
+      .andWhere("content.deletedDateTime is null")
       // .andWhere("content.contentType = :contentType", {
       //   contentType: payload.contentType,
       // })
@@ -204,6 +207,7 @@ export class TypeormContentRepository implements IContentRepository {
       .leftJoinAndSelect("content.referred", "referred")
       .where("content.ownerId = :userId", { userId: payload.userId })
       .andWhere("content.groupId = :groupId", { groupId: payload.groupId })
+      .andWhere("content.deletedDateTime is null")
       .getMany();
 
     const mapperPayload = await Promise.all(
@@ -248,6 +252,7 @@ export class TypeormContentRepository implements IContentRepository {
     return this.typeormCommentRepository
       .createQueryBuilder("comment")
       .where("comment.contentId = :contentId", { contentId })
+      .andWhere("comment.deletedDateTime is null")
       .orderBy("comment.createdDateTime", "DESC")
       .limit(limit)
       .leftJoinAndSelect("comment.tags", "tags")

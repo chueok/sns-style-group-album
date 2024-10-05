@@ -17,6 +17,8 @@ export class MinioObjectStorageFactory {
 
   private readonly logger = new Logger(MinioObjectStorageFactory.name);
 
+  private readonly defaultExpires = 60 * 5;
+
   async init() {}
 
   async getObjectStorageAdapter(
@@ -51,7 +53,11 @@ export class MinioObjectStorageFactory {
     key: string,
     expires?: number,
   ): Promise<string> {
-    return this.client.presignedPutObject(bucketName, key, expires);
+    return this.client.presignedPutObject(
+      bucketName,
+      key,
+      expires || this.defaultExpires,
+    );
   }
 
   async getPresignedUrlForDownload(
@@ -59,7 +65,11 @@ export class MinioObjectStorageFactory {
     key: string,
     expires?: number,
   ): Promise<string> {
-    return this.client.presignedGetObject(bucketName, key, expires);
+    return this.client.presignedGetObject(
+      bucketName,
+      key,
+      expires || this.defaultExpires,
+    );
   }
 
   async getPublicUrlForDownload(

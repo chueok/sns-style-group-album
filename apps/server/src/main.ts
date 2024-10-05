@@ -1,9 +1,15 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { ServerConfig } from "./config/server-config";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // TODO : production 에서 정상적으로 cors 작동하는지 확인 필요.
+  app.enableCors({
+    origin: ServerConfig.isProduction ? ServerConfig.CLIENT_ENDPOINT : true,
+  });
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle("SNS style group album API")

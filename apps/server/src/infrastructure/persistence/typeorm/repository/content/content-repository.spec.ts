@@ -113,7 +113,10 @@ describe("ContentRepository", () => {
     it("(asc) should find a content list by group id and type", async () => {
       const targetContentList = testDatabaseHandler
         .getDbCacheList(TypeormContent)
-        .filter((content) => content.groupId === targetOrmGroup.id)
+        .filter(
+          (content) =>
+            content.groupId === targetOrmGroup.id && !content.deletedDateTime,
+        )
         .sort(
           (a, b) => b.createdDateTime.getTime() - a.createdDateTime.getTime(),
         );
@@ -137,7 +140,8 @@ describe("ContentRepository", () => {
           (content) =>
             content.groupId === targetOrmGroup.id &&
             content.contentType === ContentTypeEnum.POST &&
-            content.createdDateTime.getTime() > cursor.getTime(),
+            content.createdDateTime.getTime() > cursor.getTime() &&
+            !content.deletedDateTime,
         ).length;
 
       expect(contentList).not.toBeNull();
@@ -148,7 +152,10 @@ describe("ContentRepository", () => {
     it("(desc) should find a content list by group id and type", async () => {
       const targetContentList = testDatabaseHandler
         .getDbCacheList(TypeormContent)
-        .filter((content) => content.groupId === targetOrmGroup.id)
+        .filter(
+          (content) =>
+            content.groupId === targetOrmGroup.id && !content.deletedDateTime,
+        )
         .sort(
           (a, b) => a.createdDateTime.getTime() - b.createdDateTime.getTime(),
         );
@@ -172,7 +179,8 @@ describe("ContentRepository", () => {
           (content) =>
             content.groupId === targetOrmGroup.id &&
             content.contentType === ContentTypeEnum.POST &&
-            content.createdDateTime.getTime() < cursor.getTime(),
+            content.createdDateTime.getTime() < cursor.getTime() &&
+            !content.deletedDateTime,
         );
 
       expect(contentList).not.toBeNull();
@@ -211,7 +219,8 @@ describe("ContentRepository", () => {
         .filter(
           (content) =>
             content.ownerId === targetOrmUser.id &&
-            content.groupId === targetGroup.id,
+            content.groupId === targetGroup.id &&
+            !content.deletedDateTime,
         ).length;
 
       expect(contentList).not.toBeNull();

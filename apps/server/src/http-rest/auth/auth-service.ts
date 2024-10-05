@@ -8,6 +8,7 @@ import {
 import { VerifiedUserPayload } from "./type/verified-user-payload";
 import {
   Code,
+  ContentId,
   CreateUserEntityPayload,
   Exception,
   IUserRepository,
@@ -29,12 +30,14 @@ import { validateSync } from "class-validator";
 import { IAuthService } from "./auth-service.interface";
 import { JwtSignupModel, JwtSignupPayload } from "./type/jwt-signup-payload";
 import { ISignupPort } from "./port/signup-port";
+import { TypeormContent } from "../../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity";
 
 @Injectable()
 export class AuthService implements IAuthService {
   private readonly typeormUserRepository: Repository<TypeormUser>;
   private readonly typeormOauthRepository: Repository<TypeormOauth>;
   private readonly typeormGroupRepository: Repository<TypeormGroup>;
+  private readonly typeormContentRepository: Repository<TypeormContent>;
 
   private readonly logger: LoggerService;
 
@@ -48,6 +51,7 @@ export class AuthService implements IAuthService {
     this.typeormOauthRepository = dataSource.getRepository(TypeormOauth);
     this.typeormUserRepository = dataSource.getRepository(TypeormUser);
     this.typeormGroupRepository = dataSource.getRepository(TypeormGroup);
+    this.typeormContentRepository = dataSource.getRepository(TypeormContent);
 
     this.logger = logger || new Logger(AuthService.name);
   }
@@ -200,5 +204,17 @@ export class AuthService implements IAuthService {
     }
 
     return signupModel.toObject();
+  }
+
+  async isContentOwner(userId: string, contentId: string): Promise<boolean> {
+    const content = await this.typeormContentRepository.findOneBy({
+      id: contentId as ContentId,
+    });
+
+    if (!content) {
+      return false;
+    }
+
+    return content.ownerId === userId;
   }
 }

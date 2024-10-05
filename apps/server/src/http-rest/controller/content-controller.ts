@@ -5,7 +5,6 @@ import {
   Get,
   Inject,
   Param,
-  Patch,
   Post,
   Query,
   UseGuards,
@@ -14,6 +13,8 @@ import { ApiTags } from "@nestjs/swagger";
 import { RestResponse } from "./dto/common/rest-response";
 import {
   Code,
+  DeleteContentAdapter,
+  DeleteContentUsecase,
   GetContentListAdapter,
   GetMediaContentListUsecase,
   IObjectStoragePort,
@@ -37,6 +38,7 @@ import { MinioWebhookBody } from "./dto/content/minio-webhook-body";
 import mime from "mime";
 import { ConfirmMediaUploadedAdapter } from "../media/port/confirm-original-media-uploaded-port";
 import { ConfirmResponsiveMediaUploadedAdapter } from "../media/port/confirm-responsive-media-uploaded-port";
+import { HttpContentOwnerGuard } from "../auth/guard/content-owner-guard";
 
 @Controller("contents")
 @ApiTags("contents")
@@ -49,6 +51,9 @@ export class ContentController {
     private readonly getMediaContentListUsecase: GetMediaContentListUsecase,
 
     private readonly mediaService: MediaService,
+
+    @Inject(DiTokens.DeleteContentUsecase)
+    private readonly deleteContentUsecase: DeleteContentUsecase,
   ) {}
 
   @Get("group/:groupId/medias")
@@ -141,7 +146,6 @@ export class ContentController {
   @ApiResponseGeneric({
     code: Code.CREATED,
     data: ContentUploadUrlDTO,
-    isArray: true,
   })
   async createMediaContentList(
     @VerifiedUser() user: VerifiedUserPayload,
@@ -176,43 +180,50 @@ export class ContentController {
     return RestResponse.success(ret);
   }
 
-  @Get(":contentId")
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: MediaContentResponseDTO })
-  async getContent(
-    @Param("contentId") contentId: string,
-  ): Promise<RestResponse<MediaContentResponseDTO | null>> {
-    throw new Error("Not implemented");
-  }
+  // @Get(":contentId")
+  // @ApiResponseGeneric({ code: Code.SUCCESS, data: MediaContentResponseDTO })
+  // async getContent(
+  //   @Param("contentId") contentId: string,
+  // ): Promise<RestResponse<MediaContentResponseDTO | null>> {
+  //   throw new Error("Not implemented");
+  // }
 
-  @Delete(":contentId")
+  @Delete("group/:groupId/content/:contentId")
+  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard, HttpContentOwnerGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
   async deleteContent(
     @Param("contentId") contentId: string,
   ): Promise<RestResponse<null>> {
-    throw new Error("Not implemented");
+    const adapter = await DeleteContentAdapter.new({
+      contentId,
+    });
+
+    await this.deleteContentUsecase.execute(adapter);
+
+    return RestResponse.success(null);
   }
 
-  @Patch(":contentId")
-  @ApiResponseGeneric({ code: Code.SUCCESS, data: MediaContentResponseDTO })
-  async editContent(
-    @Param("contentId") contentId: string,
-    @Body() body: RestEditContentBody,
-  ): Promise<RestResponse<MediaContentResponseDTO>> {
-    throw new Error("Not implemented");
-  }
+  // @Patch(":contentId")
+  // @ApiResponseGeneric({ code: Code.SUCCESS, data: MediaContentResponseDTO })
+  // async editContent(
+  //   @Param("contentId") contentId: string,
+  //   @Body() body: RestEditContentBody,
+  // ): Promise<RestResponse<MediaContentResponseDTO>> {
+  //   throw new Error("Not implemented");
+  // }
 
-  @Post()
-  @ApiResponseGeneric({ code: Code.CREATED, data: MediaContentResponseDTO })
-  async createContent(
-    @Body() body: RestCreateContentBody,
-  ): Promise<RestResponse<MediaContentResponseDTO>> {
-    throw new Error("Not implemented");
-  }
+  // @Post()
+  // @ApiResponseGeneric({ code: Code.CREATED, data: MediaContentResponseDTO })
+  // async createContent(
+  //   @Body() body: RestCreateContentBody,
+  // ): Promise<RestResponse<MediaContentResponseDTO>> {
+  //   throw new Error("Not implemented");
+  // }
 
-  @Get(":contentId/likes")
-  // TODO: pagenation 구현 필요
-  async getLikes(
-    @Param("contentId") contentId: string,
-    @Query() query: unknown,
-  ) {}
+  // @Get(":contentId/likes")
+  // // TODO: pagenation 구현 필요
+  // async getLikes(
+  //   @Param("contentId") contentId: string,
+  //   @Query() query: unknown,
+  // ) {}
 }

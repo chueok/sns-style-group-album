@@ -67,4 +67,8 @@ export class ServerConfig {
   )
     .required()
     .asString();
+
+  public static readonly CLIENT_ENDPOINT = get("CLIENT_ENDPOINT")
+    .required()
+    .asString();
 }

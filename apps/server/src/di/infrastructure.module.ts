@@ -28,6 +28,7 @@ import {
   IGroupRepository,
   InviteUserUsecase,
   IUserRepository,
+  DeleteContentUsecase,
 } from "@repo/be-core";
 import { MinioObjectStorageFactory } from "../infrastructure/persistence/object-storage/minio/minio-adapter";
 import assert from "assert";
@@ -155,6 +156,12 @@ const contentUsecaseProviders: Provider[] = [
     inject: [DiTokens.ContentRepository],
   },
   MediaService,
+  {
+    provide: DiTokens.DeleteContentUsecase,
+    useFactory: (contentRepository: IContentRepository) =>
+      new DeleteContentUsecase(contentRepository),
+    inject: [DiTokens.ContentRepository],
+  },
 ];
 
 const globalProviders: Provider[] = [

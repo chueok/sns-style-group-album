@@ -23,4 +23,6 @@ export interface IAuthService {
   isUserInGroup(userId: string, groupId: string): Promise<boolean>;
 
   isGroupOwner(userId: string, groupId: string): Promise<boolean>;
+
+  isContentOwner(userId: string, contentId: string): Promise<boolean>;
 }

@@ -7,6 +7,7 @@ import { TypeormUser } from "../../src/infrastructure/persistence/typeorm/entity
 import { JwtService } from "@nestjs/jwt";
 import { JwtUserPayload } from "../../src/http-rest/auth/type/jwt-user-payload";
 import { v4 } from "uuid";
+import { TypeormContent } from "../../src/infrastructure/persistence/typeorm/entity/content/typeorm-content.entity";
 
 export class AuthFixture {
   private readonly dbHandler: DummyDatabaseHandler;
@@ -207,5 +208,41 @@ export class AuthFixture {
       .of(group)
       .add(user);
     return { user, group, accessToken };
+  }
+
+  public async getContentAndContentOwner(): Promise<{
+    content: TypeormContent;
+    owner: TypeormUser;
+    accessToken: string;
+  }> {
+    const contentList = this.dbHandler.getDbCacheList(TypeormContent);
+
+    let targetContent: TypeormContent | null = null;
+    for (const content of contentList) {
+      const comments = await content.comments;
+      const likes = await content.likes;
+      const referred = await content.referred;
+
+      if (
+        comments.length > 0 &&
+        !content.deletedDateTime &&
+        likes.length > 0 &&
+        referred.length > 0
+      ) {
+        targetContent = content;
+        break;
+      }
+    }
+    assert(targetContent, "content not found");
+
+    return {
+      content: targetContent,
+      owner: await targetContent.owner,
+      accessToken: (
+        await this.authService.getLoginToken({
+          id: targetContent.ownerId,
+        })
+      ).accessToken,
+    };
   }
 }

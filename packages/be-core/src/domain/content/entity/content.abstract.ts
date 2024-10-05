@@ -83,6 +83,13 @@ export abstract class Content extends EntityWithCUDTime<ContentId> {
     await this.validate();
   }
 
+  public async deleteContent(): Promise<boolean> {
+    // TODO : 참조하고 있는 컨텐츠가 있을 때, 유저에게 경고 띄울 수 있도록 하면 좋을 것 같음.
+    this._deletedDateTime = new Date();
+    await this.validate();
+    return true;
+  }
+
   constructor(payload: CreateContentEntityPayload<"base", "all">) {
     super();
 
