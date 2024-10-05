@@ -1,7 +1,6 @@
 import { Code, Exception, IObjectStoragePort } from "@repo/be-core";
 import { ServerConfig } from "../../../../config/server-config";
 import { Client } from "minio";
-import { MinioPolicy } from "./minio-policy";
 import { Injectable, Logger } from "@nestjs/common";
 
 @Injectable()
@@ -18,33 +17,7 @@ export class MinioObjectStorageFactory {
 
   private readonly logger = new Logger(MinioObjectStorageFactory.name);
 
-  async init() {
-    const isMediaBucketExist = await this.client.bucketExists(
-      ServerConfig.OBJECT_STORAGE_MEDIA_BUCKET,
-    );
-    if (!isMediaBucketExist) {
-      await this.client.makeBucket(ServerConfig.OBJECT_STORAGE_MEDIA_BUCKET);
-      this.logger.log(
-        `Bucket ${ServerConfig.OBJECT_STORAGE_MEDIA_BUCKET} created`,
-      );
-    }
-    const isPublicBucketExist = await this.client.bucketExists(
-      ServerConfig.OBJECT_STORAGE_PUBLIC_BUCKET,
-    );
-    if (!isPublicBucketExist) {
-      await this.client.makeBucket(ServerConfig.OBJECT_STORAGE_PUBLIC_BUCKET);
-      this.logger.log(
-        `Bucket ${ServerConfig.OBJECT_STORAGE_PUBLIC_BUCKET} created`,
-      );
-      await this.client.setBucketPolicy(
-        ServerConfig.OBJECT_STORAGE_PUBLIC_BUCKET,
-        JSON.stringify(MinioPolicy.PUBLIC_BUCKET),
-      );
-      this.logger.log(
-        `Bucket ${ServerConfig.OBJECT_STORAGE_PUBLIC_BUCKET} policy set`,
-      );
-    }
-  }
+  async init() {}
 
   async getObjectStorageAdapter(
     bucketName: string,

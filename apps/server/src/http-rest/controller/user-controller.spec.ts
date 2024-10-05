@@ -87,11 +87,13 @@ describe(`${UserController.name} e2e`, () => {
   it("/users (DELETE)", async () => {
     const { accessToken, user } = await authFixtrue.get_validUser_accessToken();
 
-    // own group 삭제
+    // own group이 있다면 삭제
     const ownGroups = await user.ownGroups;
-    await testDataSource
-      .getRepository(TypeormGroup)
-      .delete(ownGroups.map((group) => group.id));
+    if (ownGroups.length > 0) {
+      await testDataSource
+        .getRepository(TypeormGroup)
+        .delete(ownGroups.map((group) => group.id));
+    }
 
     await request(app.getHttpServer())
       .delete(`/users`)

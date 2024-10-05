@@ -6,7 +6,6 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUrl,
 } from "class-validator";
 import { ContentTypeEnum } from "../enum/content-type-enum";
 import { BucketStatusEnum } from "../enum/bucket-status";
@@ -51,13 +50,13 @@ export class MediaContent extends Content {
   }
 
   @IsOptional()
-  @IsUrl()
+  @IsString()
   protected _largeRelativePath: Nullable<string>;
   get largeRelativePath(): Nullable<string> {
     return this._largeRelativePath;
   }
 
-  @IsUrl()
+  @IsString()
   protected _originalRelativePath: string;
   get originalRelativePath(): string {
     return this._originalRelativePath;

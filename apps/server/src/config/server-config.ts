@@ -61,4 +61,10 @@ export class ServerConfig {
   )
     .required()
     .asString();
+
+  public static readonly OBJECT_STORAGE_WEB_HOOK_AUTH = get(
+    "OBJECT_STORAGE_WEB_HOOK_AUTH",
+  )
+    .required()
+    .asString();
 }

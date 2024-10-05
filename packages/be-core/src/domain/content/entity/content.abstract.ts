@@ -43,7 +43,7 @@ export abstract class Content extends EntityWithCUDTime<ContentId> {
 
   @IsOptional()
   @IsString()
-  // bucket/groups/groupId/contents/contentId/thumbnail.img
+  // bucket/groups/groupId/contents/original/contentId
   protected _thumbnailRelativePath: Nullable<string>;
   get thumbnailRelativePath(): Nullable<string> {
     return this._thumbnailRelativePath;

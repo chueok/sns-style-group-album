@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { RestResponse } from "./dto/common/rest-response";
@@ -23,6 +24,19 @@ import { RestEditContentBody } from "./dto/content/edit-content-body";
 import { RestCreateContentBody } from "./dto/content/create-content-body";
 import { DiTokens } from "../../di/di-tokens";
 import { MediaContentResponseDTO } from "./dto/content/media-content-response-dto";
+import { HttpJwtAuthGuard } from "../auth/guard/jwt-auth-guard";
+import { HttpGroupMemberGuard } from "../auth/guard/group-member-guard";
+import { HttpObjectStorageGuard } from "../auth/guard/object-storage-guard";
+import { CreateMediaListContentBody } from "./dto/content/create-media-list-content-body";
+import { MediaService } from "../media/media-service";
+import { SaveTemporaryMediaAdapter } from "../media/port/save-temporary-media-port";
+import { VerifiedUser } from "../auth/decorator/verified-user";
+import { VerifiedUserPayload } from "../auth/type/verified-user-payload";
+import { ContentUploadUrlDTO } from "./dto/content/content-upload-url-dto";
+import { MinioWebhookBody } from "./dto/content/minio-webhook-body";
+import mime from "mime";
+import { ConfirmMediaUploadedAdapter } from "../media/port/confirm-original-media-uploaded-port";
+import { ConfirmResponsiveMediaUploadedAdapter } from "../media/port/confirm-responsive-media-uploaded-port";
 
 @Controller("contents")
 @ApiTags("contents")
@@ -33,9 +47,12 @@ export class ContentController {
 
     @Inject(DiTokens.GetMediaContentListUsecase)
     private readonly getMediaContentListUsecase: GetMediaContentListUsecase,
+
+    private readonly mediaService: MediaService,
   ) {}
 
   @Get("group/:groupId/medias")
+  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
     data: MediaContentResponseDTO,
@@ -61,6 +78,102 @@ export class ContentController {
     );
 
     return RestResponse.success(dtos);
+  }
+
+  // TODO WEB에서 Test 필요함.
+  @Post("media-upload-hook/original")
+  @UseGuards(HttpObjectStorageGuard)
+  async mediaUploadHook(@Body() body: MinioWebhookBody) {
+    const promises = body.Records.map(async (record) => {
+      const object = record.s3.object;
+      const adapter = await ConfirmMediaUploadedAdapter.new({
+        id: object.key,
+        originalRelativePath: object.key,
+        size: object.size,
+        mimetype: object.contentType,
+        ext: mime.extension(object.contentType) || "",
+      });
+      await this.mediaService.confirmOriginalMediaUploaded(adapter);
+    });
+
+    await Promise.allSettled(promises);
+
+    return;
+  }
+
+  // TODO WEB에서 Test 필요함.
+  @Post("media-upload-hook/responsive/thumbnail")
+  @UseGuards(HttpObjectStorageGuard)
+  async thumbnailMediaUploadHook(@Body() body: MinioWebhookBody) {
+    const promises = body.Records.map(async (record) => {
+      const object = record.s3.object;
+      const adapter = await ConfirmResponsiveMediaUploadedAdapter.new({
+        id: object.key,
+        thumbnailRelativePath: object.key,
+      });
+      await this.mediaService.confirmResponsiveMediaUploaded(adapter);
+    });
+
+    await Promise.allSettled(promises);
+
+    return;
+  }
+
+  @Post("media-upload-hook/responsive/large")
+  @UseGuards(HttpObjectStorageGuard)
+  async largeMediaUploadHook(@Body() body: MinioWebhookBody) {
+    const promises = body.Records.map(async (record) => {
+      const object = record.s3.object;
+      const adapter = await ConfirmResponsiveMediaUploadedAdapter.new({
+        id: object.key,
+        largeRelativePath: object.key,
+      });
+      await this.mediaService.confirmResponsiveMediaUploaded(adapter);
+    });
+
+    await Promise.allSettled(promises);
+
+    return;
+  }
+
+  @Post("group/:groupId/medias")
+  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
+  @ApiResponseGeneric({
+    code: Code.CREATED,
+    data: ContentUploadUrlDTO,
+    isArray: true,
+  })
+  async createMediaContentList(
+    @VerifiedUser() user: VerifiedUserPayload,
+    @Param("groupId") groupId: string,
+    @Body() body: CreateMediaListContentBody,
+  ): Promise<RestResponse<ContentUploadUrlDTO>> {
+    // type이 정해지지 않음...
+    // 1. db에 type없이 저장 이후 webhook 요청이 오면 업데이트
+    //    - 실제 업로드 되지 않으면 의미없는 entity인데, db에 저장하는게 맞을까?
+    // 2. type 없이 임시 데이터를 가지고 있다가, webhook 요청이 오면 실제 저장
+    //    - BE 서버가 여러개일 경우 문제가 될 수 있음.
+
+    const promises = Array.from({ length: body.numContent }).map(async () => {
+      const adapter = await SaveTemporaryMediaAdapter.new({
+        groupId,
+        ownerId: user.id,
+      });
+
+      return await this.mediaService.saveTemporaryMedia(adapter);
+    });
+
+    const ret = new ContentUploadUrlDTO();
+
+    await Promise.allSettled(promises).then((results) => {
+      results.forEach((result) => {
+        if (result.status === "fulfilled") {
+          ret.presignedUrlList.push(result.value);
+        }
+      });
+    });
+
+    return RestResponse.success(ret);
   }
 
   @Get(":contentId")

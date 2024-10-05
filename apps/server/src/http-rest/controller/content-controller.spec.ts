@@ -12,6 +12,9 @@ import { ContentController } from "./content-controller";
 import { GetContentListQuery } from "./dto/content/get-content-list-query";
 import { MediaContentResponseDTO } from "./dto/content/media-content-response-dto";
 import { MockObjectStorage } from "@test-utils/mock/object-storage";
+import { ContentUploadUrlDTO } from "./dto/content/content-upload-url-dto";
+import { CreateMediaListContentBody } from "./dto/content/create-media-list-content-body";
+import { isURL } from "class-validator";
 
 const parameters = {
   testDbPath: join("db", `${basename(__filename)}.sqlite`),
@@ -72,5 +75,24 @@ describe(`${ContentController.name} e2e`, () => {
     const data = result.body.data as MediaContentResponseDTO[];
 
     expect(data.length).toBeGreaterThan(0);
+  });
+
+  it("/contents/group/:groupId/medias (POST)", async () => {
+    const { user, group, accessToken } =
+      await authFixtrue.get_group_member_accessToken();
+    const body: CreateMediaListContentBody = {
+      numContent: 10,
+    };
+    const result = await request(app.getHttpServer())
+      .post(`/contents/group/${group.id}/medias`)
+      .auth(accessToken, { type: "bearer" })
+      .send(body)
+      .expect(201);
+
+    const data = result.body.data as ContentUploadUrlDTO;
+    expect(data.presignedUrlList.length).toBe(body.numContent);
+    data.presignedUrlList.forEach((url) => {
+      expect(isURL(url)).toBeTruthy();
+    });
   });
 });

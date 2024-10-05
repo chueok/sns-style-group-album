@@ -31,6 +31,7 @@ import {
 } from "@repo/be-core";
 import { MinioObjectStorageFactory } from "../infrastructure/persistence/object-storage/minio/minio-adapter";
 import assert from "assert";
+import { MediaService } from "../http-rest/media/media-service";
 
 export const typeormSqliteOptions = {
   type: "sqlite",
@@ -153,6 +154,7 @@ const contentUsecaseProviders: Provider[] = [
       new GetMediaContentListUsecase(contentRepository),
     inject: [DiTokens.ContentRepository],
   },
+  MediaService,
 ];
 
 const globalProviders: Provider[] = [
