@@ -38,13 +38,12 @@ import { GroupSimpleResponseDTO } from "./dto/group/group-simple-response";
 import { GroupResponseDTO } from "./dto/group/group-response";
 import { RestCreateGroupBody } from "./dto/group/create-group-body";
 import { RestEditGroupBody } from "./dto/group/edit-group-body";
-import { HttpJwtAuthGuard } from "../auth/guard/jwt-auth-guard";
-import { HttpGroupMemberGuard } from "../auth/guard/group-member-guard";
 import { UserSimpleResponseDTO } from "./dto/user/user-simple-response-dto";
 import { DiTokens } from "../../di/di-tokens";
 import { VerifiedUser } from "../auth/decorator/verified-user";
 import { VerifiedUserPayload } from "../auth/type/verified-user-payload";
-import { HttpGroupOwnerGuard } from "../auth/guard/group-owner-guard";
+import { HttpPermissionGuard } from "../auth/guard/permission-guard";
+import { Permission, PermissionEnum } from "../auth/decorator/permission";
 
 @Controller("groups")
 @ApiTags("groups")
@@ -79,7 +78,7 @@ export class GroupController {
   ) {}
 
   @Patch(":groupId/accept-invitation")
-  @UseGuards(HttpJwtAuthGuard)
+  @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
   async acceptInvitation(
     @VerifiedUser() verifiedUser: VerifiedUserPayload,
@@ -96,7 +95,7 @@ export class GroupController {
   }
 
   @Get("own")
-  @UseGuards(HttpJwtAuthGuard)
+  @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
     data: GroupSimpleResponseDTO,
@@ -117,7 +116,8 @@ export class GroupController {
   }
 
   @Get(":groupId/members")
-  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
+  @UseGuards(HttpPermissionGuard)
+  @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
     data: UserSimpleResponseDTO,
@@ -136,7 +136,8 @@ export class GroupController {
   }
 
   @Get(":groupId")
-  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
+  @UseGuards(HttpPermissionGuard)
+  @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: GroupResponseDTO })
   async getGroup(
     @Param("groupId") groupId: string,
@@ -153,7 +154,8 @@ export class GroupController {
   }
 
   @Patch(":groupId")
-  @UseGuards(HttpJwtAuthGuard, HttpGroupOwnerGuard)
+  @UseGuards(HttpPermissionGuard)
+  @Permission(PermissionEnum.GROUP_OWNER)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: GroupResponseDTO })
   async editGroup(
     @Param("groupId") groupId: string,
@@ -197,7 +199,8 @@ export class GroupController {
   }
 
   @Delete(":groupId")
-  @UseGuards(HttpJwtAuthGuard, HttpGroupOwnerGuard)
+  @UseGuards(HttpPermissionGuard)
+  @Permission(PermissionEnum.GROUP_OWNER)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
   async deleteGroup(
     @Param("groupId") groupId: string,
@@ -210,7 +213,7 @@ export class GroupController {
   }
 
   @Post()
-  @UseGuards(HttpJwtAuthGuard)
+  @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({ code: Code.CREATED, data: GroupResponseDTO })
   async createGroup(
     @VerifiedUser() verifiedUser: VerifiedUserPayload,
@@ -229,7 +232,7 @@ export class GroupController {
   }
 
   @Get()
-  @UseGuards(HttpJwtAuthGuard)
+  @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
     data: GroupSimpleResponseDTO,

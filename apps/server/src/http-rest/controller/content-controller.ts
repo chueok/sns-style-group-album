@@ -25,8 +25,6 @@ import { RestEditContentBody } from "./dto/content/edit-content-body";
 import { RestCreateContentBody } from "./dto/content/create-content-body";
 import { DiTokens } from "../../di/di-tokens";
 import { MediaContentResponseDTO } from "./dto/content/media-content-response-dto";
-import { HttpJwtAuthGuard } from "../auth/guard/jwt-auth-guard";
-import { HttpGroupMemberGuard } from "../auth/guard/group-member-guard";
 import { HttpObjectStorageGuard } from "../auth/guard/object-storage-guard";
 import { CreateMediaListContentBody } from "./dto/content/create-media-list-content-body";
 import { MediaService } from "../media/media-service";
@@ -38,7 +36,8 @@ import { MinioWebhookBody } from "./dto/content/minio-webhook-body";
 import mime from "mime";
 import { ConfirmMediaUploadedAdapter } from "../media/port/confirm-original-media-uploaded-port";
 import { ConfirmResponsiveMediaUploadedAdapter } from "../media/port/confirm-responsive-media-uploaded-port";
-import { HttpContentOwnerGuard } from "../auth/guard/content-owner-guard";
+import { Permission, PermissionEnum } from "../auth/decorator/permission";
+import { HttpPermissionGuard } from "../auth/guard/permission-guard";
 
 @Controller("contents")
 @ApiTags("contents")
@@ -57,7 +56,8 @@ export class ContentController {
   ) {}
 
   @Get("group/:groupId/medias")
-  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
+  @UseGuards(HttpPermissionGuard)
+  @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
     data: MediaContentResponseDTO,
@@ -142,7 +142,8 @@ export class ContentController {
   }
 
   @Post("group/:groupId/medias")
-  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
+  @UseGuards(HttpPermissionGuard)
+  @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({
     code: Code.CREATED,
     data: ContentUploadUrlDTO,
@@ -189,7 +190,8 @@ export class ContentController {
   // }
 
   @Delete("group/:groupId/content/:contentId")
-  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard, HttpContentOwnerGuard)
+  @UseGuards(HttpPermissionGuard)
+  @Permission(PermissionEnum.CONTENT_OWNER)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
   async deleteContent(
     @Param("contentId") contentId: string,

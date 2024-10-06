@@ -212,6 +212,7 @@ export class AuthFixture {
 
   public async getContentAndContentOwner(): Promise<{
     content: TypeormContent;
+    group: TypeormGroup;
     owner: TypeormUser;
     accessToken: string;
   }> {
@@ -238,6 +239,7 @@ export class AuthFixture {
     return {
       content: targetContent,
       owner: await targetContent.owner,
+      group: await targetContent.group,
       accessToken: (
         await this.authService.getLoginToken({
           id: targetContent.ownerId,

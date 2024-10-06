@@ -26,13 +26,13 @@ import {
 import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
 import { RestEditUserBody } from "./dto/user/edit-user-body";
 import { DiTokens } from "../../di/di-tokens";
-import { HttpJwtAuthGuard } from "../auth/guard/jwt-auth-guard";
-import { HttpGroupMemberGuard } from "../auth/guard/group-member-guard";
 import { GetUserGroupProfileImageUploadUrlResponseDTO } from "./dto/user/get-user-group-profile-image-upload-url-response-dto";
 import { GetProfileImageUploadUrlResponseDTO } from "./dto/user/get-profile-image-upload-url-response-dto";
 import { EditUserGroupProfileBody } from "./dto/user/edit-user-group-profile-body";
 import { VerifiedUser } from "../auth/decorator/verified-user";
 import { VerifiedUserPayload } from "../auth/type/verified-user-payload";
+import { HttpPermissionGuard } from "../auth/guard/permission-guard";
+import { Permission, PermissionEnum } from "../auth/decorator/permission";
 
 @Controller("users")
 @ApiTags("users")
@@ -51,7 +51,7 @@ export class UserController {
   ) {}
 
   @Get()
-  @UseGuards(HttpJwtAuthGuard)
+  @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDTO })
   async getUser(
     @VerifiedUser() verifiedUser: VerifiedUserPayload,
@@ -68,7 +68,7 @@ export class UserController {
   }
 
   @Delete()
-  @UseGuards(HttpJwtAuthGuard)
+  @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
   async deleteUser(
     @VerifiedUser() verifiedUser: VerifiedUserPayload,
@@ -81,7 +81,7 @@ export class UserController {
   }
 
   @Patch()
-  @UseGuards(HttpJwtAuthGuard)
+  @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDTO })
   async editUser(
     @VerifiedUser() verifiedUser: VerifiedUserPayload,
@@ -103,11 +103,11 @@ export class UserController {
 
   // TODO : email 변경 구현 (email 인증 구현 필요)
   @Patch("email")
-  @UseGuards(HttpJwtAuthGuard)
+  @UseGuards(HttpPermissionGuard)
   async editEmail() {}
 
   @Get("profile-image-upload-url")
-  @UseGuards(HttpJwtAuthGuard)
+  @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
     data: GetProfileImageUploadUrlResponseDTO,
@@ -130,7 +130,8 @@ export class UserController {
 
   // user group profile 변경
   @Patch("profile/:groupId")
-  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
+  @UseGuards(HttpPermissionGuard)
+  @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDTO })
   async editUserGroupProfile(
     @VerifiedUser() verifiedUser: VerifiedUserPayload,
@@ -153,7 +154,8 @@ export class UserController {
   }
 
   @Get("profile/:groupId/profile-image-upload-url")
-  @UseGuards(HttpJwtAuthGuard, HttpGroupMemberGuard)
+  @UseGuards(HttpPermissionGuard)
+  @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
     data: GetUserGroupProfileImageUploadUrlResponseDTO,
