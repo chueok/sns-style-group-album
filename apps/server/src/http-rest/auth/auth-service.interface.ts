@@ -4,9 +4,11 @@ import { RestResponseJwt } from "../controller/dto/auth/rest-response-jwt";
 import { RestResponseSignupJwt } from "../controller/dto/auth/rest-response-signup-jwt";
 import { Nullable } from "@repo/be-core";
 import { ISignupPort } from "./port/signup-port";
+import { JwtUserPayload } from "./type/jwt-user-payload";
 
 export interface IAuthService {
   getLoginToken(user: VerifiedUserPayload): Promise<RestResponseJwt>;
+  validateLoginToken(token: string): JwtUserPayload;
 
   getSignupToken(user: OauthUserPayload): Promise<RestResponseSignupJwt>;
 
@@ -18,11 +20,27 @@ export interface IAuthService {
     providerId: string,
   ): Promise<Nullable<VerifiedUserPayload>>;
 
-  getUser(payload: { id: string }): Promise<Nullable<VerifiedUserPayload>>;
+  getUser(payload: { id: string }): Promise<VerifiedUserPayload>;
 
-  isUserInGroup(userId: string, groupId: string): Promise<boolean>;
+  getGroupMember(payload: {
+    userId: string;
+    groupId: string;
+  }): Promise<VerifiedUserPayload>;
 
-  isGroupOwner(userId: string, groupId: string): Promise<boolean>;
+  getGroupOwner(payload: {
+    userId: string;
+    groupId: string;
+  }): Promise<VerifiedUserPayload>;
 
-  isContentOwner(userId: string, contentId: string): Promise<boolean>;
+  getContentOwner(payload: {
+    userId: string;
+    groupId: string;
+    contentId: string;
+  }): Promise<VerifiedUserPayload>;
+
+  getCommentOwner(payload: {
+    userId: string;
+    groupId: string;
+    commentId: string;
+  }): Promise<VerifiedUserPayload>;
 }

@@ -157,41 +157,41 @@ describe(`${HttpPermissionGuard.name}`, () => {
         .expect(Code.SUCCESS.code);
     });
 
-    it("should return 403 if user is deleted", async () => {
+    it("should return 401 if user is deleted", async () => {
       const { accessToken, user } = await fixture.get_deletedUser_accessToken();
       const response = await supertest(testingServer.getHttpServer())
         .get(`/test/user`)
         .auth(accessToken, { type: "bearer" })
-        .expect(Code.ACCESS_DENIED_ERROR.code);
+        .expect(Code.UNAUTHORIZED_ERROR.code);
 
       await supertest(testingServer.getHttpServer())
         .get(`/test/without-permission-decorator`)
         .auth(accessToken, { type: "bearer" })
-        .expect(Code.ACCESS_DENIED_ERROR.code);
+        .expect(Code.UNAUTHORIZED_ERROR.code);
     });
 
-    it("should return 403 if accessToken is invalid", async () => {
+    it("should return 401 if accessToken is invalid", async () => {
       const { accessToken, user } =
         await fixture.get_invalidAccessToken_validUser_invalidScretKey();
       const response = await supertest(testingServer.getHttpServer())
         .get(`/test/user`)
         .auth(accessToken, { type: "bearer" })
-        .expect(Code.ACCESS_DENIED_ERROR.code);
+        .expect(Code.UNAUTHORIZED_ERROR.code);
 
       await supertest(testingServer.getHttpServer())
         .get(`/test/without-permission-decorator`)
         .auth(accessToken, { type: "bearer" })
-        .expect(Code.ACCESS_DENIED_ERROR.code);
+        .expect(Code.UNAUTHORIZED_ERROR.code);
     });
 
-    it("should return 403 if accessToken is empty", async () => {
+    it("should return 401 if accessToken is empty", async () => {
       const response = await supertest(testingServer.getHttpServer())
         .get(`/test/user`)
-        .expect(Code.ACCESS_DENIED_ERROR.code);
+        .expect(Code.UNAUTHORIZED_ERROR.code);
 
       await supertest(testingServer.getHttpServer())
         .get(`/test/without-permission-decorator`)
-        .expect(Code.ACCESS_DENIED_ERROR.code);
+        .expect(Code.UNAUTHORIZED_ERROR.code);
     });
   });
 
@@ -205,13 +205,13 @@ describe(`${HttpPermissionGuard.name}`, () => {
         .expect(Code.SUCCESS.code);
     });
 
-    it("should return 403 if groupId is empty", async () => {
+    it("should return 400 if groupId is empty", async () => {
       const { accessToken, user, group } =
         await fixture.get_group_owner_accessToken();
       const response = await supertest(testingServer.getHttpServer())
         .get(`/test/group-owner`)
         .auth(accessToken, { type: "bearer" })
-        .expect(Code.ACCESS_DENIED_ERROR.code);
+        .expect(Code.BAD_REQUEST_ERROR.code);
     });
 
     it("should return 403 if user is not group owner", async () => {
@@ -223,7 +223,7 @@ describe(`${HttpPermissionGuard.name}`, () => {
         .expect(Code.ACCESS_DENIED_ERROR.code);
     });
 
-    it("should return 403 if user is not valid", async () => {
+    it("should return 401 if user is not valid", async () => {
       const { accessToken, user, group } =
         await fixture.get_group_owner_accessToken();
 
@@ -233,7 +233,7 @@ describe(`${HttpPermissionGuard.name}`, () => {
       const response = await supertest(testingServer.getHttpServer())
         .get(`/test/group-owner/${group.id}`)
         .auth(accessToken, { type: "bearer" })
-        .expect(Code.ACCESS_DENIED_ERROR.code);
+        .expect(Code.UNAUTHORIZED_ERROR.code);
     });
   });
 
@@ -247,13 +247,13 @@ describe(`${HttpPermissionGuard.name}`, () => {
         .expect(Code.SUCCESS.code);
     });
 
-    it("should return 403 if groupId is empty", async () => {
+    it("should return 400 if groupId is empty", async () => {
       const { accessToken, user, group } =
         await fixture.get_group_member_accessToken();
       const response = await supertest(testingServer.getHttpServer())
         .get(`/test/group-member`)
         .auth(accessToken, { type: "bearer" })
-        .expect(Code.ACCESS_DENIED_ERROR.code);
+        .expect(Code.BAD_REQUEST_ERROR.code);
     });
 
     it("should return 403 if user is not group member", async () => {
@@ -265,7 +265,7 @@ describe(`${HttpPermissionGuard.name}`, () => {
         .expect(Code.ACCESS_DENIED_ERROR.code);
     });
 
-    it("should return 403 if user is not valid", async () => {
+    it("should return 401 if user is not valid", async () => {
       const { accessToken, user, group } =
         await fixture.get_group_member_accessToken();
 
@@ -275,7 +275,7 @@ describe(`${HttpPermissionGuard.name}`, () => {
       const response = await supertest(testingServer.getHttpServer())
         .get(`/test/group-owner/${group.id}`)
         .auth(accessToken, { type: "bearer" })
-        .expect(Code.ACCESS_DENIED_ERROR.code);
+        .expect(Code.UNAUTHORIZED_ERROR.code);
     });
   });
 
@@ -290,24 +290,24 @@ describe(`${HttpPermissionGuard.name}`, () => {
         .expect(Code.SUCCESS.code);
     });
 
-    it("should return 403 if groupId is empty", async () => {
+    it("should return 400 if groupId is empty", async () => {
       const { content, owner, accessToken, group } =
         await fixture.getContentAndContentOwner();
 
       const response = await supertest(testingServer.getHttpServer())
         .get(`/test/content-owner/content/${content.id}`)
         .auth(accessToken, { type: "bearer" })
-        .expect(Code.ACCESS_DENIED_ERROR.code);
+        .expect(Code.BAD_REQUEST_ERROR.code);
     });
 
-    it("should return 403 if contentId is empty", async () => {
+    it("should return 400 if contentId is empty", async () => {
       const { content, owner, accessToken, group } =
         await fixture.getContentAndContentOwner();
 
       const response = await supertest(testingServer.getHttpServer())
         .get(`/test/content-owner/group/${group.id}`)
         .auth(accessToken, { type: "bearer" })
-        .expect(Code.ACCESS_DENIED_ERROR.code);
+        .expect(Code.BAD_REQUEST_ERROR.code);
     });
 
     it("should return 403 if user is not content owner", async () => {

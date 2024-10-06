@@ -2,15 +2,16 @@ import { Reflector } from "@nestjs/core";
 
 /**
  * 1. jwt를 통해 user 확인
- * 2. group owner 확인
- * 3. group member 확인
- * 4. content owner인지 확인
+ * 2. group owner 확인 - 'groupId' parameter required
+ * 3. group member 확인 - 'groupId' parameter required
+ * 4. content owner인지 확인 - 'groupId' and 'contentId' parameter required
  */
 export enum PermissionEnum {
-  USER = "USER", // 1
-  GROUP_OWNER = "GROUP_OWNER", // 1, 2
-  GROUP_MEMBER = "GROUP_MEMBER", // 1, 3
-  CONTENT_OWNER = "CONTENT_OWNER", // 1, 3, 4
+  USER = "USER",
+  GROUP_OWNER = "GROUP_OWNER",
+  GROUP_MEMBER = "GROUP_MEMBER",
+  CONTENT_OWNER = "CONTENT_OWNER",
+  COMMENT_OWNER = "COMMENT_OWNER",
 }
 
 export const Permission = Reflector.createDecorator<PermissionEnum>();

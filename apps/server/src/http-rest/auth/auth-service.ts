@@ -31,6 +31,8 @@ import { IAuthService } from "./auth-service.interface";
 import { JwtSignupModel, JwtSignupPayload } from "./type/jwt-signup-payload";
 import { ISignupPort } from "./port/signup-port";
 import { TypeormContent } from "../../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity";
+import { TypeormComment } from "../../infrastructure/persistence/typeorm/entity/comment/typeorm-comment.entity";
+import { JwtUserModel, JwtUserPayload } from "./type/jwt-user-payload";
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -38,6 +40,7 @@ export class AuthService implements IAuthService {
   private readonly typeormOauthRepository: Repository<TypeormOauth>;
   private readonly typeormGroupRepository: Repository<TypeormGroup>;
   private readonly typeormContentRepository: Repository<TypeormContent>;
+  private readonly typeormCommentRepository: Repository<TypeormComment>;
 
   private readonly logger: LoggerService;
 
@@ -52,6 +55,7 @@ export class AuthService implements IAuthService {
     this.typeormUserRepository = dataSource.getRepository(TypeormUser);
     this.typeormGroupRepository = dataSource.getRepository(TypeormGroup);
     this.typeormContentRepository = dataSource.getRepository(TypeormContent);
+    this.typeormCommentRepository = dataSource.getRepository(TypeormComment);
 
     this.logger = logger || new Logger(AuthService.name);
   }
@@ -93,10 +97,16 @@ export class AuthService implements IAuthService {
 
   async signup(payload: ISignupPort): Promise<RestResponseJwt> {
     const signupPayload = await this.validateSignupToken(payload.signupToken);
-    if (!signupPayload) {
+
+    const oauth = await this.typeormOauthRepository.findOneBy({
+      provider: signupPayload.provider,
+      providerId: signupPayload.providerId,
+      secretToken: payload.signupToken,
+      userId: undefined,
+    });
+    if (!oauth) {
       throw Exception.new({
         code: Code.UNAUTHORIZED_ERROR,
-        overrideMessage: "invalid signup token",
       });
     }
 
@@ -140,13 +150,10 @@ export class AuthService implements IAuthService {
     return userPayload;
   }
 
-  async getUser(payload: {
-    id: string;
-  }): Promise<Nullable<VerifiedUserPayload>> {
+  async getUser(payload: { id: string }): Promise<VerifiedUserPayload> {
     const user = await this.userRepository.findUserById(payload.id as UserId);
     if (!user) {
-      this.logger.log(`user not found: ${payload}`);
-      return null;
+      throw Exception.new({ code: Code.UNAUTHORIZED_ERROR });
     }
     const userPayload: VerifiedUserPayload = {
       id: user.id,
@@ -154,67 +161,152 @@ export class AuthService implements IAuthService {
     return userPayload;
   }
 
-  async isUserInGroup(userId: string, groupId: string): Promise<boolean> {
-    const isInGroup =
-      (await this.typeormUserRepository
+  async getGroupMember(payload: {
+    userId: string;
+    groupId: string;
+  }): Promise<VerifiedUserPayload> {
+    const { userId, groupId } = payload;
+
+    const [user, isGroupMember] = await Promise.all([
+      this.getUser({ id: userId }),
+
+      this.typeormUserRepository
         .createQueryBuilder("user")
         .leftJoinAndSelect("user.groups", "group")
         .where("user.id = :userId", { userId })
-        .andWhere("user.deletedDateTime is null")
         .andWhere("group.id = :groupId", { groupId })
-        .getCount()) > 0;
-    return isInGroup;
+        .getCount()
+        .then((count) => count > 0),
+    ]);
+
+    if (!isGroupMember) {
+      throw Exception.new({
+        code: Code.ACCESS_DENIED_ERROR,
+      });
+    }
+
+    return user;
   }
 
-  async isGroupOwner(userId: string, groupId: string): Promise<boolean> {
-    const isOwner =
-      (await this.typeormGroupRepository
+  async getGroupOwner(payload: {
+    userId: string;
+    groupId: string;
+  }): Promise<VerifiedUserPayload> {
+    const { userId, groupId } = payload;
+
+    const [user, isGroupOwner] = await Promise.all([
+      this.getUser({ id: userId }),
+
+      this.typeormGroupRepository
         .createQueryBuilder("group")
         .where("group.id = :groupId", { groupId })
         .andWhere("group.ownerId = :userId", { userId })
-        .getCount()) > 0;
-    return isOwner;
+        .getCount()
+        .then((count) => count > 0),
+    ]);
+
+    if (!isGroupOwner) {
+      throw Exception.new({
+        code: Code.ACCESS_DENIED_ERROR,
+      });
+    }
+
+    return user;
   }
 
-  private async validateSignupToken(
-    jwt: string,
-  ): Promise<Nullable<JwtSignupPayload>> {
+  async getContentOwner(payload: {
+    userId: string;
+    groupId: string;
+    contentId: string;
+  }): Promise<VerifiedUserPayload> {
+    const { userId, groupId, contentId } = payload;
+
+    const [groupMember, isContentOwner] = await Promise.all([
+      this.getGroupMember({ userId, groupId }),
+      this.typeormContentRepository
+        .createQueryBuilder("content")
+        .where("content.id = :contentId", { contentId })
+        .andWhere("content.ownerId = :userId", { userId })
+        .getCount()
+        .then((count) => count > 0),
+    ]);
+
+    if (!isContentOwner) {
+      throw Exception.new({
+        code: Code.ACCESS_DENIED_ERROR,
+      });
+    }
+
+    return groupMember;
+  }
+
+  async getCommentOwner(payload: {
+    userId: string;
+    groupId: string;
+    commentId: string;
+  }): Promise<VerifiedUserPayload> {
+    const { userId, groupId, commentId } = payload;
+
+    const [groupMember, isCommentOwner] = await Promise.all([
+      this.getGroupMember({ userId, groupId }),
+
+      await this.typeormCommentRepository
+        .createQueryBuilder("comment")
+        .where("comment.id = :commentId", { commentId })
+        .andWhere("comment.ownerId = :userId", { userId })
+        .getCount()
+        .then((count) => count > 0),
+    ]);
+
+    if (!isCommentOwner) {
+      throw Exception.new({
+        code: Code.ACCESS_DENIED_ERROR,
+      });
+    }
+
+    return groupMember;
+  }
+
+  private async validateSignupToken(jwt: string): Promise<JwtSignupPayload> {
     let jwtPayload: JwtSignupPayload;
     try {
       jwtPayload = this.jwtService.verify(jwt);
     } catch (error) {
-      return null;
+      throw Exception.new({
+        code: Code.UNAUTHORIZED_ERROR,
+      });
     }
 
     const signupModel = plainToInstance(JwtSignupModel, jwtPayload);
 
     const errors = validateSync(signupModel);
     if (errors.length > 0) {
-      null;
-    }
-
-    const oauth = await this.typeormOauthRepository.findOneBy({
-      provider: signupModel.provider,
-      providerId: signupModel.providerId,
-      secretToken: jwt,
-      userId: undefined,
-    });
-    if (!oauth) {
-      return null;
+      throw Exception.new({
+        code: Code.UNAUTHORIZED_ERROR,
+      });
     }
 
     return signupModel.toObject();
   }
 
-  async isContentOwner(userId: string, contentId: string): Promise<boolean> {
-    const content = await this.typeormContentRepository.findOneBy({
-      id: contentId as ContentId,
-    });
-
-    if (!content) {
-      return false;
+  validateLoginToken(token: string): JwtUserPayload {
+    let jwtPayload: JwtUserPayload;
+    try {
+      jwtPayload = this.jwtService.verify(token);
+    } catch (error) {
+      throw Exception.new({
+        code: Code.UNAUTHORIZED_ERROR,
+      });
     }
 
-    return content.ownerId === userId;
+    const jwtUserModel = plainToInstance(JwtUserModel, jwtPayload);
+    const errors = validateSync(jwtUserModel);
+    if (errors.length > 0) {
+      throw Exception.new({
+        code: Code.UNAUTHORIZED_ERROR,
+      });
+    }
+
+    return jwtPayload;
   }
 }

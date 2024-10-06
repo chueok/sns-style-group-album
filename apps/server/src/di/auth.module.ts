@@ -19,7 +19,7 @@ const providers: Provider[] = [
     JwtModule.register({
       secret: ServerConfig.JWT_SECRET,
       signOptions: { expiresIn: "30m" },
-      global: true, // permission guard 에서 사용하기 위해 global로 설정
+      verifyOptions: { ignoreExpiration: false },
     }),
   ],
   providers: [...providers, HttpGoogleStrategy],
