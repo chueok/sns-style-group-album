@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { CommentId, CommentTypeEnum, ContentId } from "@repo/be-core";
 
-export class RestCommentResponse {
+export class CommentResponseDTO {
   @ApiProperty({ type: "string" })
   id!: CommentId;
 

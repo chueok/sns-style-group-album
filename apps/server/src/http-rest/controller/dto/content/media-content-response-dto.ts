@@ -4,7 +4,7 @@ import {
   IObjectStoragePort,
   MediaContent,
 } from "@repo/be-core";
-import { RestCommentResponse } from "../comment/comment-response";
+import { CommentResponseDTO } from "../comment/comment-response-dto";
 
 export class MediaContentResponseDTO {
   @ApiProperty({ type: "string" })
@@ -34,8 +34,8 @@ export class MediaContentResponseDTO {
   @ApiProperty({ type: "number" })
   numComments!: number;
 
-  @ApiProperty({ type: RestCommentResponse, isArray: true })
-  topComments!: RestCommentResponse[];
+  @ApiProperty({ type: CommentResponseDTO, isArray: true })
+  topComments!: CommentResponseDTO[];
 
   @ApiProperty({ type: "number" })
   createdTimestamp!: number;
