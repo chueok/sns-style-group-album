@@ -10,11 +10,11 @@ import {
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
-import { RestCommentCreateBody } from "./dto/comment/comment-create-body";
+import { CommentCreateBody } from "./dto/comment/comment-create-body";
 import { CommentResponseDTO } from "./dto/comment/comment-response-dto";
-import { RestCommentEditBody } from "./dto/comment/comment-edit-body";
+import { CommentEditBody } from "./dto/comment/comment-edit-body";
 import { Code } from "@repo/be-core";
-import { RestGetCommentListQuery } from "./dto/comment/get-comment-list-query";
+import { GetCommentListQuery } from "./dto/comment/get-comment-list-query";
 import { RestResponse } from "./dto/common/rest-response";
 
 @Controller("comments")
@@ -23,8 +23,8 @@ export class CommentController {
   @Post("group/:groupId")
   @ApiResponseGeneric({ code: Code.CREATED, data: CommentResponseDTO })
   async createComment(
-    @Body() body: RestCommentCreateBody,
-  ): Promise<RestResponse<CommentResponseDTO | null>> {
+    @Body() body: CommentCreateBody,
+  ): Promise<RestResponse<CommentResponseDTO>> {
     throw new Error("Not implemented");
   }
 
@@ -36,7 +36,7 @@ export class CommentController {
   })
   // TODO : pagenation 구현 필요 (content에 해당하는 comment를 가져오기 위함)
   async getCommentList(
-    @Query() query: RestGetCommentListQuery,
+    @Query() query: GetCommentListQuery,
   ): Promise<RestResponse<CommentResponseDTO[] | null>> {
     throw new Error("Not implemented");
   }
@@ -53,7 +53,7 @@ export class CommentController {
   @ApiResponseGeneric({ code: Code.SUCCESS, data: CommentResponseDTO })
   async editComment(
     @Param("commentId") commentId: string,
-    @Body() body: RestCommentEditBody,
+    @Body() body: CommentEditBody,
   ): Promise<RestResponse<CommentResponseDTO | null>> {
     throw new Error("Not implemented");
   }

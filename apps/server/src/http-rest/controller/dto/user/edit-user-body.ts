@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 
-export class RestEditUserBody {
+export class EditUserBody {
   @ApiPropertyOptional({ type: "string" })
   username?: string;
 }

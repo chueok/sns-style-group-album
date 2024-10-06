@@ -36,8 +36,8 @@ import {
 import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
 import { GroupSimpleResponseDTO } from "./dto/group/group-simple-response";
 import { GroupResponseDTO } from "./dto/group/group-response";
-import { RestCreateGroupBody } from "./dto/group/create-group-body";
-import { RestEditGroupBody } from "./dto/group/edit-group-body";
+import { CreateGroupBody } from "./dto/group/create-group-body";
+import { EditGroupBody } from "./dto/group/edit-group-body";
 import { UserSimpleResponseDTO } from "./dto/user/user-simple-response-dto";
 import { DiTokens } from "../../di/di-tokens";
 import { VerifiedUser } from "../auth/decorator/verified-user";
@@ -159,7 +159,7 @@ export class GroupController {
   @ApiResponseGeneric({ code: Code.SUCCESS, data: GroupResponseDTO })
   async editGroup(
     @Param("groupId") groupId: string,
-    @Body() body: RestEditGroupBody,
+    @Body() body: EditGroupBody,
   ): Promise<RestResponse<GroupResponseDTO>> {
     const trueCount = Object.keys(body)
       .map((key) => !!body[key])
@@ -217,8 +217,8 @@ export class GroupController {
   @ApiResponseGeneric({ code: Code.CREATED, data: GroupResponseDTO })
   async createGroup(
     @VerifiedUser() verifiedUser: VerifiedUserPayload,
-    @Body() body: RestCreateGroupBody,
-  ): Promise<RestResponse<GroupResponseDTO | null>> {
+    @Body() body: CreateGroupBody,
+  ): Promise<RestResponse<GroupResponseDTO>> {
     const adapter = await CreateGroupAdapter.new({
       ownerId: verifiedUser.id,
       name: body.name,

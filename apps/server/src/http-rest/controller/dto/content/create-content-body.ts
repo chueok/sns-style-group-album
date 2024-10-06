@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { BucketStatusEnum, ContentTypeEnum } from "@repo/be-core";
 
-export class RestCreateContentBody {
+export class CreateContentBody {
   @ApiProperty({ type: "string" })
   groupId!: string;
 

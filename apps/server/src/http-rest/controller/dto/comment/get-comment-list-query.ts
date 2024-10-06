@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 
-export class RestGetCommentListQuery {
+export class GetCommentListQuery {
   @ApiPropertyOptional({ type: "string" })
   userId?: string;
 

@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 
-export class RestEditGroupBody {
+export class EditGroupBody {
   @ApiPropertyOptional({ type: "string", description: "change group name" })
   name?: string;
 

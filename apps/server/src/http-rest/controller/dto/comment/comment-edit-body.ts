@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 
-export class RestCommentEditBody {
+export class CommentEditBody {
   @ApiProperty({ type: "string" })
   id!: string;
 

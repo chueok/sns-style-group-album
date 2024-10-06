@@ -21,8 +21,8 @@ import {
 } from "@repo/be-core";
 import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
 import { GetContentListQuery } from "./dto/content/get-content-list-query";
-import { RestEditContentBody } from "./dto/content/edit-content-body";
-import { RestCreateContentBody } from "./dto/content/create-content-body";
+import { EditContentBody } from "./dto/content/edit-content-body";
+import { CreateContentBody } from "./dto/content/create-content-body";
 import { DiTokens } from "../../di/di-tokens";
 import { MediaContentResponseDTO } from "./dto/content/media-content-response-dto";
 import { HttpObjectStorageGuard } from "../auth/guard/object-storage-guard";

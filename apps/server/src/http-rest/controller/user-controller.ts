@@ -24,11 +24,11 @@ import {
   IObjectStoragePort,
 } from "@repo/be-core";
 import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
-import { RestEditUserBody } from "./dto/user/edit-user-body";
+import { EditUserBody } from "./dto/user/edit-user-body";
 import { DiTokens } from "../../di/di-tokens";
 import { GetUserGroupProfileImageUploadUrlResponseDTO } from "./dto/user/get-user-group-profile-image-upload-url-response-dto";
 import { GetProfileImageUploadUrlResponseDTO } from "./dto/user/get-profile-image-upload-url-response-dto";
-import { EditUserGroupProfileBody } from "./dto/user/edit-user-group-profile-body";
+import { UserGroupProfileBody } from "./dto/user/edit-user-group-profile-body";
 import { VerifiedUser } from "../auth/decorator/verified-user";
 import { VerifiedUserPayload } from "../auth/type/verified-user-payload";
 import { HttpPermissionGuard } from "../auth/guard/permission-guard";
@@ -85,7 +85,7 @@ export class UserController {
   @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDTO })
   async editUser(
     @VerifiedUser() verifiedUser: VerifiedUserPayload,
-    @Body() body: RestEditUserBody,
+    @Body() body: EditUserBody,
   ): Promise<RestResponse<UserResponseDTO>> {
     const adapter = await EditUserAdapter.new({
       userId: verifiedUser.id,
@@ -136,7 +136,7 @@ export class UserController {
   async editUserGroupProfile(
     @VerifiedUser() verifiedUser: VerifiedUserPayload,
     @Param("groupId") groupId: string,
-    @Body() body: EditUserGroupProfileBody,
+    @Body() body: UserGroupProfileBody,
   ): Promise<RestResponse<UserResponseDTO>> {
     const adapter = await EditUserGroupProfileAdapter.new({
       userId: verifiedUser.id,
