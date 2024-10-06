@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { CommentId, CommentTypeEnum, ContentId } from "@repo/be-core";
+import {
+  Comment,
+  CommentId,
+  CommentTypeEnum,
+  ContentId,
+  SystemComment,
+  UserComment,
+} from "@repo/be-core";
 
 export class CommentResponseDTO {
   @ApiProperty({ type: "string" })
@@ -15,5 +22,25 @@ export class CommentResponseDTO {
   text!: string;
 
   @ApiPropertyOptional({ type: "string" })
+  ownerId?: string;
+
+  @ApiPropertyOptional({ type: "string" })
   subText?: string;
+
+  public static newFromComment(comment: Comment): CommentResponseDTO {
+    const dto: CommentResponseDTO = new CommentResponseDTO();
+    dto.id = comment.id;
+    dto.type = comment.type;
+    dto.contentId = comment.contentId;
+    dto.text = comment.text;
+    dto.ownerId = (comment as UserComment).ownerId || undefined;
+    dto.subText = (comment as SystemComment).subText || undefined;
+    return dto;
+  }
+
+  public static newListFromComments(comments: Comment[]): CommentResponseDTO[] {
+    return comments.map((comment) =>
+      CommentResponseDTO.newFromComment(comment),
+    );
+  }
 }
