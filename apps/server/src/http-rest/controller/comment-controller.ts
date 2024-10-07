@@ -10,7 +10,7 @@ import {
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
-import { CommentCreateBody } from "./dto/comment/comment-create-body";
+import { CreateUserCommentBody } from "./dto/comment/comment-create-body";
 import { CommentResponseDTO } from "./dto/comment/comment-response-dto";
 import { CommentEditBody } from "./dto/comment/comment-edit-body";
 import { Code } from "@repo/be-core";
@@ -22,8 +22,8 @@ import { RestResponse } from "./dto/common/rest-response";
 export class CommentController {
   @Post("group/:groupId")
   @ApiResponseGeneric({ code: Code.CREATED, data: CommentResponseDTO })
-  async createComment(
-    @Body() body: CommentCreateBody,
+  async createUserComment(
+    @Body() body: CreateUserCommentBody,
   ): Promise<RestResponse<CommentResponseDTO>> {
     throw new Error("Not implemented");
   }
