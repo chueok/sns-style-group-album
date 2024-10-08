@@ -12,6 +12,7 @@ import {
   CommentTypeEnum,
   ContentId,
   Nullable,
+  Optional,
   UserId,
 } from "@repo/be-core";
 import { TypeormContent } from "../content/typeorm-content.entity";
@@ -31,23 +32,28 @@ export class TypeormComment {
   @Column({ nullable: false })
   text!: string;
 
-  @OneToMany(() => TypeormCommentUserTag, (tag) => tag.comment)
-  tags!: Promise<TypeormCommentUserTag[]>;
-
-  @ManyToOne(() => TypeormContent, {
-    nullable: false,
-    onDelete: "CASCADE",
-  })
-  content!: Promise<TypeormContent>;
-  @Column()
-  contentId!: ContentId;
-
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;
   @Column({ type: "datetime", nullable: true })
   updatedDateTime!: Nullable<Date>;
   @Column({ type: "datetime", nullable: true })
   deletedDateTime!: Nullable<Date>;
+
+  /**
+   * relations
+   */
+  @OneToMany(() => TypeormCommentUserTag, (tag) => tag.comment)
+  tags!: Promise<TypeormCommentUserTag[]>;
+  __tags__: Optional<TypeormCommentUserTag[]>;
+
+  @ManyToOne(() => TypeormContent, {
+    nullable: false,
+    onDelete: "CASCADE",
+  })
+  content!: Promise<TypeormContent>;
+  __content__: Optional<TypeormContent>;
+  @Column()
+  contentId!: ContentId;
 }
 
 // NOTE ChildEntity에서 정의된 모든 property 는 db상에서 nullable임

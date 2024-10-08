@@ -7,7 +7,7 @@ import {
   JoinTable,
 } from "typeorm";
 import { TypeormGroup } from "../group/typeorm-group.entity";
-import { Nullable, UserId } from "@repo/be-core";
+import { Nullable, Optional, UserId } from "@repo/be-core";
 import { TableAlias } from "../table-alias";
 import { TypeormOauth } from "../oauth/typeorm-oauth.entity";
 import { TypeormUserGroupProfile } from "../user-group-profile/typeorm-user-group-profile.entity";
@@ -26,25 +26,6 @@ export class TypeormUser {
   @Column({ type: "boolean", nullable: false })
   hasProfileImage!: boolean;
 
-  @OneToMany(() => TypeormOauth, (oauth) => oauth.user)
-  oauths!: Promise<TypeormOauth[]>;
-
-  // NOTE nullable: false를 하더라도 Join Table에서 관리 되므로 효과 없음.
-  @ManyToMany(() => TypeormGroup, (group) => group.members)
-  groups!: Promise<TypeormGroup[]>;
-
-  @OneToMany(() => TypeormGroup, (group) => group.owner)
-  ownGroups!: Promise<TypeormGroup[]>;
-
-  @OneToMany(() => TypeormUserGroupProfile, (profile) => profile.user)
-  userGroupProfiles!: Promise<TypeormUserGroupProfile[]>;
-
-  @ManyToMany(() => TypeormGroup, (group) => group.invitedUsers, {
-    cascade: false,
-  })
-  @JoinTable({ name: "GroupInvitedUsersRelation" })
-  invitedGroups!: Promise<TypeormGroup[]>;
-
   @Column({ type: "datetime", nullable: false })
   createdDateTime!: Date;
 
@@ -53,4 +34,31 @@ export class TypeormUser {
 
   @Column({ type: "datetime", nullable: true })
   deletedDateTime!: Nullable<Date>;
+
+  /**
+   * relations
+   */
+  @OneToMany(() => TypeormOauth, (oauth) => oauth.user)
+  oauths!: Promise<TypeormOauth[]>;
+  __oauths__: Optional<TypeormOauth[]>;
+
+  // NOTE nullable: false를 하더라도 Join Table에서 관리 되므로 효과 없음.
+  @ManyToMany(() => TypeormGroup, (group) => group.members)
+  groups!: Promise<TypeormGroup[]>;
+  __groups__: Optional<TypeormGroup[]>;
+
+  @OneToMany(() => TypeormGroup, (group) => group.owner)
+  ownGroups!: Promise<TypeormGroup[]>;
+  __ownGroups__: Optional<TypeormGroup[]>;
+
+  @OneToMany(() => TypeormUserGroupProfile, (profile) => profile.user)
+  userGroupProfiles!: Promise<TypeormUserGroupProfile[]>;
+  __userGroupProfiles__: Optional<TypeormUserGroupProfile[]>;
+
+  @ManyToMany(() => TypeormGroup, (group) => group.invitedUsers, {
+    cascade: false,
+  })
+  @JoinTable({ name: "GroupInvitedUsersRelation" })
+  invitedGroups!: Promise<TypeormGroup[]>;
+  __invitedGroups__: Optional<TypeormGroup[]>;
 }

@@ -15,6 +15,7 @@ import {
   ContentTypeEnum,
   GroupId,
   Nullable,
+  Optional,
   UserId,
 } from "@repo/be-core";
 import { TypeormComment } from "../comment/typeorm-comment.entity";
@@ -29,11 +30,28 @@ export class TypeormContent {
   @PrimaryColumn({ type: "text" })
   id!: ContentId;
 
+  @Column({ type: "varchar", nullable: false })
+  contentType!: ContentTypeEnum;
+
+  @Column({ type: "text", nullable: true })
+  thumbnailRelativePath!: Nullable<string>;
+
+  @Column({ type: "datetime", nullable: false })
+  createdDateTime!: Date;
+  @Column({ type: "datetime", nullable: true })
+  updatedDateTime!: Nullable<Date>;
+  @Column({ type: "datetime", nullable: true })
+  deletedDateTime!: Nullable<Date>;
+
+  /**
+   * relations
+   */
   @ManyToOne(() => TypeormGroup, {
     nullable: false,
     onDelete: "CASCADE",
   })
   group!: Promise<TypeormGroup>;
+  __group__: Optional<TypeormGroup>;
   @Column()
   groupId!: GroupId;
 
@@ -41,11 +59,9 @@ export class TypeormContent {
     nullable: false,
   })
   owner!: Promise<TypeormUser>;
+  __owner__: Optional<TypeormUser>;
   @Column()
   ownerId!: UserId;
-
-  @Column({ type: "varchar", nullable: false })
-  contentType!: ContentTypeEnum;
 
   @ManyToMany(() => TypeormContent)
   @JoinTable({
@@ -54,22 +70,15 @@ export class TypeormContent {
     inverseJoinColumn: { name: "referencedId" },
   })
   referred!: Promise<TypeormContent[]>;
-
-  @Column({ type: "text", nullable: true })
-  thumbnailRelativePath!: Nullable<string>;
+  __referred__: Optional<TypeormContent[]>;
 
   @OneToMany(() => TypeormComment, (comment) => comment.content)
   comments!: Promise<TypeormComment[]>;
+  __comments__: Optional<TypeormComment[]>;
 
   @OneToMany(() => TypeormLike, (like) => like.content)
   likes!: Promise<TypeormLike[]>;
-
-  @Column({ type: "datetime", nullable: false })
-  createdDateTime!: Date;
-  @Column({ type: "datetime", nullable: true })
-  updatedDateTime!: Nullable<Date>;
-  @Column({ type: "datetime", nullable: true })
-  deletedDateTime!: Nullable<Date>;
+  __likes__: Optional<TypeormLike[]>;
 }
 
 @ChildEntity()
