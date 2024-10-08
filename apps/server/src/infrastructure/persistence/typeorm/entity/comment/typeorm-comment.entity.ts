@@ -7,14 +7,7 @@ import {
   ChildEntity,
   OneToMany,
 } from "typeorm";
-import {
-  CommentId,
-  CommentTypeEnum,
-  ContentId,
-  Nullable,
-  Optional,
-  UserId,
-} from "@repo/be-core";
+import { CommentId, CommentTypeEnum, Nullable, Optional } from "@repo/be-core";
 import { TypeormContent } from "../content/typeorm-content.entity";
 import { TypeormUser } from "../user/typeorm-user.entity";
 import { TableAlias } from "../table-alias";
@@ -53,7 +46,7 @@ export class TypeormComment {
   content!: Promise<TypeormContent>;
   __content__: Optional<TypeormContent>;
   @Column()
-  contentId!: ContentId;
+  contentId!: TypeormContent["id"];
 }
 
 // NOTE ChildEntity에서 정의된 모든 property 는 db상에서 nullable임
@@ -64,7 +57,7 @@ export class TypeormUserComment extends TypeormComment {
   @ManyToOne(() => TypeormUser)
   owner!: Promise<TypeormUser>;
   @Column()
-  ownerId!: UserId;
+  ownerId!: TypeormUser["id"];
 }
 
 @ChildEntity()

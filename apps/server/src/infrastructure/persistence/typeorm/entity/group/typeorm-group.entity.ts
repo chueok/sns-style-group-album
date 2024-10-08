@@ -7,7 +7,7 @@ import {
   JoinTable,
   OneToMany,
 } from "typeorm";
-import { GroupId, Nullable, Optional, UserId } from "@repo/be-core";
+import { GroupId, Nullable, Optional } from "@repo/be-core";
 import { TypeormUser } from "../user/typeorm-user.entity";
 import { TableAlias } from "../table-alias";
 import { TypeormUserGroupProfile } from "../user-group-profile/typeorm-user-group-profile.entity";
@@ -47,7 +47,7 @@ export class TypeormGroup {
   owner!: Promise<TypeormUser>;
   __owner__: Optional<TypeormUser>;
   @Column()
-  ownerId!: UserId;
+  ownerId!: TypeormUser["id"];
 
   @ManyToMany(() => TypeormUser, (user) => user.invitedGroups)
   invitedUsers!: Promise<TypeormUser[]>;

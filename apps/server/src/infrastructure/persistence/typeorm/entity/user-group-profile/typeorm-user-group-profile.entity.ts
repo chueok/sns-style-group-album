@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, PrimaryColumn } from "typeorm";
 import { TableAlias } from "../table-alias";
 import { TypeormUser } from "../user/typeorm-user.entity";
-import { GroupId, Optional, UserId } from "@repo/be-core";
+import { Optional } from "@repo/be-core";
 import { TypeormGroup } from "../group/typeorm-group.entity";
 
 @Entity(TableAlias.USER_GROUP_PROFILE)
@@ -21,11 +21,11 @@ export class TypeormUserGroupProfile {
   user!: Promise<TypeormUser>;
   __user__: Optional<TypeormUser>;
   @PrimaryColumn({ type: "text" })
-  userId!: UserId;
+  userId!: TypeormUser["id"];
 
   @ManyToOne(() => TypeormGroup, { onDelete: "CASCADE" })
   group!: Promise<TypeormGroup>;
   __group__: Optional<TypeormGroup>;
   @PrimaryColumn({ type: "text" })
-  groupId!: GroupId;
+  groupId!: TypeormGroup["id"];
 }

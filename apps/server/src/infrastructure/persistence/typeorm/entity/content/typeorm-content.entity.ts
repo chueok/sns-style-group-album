@@ -13,10 +13,8 @@ import {
   BucketStatusEnum,
   ContentId,
   ContentTypeEnum,
-  GroupId,
   Nullable,
   Optional,
-  UserId,
 } from "@repo/be-core";
 import { TypeormComment } from "../comment/typeorm-comment.entity";
 import { TypeormGroup } from "../group/typeorm-group.entity";
@@ -53,7 +51,7 @@ export class TypeormContent {
   group!: Promise<TypeormGroup>;
   __group__: Optional<TypeormGroup>;
   @Column()
-  groupId!: GroupId;
+  groupId!: TypeormGroup["id"];
 
   @ManyToOne(() => TypeormUser, {
     nullable: false,
@@ -61,7 +59,7 @@ export class TypeormContent {
   owner!: Promise<TypeormUser>;
   __owner__: Optional<TypeormUser>;
   @Column()
-  ownerId!: UserId;
+  ownerId!: TypeormUser["id"];
 
   @ManyToMany(() => TypeormContent)
   @JoinTable({

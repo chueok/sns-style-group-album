@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, PrimaryColumn } from "typeorm";
 import { TableAlias } from "../table-alias";
 import { TypeormUser } from "../user/typeorm-user.entity";
-import { Nullable, Optional, UserId } from "@repo/be-core";
+import { Nullable, Optional } from "@repo/be-core";
 
 @Entity(TableAlias.OAUTH)
 export class TypeormOauth {
@@ -24,8 +24,8 @@ export class TypeormOauth {
    * relations
    */
   @ManyToOne(() => TypeormUser, (user) => user.oauths)
-  user!: Promise<TypeormUser>;
-  __user__: Optional<TypeormUser>;
+  user!: Promise<Nullable<TypeormUser>>;
+  __user__: Optional<Nullable<TypeormUser>>;
   @Column({ type: "text", nullable: true })
-  userId!: Nullable<UserId>;
+  userId!: Nullable<TypeormUser["id"]>;
 }
