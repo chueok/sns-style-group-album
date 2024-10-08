@@ -69,7 +69,7 @@ export class TypeormCommentRepository implements ICommentRepository {
       return null;
     }
 
-    const tags: UserId[] = (await ormComment.tags).map((user) => user.id);
+    const tags = await ormComment.tags;
     const { results, errors } = await CommentMapper.toDomainEntity({
       elements: [{ comment: ormComment, tags }],
     });
@@ -98,7 +98,7 @@ export class TypeormCommentRepository implements ICommentRepository {
       ormCommentList.map(async (ormComment) => {
         return {
           comment: ormComment,
-          tags: (await ormComment.tags).map((user) => user.id),
+          tags: await ormComment.tags,
         };
       }),
     );
@@ -145,7 +145,7 @@ export class TypeormCommentRepository implements ICommentRepository {
       ormCommentList.map(async (ormComment) => {
         return {
           comment: ormComment,
-          tags: (await ormComment.tags).map((user) => user.id),
+          tags: await ormComment.tags,
         };
       }),
     );

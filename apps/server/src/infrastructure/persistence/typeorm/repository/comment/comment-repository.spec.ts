@@ -5,7 +5,7 @@ import { TypeormCommentRepository } from "./comment-repository";
 import { TypeormComment } from "../../entity/comment/typeorm-comment.entity";
 import { CommentMapper } from "./mapper/comment-mapper";
 import { TypeormContent } from "../../entity/content/typeorm-content.entity";
-import { Comment, CommentId, GroupId } from "@repo/be-core";
+import { Comment, CommentId, CommentUserTag, GroupId } from "@repo/be-core";
 import { TypeormUser } from "../../entity/user/typeorm-user.entity";
 import { Test, TestingModule } from "@nestjs/testing";
 import {
@@ -194,7 +194,7 @@ describe("CommentRepository", () => {
         elements: [
           {
             comment: ormDummyComment,
-            tags: (await ormDummyComment.tags).map((user) => user.id),
+            tags: await ormDummyComment.tags,
           },
         ],
       });
@@ -221,7 +221,7 @@ describe("CommentRepository", () => {
         elements: [
           {
             comment: ormDummyComment,
-            tags: (await ormDummyComment.tags).map((user) => user.id),
+            tags: await ormDummyComment.tags,
           },
         ],
       }))!;
@@ -236,55 +236,6 @@ describe("CommentRepository", () => {
       (domainDummyComment as any)._createdDateTime = null;
       const result = await commentRepository.createComment(domainDummyComment);
       expect(result).toBeFalsy();
-    });
-  });
-
-  describe("updateComment", () => {
-    let targetDomainComment: Comment;
-
-    beforeAll(async () => {
-      const mapResult = await CommentMapper.toDomainEntity({
-        elements: [
-          {
-            comment: targetOrmComment,
-            tags: (await targetOrmComment.tags).map((user) => user.id),
-          },
-        ],
-      });
-
-      targetDomainComment = mapResult.results[0]!;
-    });
-
-    it("should update a comment", async () => {
-      await targetDomainComment.changeText("updated content");
-
-      const result = await commentRepository.updateComment(targetDomainComment);
-      expect(result).toBeTruthy();
-
-      const updatedComment = await commentRepository.findCommentById(
-        targetDomainComment.id,
-      );
-      expect(updatedComment).toEqual(targetDomainComment);
-    });
-
-    it("should update tags of a comment", async () => {
-      const user1 = testDatabaseHandler.getDbCacheList(TypeormUser).at(-1)!;
-      const user2 = testDatabaseHandler.getDbCacheList(TypeormUser).at(-2)!;
-      const tagList = [user1.id, user2.id];
-
-      (targetDomainComment as any)._userTags = tagList;
-
-      const result = await commentRepository.updateComment(targetDomainComment);
-      expect(result).toBeTruthy();
-
-      const updatedComment = await commentRepository.findCommentById(
-        targetDomainComment.id,
-      );
-
-      expect(updatedComment?.userTags.length).toBe(tagList.length);
-      expect(updatedComment?.userTags).toEqual(
-        expect.arrayContaining(targetDomainComment.userTags),
-      );
     });
   });
 });

@@ -1,21 +1,14 @@
-import { IsEnum, IsString, IsUUID } from "class-validator";
+import { IsEnum, IsInstance, IsString, IsUUID } from "class-validator";
 import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
 import { CommentTypeEnum } from "../enum/comment-type-enum";
 import { CreateCommentEntityPayload } from "./type/create-comment-entity-payload";
 import { v4 } from "uuid";
 import { CommentId } from "./type/comment-id";
-import { UserId } from "../../user/entity/type/user-id";
 import { ContentId } from "../../content/entity/type/content-id";
+import { CommentUserTag } from "./comment-user-tag";
 
 export abstract class Comment extends EntityWithCUDTime<CommentId> {
-  public static readonly TAG_PREFIX = "@#{" as const;
-  public static readonly TAG_SUFFIX = "}" as const;
   // TODO : isUserId 같은 util 함수를 만들어, 검사하는 로직 만들 것
-  public static readonly tagRegex = new RegExp(
-    `${this.TAG_PREFIX}([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})${this.TAG_SUFFIX}`,
-    "g",
-  );
-
   @IsUUID()
   protected override _id!: CommentId;
 
@@ -31,9 +24,9 @@ export abstract class Comment extends EntityWithCUDTime<CommentId> {
     return this._text;
   }
 
-  @IsUUID("all", { each: true })
-  protected _userTags: UserId[];
-  get userTags(): UserId[] {
+  @IsInstance(CommentUserTag, { each: true })
+  protected _userTags: CommentUserTag[];
+  get userTags(): CommentUserTag[] {
     return this._userTags;
   }
 
@@ -43,33 +36,24 @@ export abstract class Comment extends EntityWithCUDTime<CommentId> {
     return this._contentId;
   }
 
-  public async changeText(text: string) {
+  public async changeComment(
+    text: string,
+    userTags: CommentUserTag[],
+  ): Promise<void> {
     this._text = text;
-    this._userTags = this.extractUserTags(this.text);
+    this._userTags = userTags;
     this._updatedDateTime = new Date();
+
     await this.validate();
-  }
-
-  private extractUserTags(text: string): UserId[] {
-    const extractedSet: Set<UserId> = new Set();
-
-    let match: RegExpExecArray | null;
-    while ((match = Comment.tagRegex.exec(text)) !== null) {
-      if (match[1]) {
-        extractedSet.add(match[1] as UserId);
-      }
-    }
-
-    return Array.from(extractedSet);
   }
 
   constructor(payload: CreateCommentEntityPayload<"base", "all">) {
     super();
     this._text = payload.text;
     this._contentId = payload.contentId;
+    this._userTags = payload.userTags;
     if ("id" in payload) {
       this._id = payload.id;
-      this._userTags = payload.userTags;
       this._createdDateTime = payload.createdDateTime;
       this._updatedDateTime = payload.updatedDateTime || null;
       this._deletedDateTime = payload.deletedDateTime || null;
@@ -78,7 +62,6 @@ export abstract class Comment extends EntityWithCUDTime<CommentId> {
       this._createdDateTime = new Date();
       this._updatedDateTime = null;
       this._deletedDateTime = null;
-      this._userTags = this.extractUserTags(this.text);
     }
   }
 }

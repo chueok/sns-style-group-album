@@ -1,12 +1,11 @@
 import {
   Column,
   Entity,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
   PrimaryColumn,
   TableInheritance,
   ChildEntity,
+  OneToMany,
 } from "typeorm";
 import {
   CommentId,
@@ -18,6 +17,7 @@ import {
 import { TypeormContent } from "../content/typeorm-content.entity";
 import { TypeormUser } from "../user/typeorm-user.entity";
 import { TableAlias } from "../table-alias";
+import { TypeormCommentUserTag } from "../commet-user-tag/typeorm-comment-user-tag.entity";
 
 @Entity(TableAlias.COMMENT)
 @TableInheritance({ column: { type: "varchar", name: "type" } })
@@ -31,9 +31,8 @@ export class TypeormComment {
   @Column({ nullable: false })
   text!: string;
 
-  @ManyToMany(() => TypeormUser)
-  @JoinTable({ name: "CommentTagsRelation" })
-  tags!: Promise<TypeormUser[]>;
+  @OneToMany(() => TypeormCommentUserTag, (tag) => tag.comment)
+  tags!: Promise<TypeormCommentUserTag[]>;
 
   @ManyToOne(() => TypeormContent, {
     nullable: false,

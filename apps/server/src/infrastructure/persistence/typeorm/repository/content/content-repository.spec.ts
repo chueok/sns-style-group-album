@@ -71,6 +71,7 @@ describe("ContentRepository", () => {
     beforeAll(async () => {
       targetOrmContent = testDatabaseHandler
         .getDbCacheList(TypeormContent)
+        .filter((content) => !content.deletedDateTime)
         .at(-1)!;
     });
 

@@ -6,17 +6,17 @@ import {
   SystemComment,
   Exception,
   Code,
-  UserId,
+  CommentUserTag,
 } from "@repo/be-core";
 import {
   TypeormComment,
   TypeormSystemComment,
   TypeormUserComment,
 } from "../../../entity/comment/typeorm-comment.entity";
-import { TypeormUser } from "../../../entity/user/typeorm-user.entity";
+import { TypeormCommentUserTag } from "../../../entity/commet-user-tag/typeorm-comment-user-tag.entity";
 
 export type CommentMapperToDomainPayloadType = {
-  elements: { comment: TypeormComment; tags: UserId[] }[];
+  elements: { comment: TypeormComment; tags: TypeormCommentUserTag[] }[];
 };
 
 type ToDomainReturnType = {
@@ -85,8 +85,16 @@ export class CommentMapper {
 
   private static async mapToDomainCommentForUtil({
     comment,
-    tags,
+    tags: typeormTags,
   }: CommentMapperToDomainPayloadType["elements"][0]): Promise<Comment> {
+    const userTagPromiseList = typeormTags.map((typeormTag) => {
+      return CommentUserTag.new({
+        userId: typeormTag.userId,
+        at: typeormTag.at.split(",").map((at) => parseInt(at)),
+      });
+    });
+    const userTags = await Promise.all(userTagPromiseList);
+
     if (comment instanceof TypeormUserComment) {
       const ownerId = comment.ownerId;
 
@@ -95,7 +103,7 @@ export class CommentMapper {
         contentId: comment.contentId,
 
         id: comment.id,
-        userTags: tags,
+        userTags,
         createdDateTime: comment.createdDateTime,
         updatedDateTime: comment.updatedDateTime,
         deletedDateTime: comment.deletedDateTime,
@@ -110,7 +118,7 @@ export class CommentMapper {
         contentId: comment.contentId,
 
         id: comment.id,
-        userTags: tags,
+        userTags,
         createdDateTime: comment.createdDateTime,
         updatedDateTime: comment.updatedDateTime,
         deletedDateTime: comment.deletedDateTime,
@@ -141,10 +149,12 @@ export class CommentMapper {
       typeormUserComment.ownerId = comment.ownerId;
 
       typeormUserComment.tags = Promise.resolve(
-        comment.userTags.map((userId) => {
-          const user = new TypeormUser();
-          user.id = userId;
-          return user;
+        comment.userTags.map((tag) => {
+          const typeormTag = new TypeormCommentUserTag();
+          typeormTag.commentId = comment.id;
+          typeormTag.userId = tag.userId;
+          typeormTag.at = tag.at.join(",");
+          return typeormTag;
         }),
       );
 
@@ -157,10 +167,12 @@ export class CommentMapper {
       typeormSystemComment.contentId = comment.contentId;
 
       typeormSystemComment.tags = Promise.resolve(
-        comment.userTags.map((userId) => {
-          const user = new TypeormUser();
-          user.id = userId;
-          return user;
+        comment.userTags.map((tag) => {
+          const typeormTag = new TypeormCommentUserTag();
+          typeormTag.commentId = comment.id;
+          typeormTag.userId = tag.userId;
+          typeormTag.at = tag.at.join(",");
+          return typeormTag;
         }),
       );
 

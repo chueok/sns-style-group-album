@@ -60,7 +60,7 @@ describe("CommentMapper", () => {
         ormCommentList.map(async (comment) => {
           return {
             comment: comment,
-            tags: (await comment.tags).map((user) => user.id),
+            tags: await comment.tags,
           };
         }),
       );
@@ -87,7 +87,7 @@ describe("CommentMapper", () => {
         ormCommentList.map(async (comment) => {
           return {
             comment: comment,
-            tags: (await comment.tags).map((user) => user.id),
+            tags: await comment.tags,
           };
         }),
       );

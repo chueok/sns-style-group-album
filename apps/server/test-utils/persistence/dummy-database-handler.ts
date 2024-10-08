@@ -30,6 +30,7 @@ import { add } from "date-fns";
 import { copyFile } from "fs/promises";
 import { TypeormLike } from "../../src/infrastructure/persistence/typeorm/entity/like/typeorm-like.entity";
 import { TypeormUserGroupProfile } from "../../src/infrastructure/persistence/typeorm/entity/user-group-profile/typeorm-user-group-profile.entity";
+import { TypeormCommentUserTag } from "../../src/infrastructure/persistence/typeorm/entity/commet-user-tag/typeorm-comment-user-tag.entity";
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 
@@ -41,6 +42,7 @@ export class DummyDatabaseHandler {
     TypeormUserGroupProfile,
     TypeormContent,
     TypeormComment,
+    TypeormCommentUserTag,
     TypeormLike,
   ] as const;
 
@@ -421,22 +423,28 @@ export class DummyDatabaseHandler {
     instance.updatedDateTime = getRandomElement([null, faker.date.past()]);
     instance.deletedDateTime = getRandomElement([null, faker.date.past()]);
 
-    let itterNum: number;
-    let tags: Set<TypeormUser>;
+    // let itterNum: number;
+    // let tags: Set<TypeormUser>;
     let randomUser: TypeormUser;
     switch (commentType) {
       case CommentTypeEnum.USER_COMMENT:
         randomUser = getRandomElement(userList);
         (instance as TypeormUserComment).owner = Promise.resolve(randomUser);
         (instance as TypeormUserComment).ownerId = randomUser.id;
-        itterNum = Math.random() * userList.length;
-        tags = new Set();
-        for (let i = 0; i < itterNum; i++) {
-          tags.add(getRandomElement(userList));
-        }
-        (instance as TypeormUserComment).tags = Promise.resolve(
-          Array.from(tags),
-        );
+        // itterNum = Math.random() * userList.length;
+        // tags = new Set();
+        // for (let i = 0; i < itterNum; i++) {
+        //   const randomUser = getRandomElement(userList);
+        //   const tag = new TypeormCommentUserTag()
+        //   tag.commentId = instance.id;
+        //   tag.userId = randomUser.id;
+        //   const [numAt] = getRandomIntegers(0,5,1)
+        //   const atList = getRandomIntegers(0, instance.text.length-1, numAt!)
+        //   tag.at = atList.join(',')
+        // }
+        // (instance as TypeormUserComment).tags = Promise.resolve(
+        //   Array.from(tags),
+        // );
         break;
       case CommentTypeEnum.SYSTEM_COMMENT:
         (instance as TypeormSystemComment).subText = getRandomElement([
@@ -449,12 +457,41 @@ export class DummyDatabaseHandler {
     this.getTemporaryEntityList(TypeormComment).push(instance);
     return instance;
   }
+  // TODO : CommentUserTag dummy 생성 추후 필요 시 구현 할 것
+  // makeDummyCommentUserTag(): TypeormCommentUserTag {
+  //   const commentList = this.getDbCacheList(TypeormComment).concat(
+  //     this.getTemporaryEntityList(TypeormComment),
+  //   );
+  //   const userList = this.getDbCacheList(TypeormUser).concat(
+  //     this.getTemporaryEntityList(TypeormUser),
+  //   );
+  //   const tag = new TypeormCommentUserTag();
+  //   tag.commentId = getRandomElement(commentList).id;
+  //   tag.userId = getRandomElement(userList).id;
+
+  //   const itterNum = Math.random() * userList.length;
+
+  //   const [numAt] = getRandomIntegers(0,5,1)
+  //   const atList = getRandomIntegers(0, instance.text.length-1, numAt!)
+  //   tag.at = atList.join(',')
+
+  //   tag.at = "";
+  //   return tag;
+  // }
 }
 
 function getRandomElement<T>(array: T[]): T {
   CustomAssert.isTrue(array.length > 0, new Error("Array is empty"));
   const randomIndex = Math.floor(Math.random() * array.length);
   return array.at(randomIndex) as T;
+}
+
+function getRandomIntegers(min: number, max: number, cnt: number): number[] {
+  const list = new Set<number>();
+  for (let i = 0; i < cnt; i++) {
+    list.add(Math.floor(Math.random() * (max - min + 1)) + min);
+  }
+  return Array.from(list);
 }
 
 // function getRandomElementList<T>(array: T[], maxNum?: number): T[] {

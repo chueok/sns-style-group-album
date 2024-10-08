@@ -106,7 +106,7 @@ export class TypeormContentRepository implements IContentRepository {
       commentList.map(async (comment) => {
         return {
           comment,
-          tags: (await comment.tags).map((user) => user.id),
+          tags: await comment.tags,
         };
       }),
     );

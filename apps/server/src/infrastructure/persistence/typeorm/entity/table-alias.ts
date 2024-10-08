@@ -7,4 +7,5 @@ export enum TableAlias {
   OAUTH = "Oauth",
   USER_GROUP_PROFILE = "UserGroupProfile",
   TEMPORARY_CONTENT = "TemporaryContent",
+  COMMENT_USER_TAG = "CommentUserTag",
 }
