@@ -8,13 +8,11 @@ import {
 import { VerifiedUserPayload } from "./type/verified-user-payload";
 import {
   Code,
-  ContentId,
   CreateUserEntityPayload,
   Exception,
   IUserRepository,
   Nullable,
   User,
-  UserId,
 } from "@repo/be-core";
 import { JwtService } from "@nestjs/jwt";
 import { DataSource, Repository } from "typeorm";
@@ -137,10 +135,13 @@ export class AuthService implements IAuthService {
     provider: string,
     providerId: string,
   ): Promise<Nullable<VerifiedUserPayload>> {
-    const user = await this.userRepository.findUserByOauth({
-      provider,
-      providerId,
-    });
+    const user = await this.typeormUserRepository
+      .createQueryBuilder("user")
+      .andWhere("user.deletedDateTime is null")
+      .innerJoinAndSelect("user.oauths", "oauth")
+      .where("oauth.provider = :provider", { provider })
+      .where("oauth.providerId = :providerId", { providerId })
+      .getOne();
     if (!user) {
       return null;
     }
@@ -151,7 +152,12 @@ export class AuthService implements IAuthService {
   }
 
   async getUser(payload: { id: string }): Promise<VerifiedUserPayload> {
-    const user = await this.userRepository.findUserById(payload.id as UserId);
+    const user = await this.typeormUserRepository
+      .createQueryBuilder("user")
+      .where("user.id = :id", { id: payload.id })
+      .andWhere("user.deletedDateTime is null")
+      .getOne();
+
     if (!user) {
       throw Exception.new({ code: Code.UNAUTHORIZED_ERROR });
     }

@@ -57,6 +57,16 @@ export default function Upload() {
 
     const body: { data: { presignedUrlList: string[] } } = await fetch(
       `${API_URL}/contents/group/${groupId}/medias`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          mode: "no-cors",
+        },
+        body: JSON.stringify({
+          numContent: imageList.length,
+        }),
+      },
     ).then((res) => {
       if (res.ok) return res.json();
       throw res;

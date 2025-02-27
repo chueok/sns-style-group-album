@@ -74,6 +74,7 @@ export class NestHttpExceptionFilter implements ExceptionFilter {
       switch (error.code) {
         case Code.UNAUTHORIZED_ERROR.code:
         case Code.BAD_REQUEST_ERROR.code:
+        case Code.ACCESS_DENIED_ERROR.code:
           errorResponse = RestResponse.error(
             error.code,
             error.message,

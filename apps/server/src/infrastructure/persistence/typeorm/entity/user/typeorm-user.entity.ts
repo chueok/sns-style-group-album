@@ -62,3 +62,51 @@ export class TypeormUser {
   invitedGroups!: Promise<TypeormGroup[]>;
   __invitedGroups__: Optional<TypeormGroup[]>;
 }
+
+type TypeormUserWithOauths = TypeormUser & {
+  __oauths__: NonNullable<TypeormUser["__oauths__"]>;
+};
+
+type TypeormUserWithGroups = TypeormUser & {
+  __groups__: NonNullable<TypeormUser["__groups__"]>;
+};
+
+type TypeormUserWithOwnGroups = TypeormUser & {
+  __ownGroups__: NonNullable<TypeormUser["__ownGroups__"]>;
+};
+
+type TypeormUserWithUserGroupProfiles = TypeormUser & {
+  __userGroupProfiles__: NonNullable<TypeormUser["__userGroupProfiles__"]>;
+};
+
+type TypeormUserWithInvitedGroups = TypeormUser & {
+  __invitedGroups__: NonNullable<TypeormUser["__invitedGroups__"]>;
+};
+
+export type TypeormUserWith = {
+  oauths: TypeormUserWithOauths;
+  groups: TypeormUserWithGroups;
+  ownGroups: TypeormUserWithOwnGroups;
+  userGroupProfiles: TypeormUserWithUserGroupProfiles;
+  invitedGroups: TypeormUserWithInvitedGroups;
+};
+
+export function isTypeormUserWith<T extends keyof TypeormUserWith>(
+  user: TypeormUser,
+  key: T,
+): user is TypeormUserWith[T] {
+  switch (key) {
+    case "oauths":
+      return !!user.__oauths__;
+    case "groups":
+      return !!user.__groups__;
+    case "ownGroups":
+      return !!user.__ownGroups__;
+    case "userGroupProfiles":
+      return !!user.__userGroupProfiles__;
+    case "invitedGroups":
+      return !!user.__invitedGroups__;
+    default:
+      return false;
+  }
+}

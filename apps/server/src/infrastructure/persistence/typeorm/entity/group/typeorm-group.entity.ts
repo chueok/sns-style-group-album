@@ -53,3 +53,44 @@ export class TypeormGroup {
   invitedUsers!: Promise<TypeormUser[]>;
   __invitedUsers__: Optional<TypeormUser[]>;
 }
+
+type TypeormGroupWithMembers = TypeormGroup & {
+  __members__: NonNullable<TypeormGroup["__members__"]>;
+};
+
+type TypeormGroupWithMemberProfiles = TypeormGroup & {
+  __memberProfiles__: NonNullable<TypeormGroup["__memberProfiles__"]>;
+};
+
+type TypeormGroupWithOwner = TypeormGroup & {
+  __owner__: NonNullable<TypeormGroup["__owner__"]>;
+};
+
+type TypeormGroupWithInvitedUsers = TypeormGroup & {
+  __invitedUsers__: NonNullable<TypeormGroup["__invitedUsers__"]>;
+};
+
+export type TypeormGroupWith = {
+  members: TypeormGroupWithMembers;
+  memberProfiles: TypeormGroupWithMemberProfiles;
+  owner: TypeormGroupWithOwner;
+  invitedUsers: TypeormGroupWithInvitedUsers;
+};
+
+export function isTypeormGroupWith<T extends keyof TypeormGroupWith>(
+  group: TypeormGroup,
+  key: T,
+): group is TypeormGroupWith[T] {
+  switch (key) {
+    case "members":
+      return !!group.__members__;
+    case "memberProfiles":
+      return !!group.__memberProfiles__;
+    case "owner":
+      return !!group.__owner__;
+    case "invitedUsers":
+      return !!group.__invitedUsers__;
+    default:
+      return false;
+  }
+}
