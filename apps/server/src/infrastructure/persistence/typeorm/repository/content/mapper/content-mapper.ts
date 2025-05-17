@@ -14,7 +14,7 @@ import {
   SystemContent,
   UserId,
   VideoContent,
-} from "@repo/be-core";
+} from '@repo/be-core';
 import {
   TypeormBucket,
   TypeormContent,
@@ -22,12 +22,12 @@ import {
   TypeormPost,
   TypeormSchedule,
   TypeormSystemContent,
-} from "../../../entity/content/typeorm-content.entity";
-import { TypeormLike } from "../../../entity/like/typeorm-like.entity";
+} from '../../../entity/content/typeorm-content.entity';
+import { TypeormLike } from '../../../entity/like/typeorm-like.entity';
 import {
   CommentMapper,
   CommentMapperToDomainPayloadType,
-} from "../../comment/mapper/comment-mapper";
+} from '../../comment/mapper/comment-mapper';
 
 type ToDomainPayloadType = {
   elements: {
@@ -36,7 +36,7 @@ type ToDomainPayloadType = {
     likeList: TypeormLike[];
     numComments: number;
     referred: TypeormContent[];
-    commentElement?: CommentMapperToDomainPayloadType["elements"][0];
+    commentElement?: CommentMapperToDomainPayloadType['elements'][0];
   }[];
 };
 
@@ -59,7 +59,7 @@ type ToOrmReturnType = {
 
 export class ContentMapper {
   public static async toDomainEntity(
-    payload: ToDomainPayloadType,
+    payload: ToDomainPayloadType
   ): Promise<ToDomainReturnType> {
     const { elements } = payload;
 
@@ -73,7 +73,7 @@ export class ContentMapper {
     const promiseAllSettledResult = await Promise.allSettled(promiseList);
 
     promiseAllSettledResult.forEach((result) => {
-      if (result.status === "fulfilled") {
+      if (result.status === 'fulfilled') {
         results.push(result.value);
       } else {
         errors.push(result.reason);
@@ -86,7 +86,7 @@ export class ContentMapper {
   public static toOrmEntity(payload: ToOrmPayloadType): ToOrmReturnType {
     const { elements } = payload;
 
-    const results: ToOrmReturnType["results"] = [];
+    const results: ToOrmReturnType['results'] = [];
     const errors: Error[] = [];
 
     elements.forEach((item) => {
@@ -112,7 +112,7 @@ export class ContentMapper {
   }
 
   private static async mapToDomainContentForUtil(
-    payload: ToDomainPayloadType["elements"][0],
+    payload: ToDomainPayloadType['elements'][0]
   ): Promise<Content> {
     const {
       content,
@@ -139,7 +139,7 @@ export class ContentMapper {
           userId: item.userId,
           createdDateTime: item.createdDateTime,
         });
-      }),
+      })
     );
 
     let commentDomainEntityList: Comment[] = [];
@@ -153,7 +153,7 @@ export class ContentMapper {
     }
 
     if (content instanceof TypeormSystemContent) {
-      const contentPayload: CreateContentEntityPayload<"system", "existing"> = {
+      const contentPayload: CreateContentEntityPayload<'system', 'existing'> = {
         groupId: content.groupId,
         ownerId,
         referred: domainReferred,
@@ -175,8 +175,8 @@ export class ContentMapper {
       return SystemContent.new(contentPayload);
     } else if (content instanceof TypeormMedia) {
       const contentPayload: CreateContentEntityPayload<
-        "image" | "video",
-        "existing"
+        'image' | 'video',
+        'existing'
       > = {
         groupId: content.groupId,
         ownerId,
@@ -205,7 +205,7 @@ export class ContentMapper {
         return VideoContent.new(contentPayload);
       }
     } else if (content instanceof TypeormPost) {
-      const contentPayload: CreateContentEntityPayload<"post", "existing"> = {
+      const contentPayload: CreateContentEntityPayload<'post', 'existing'> = {
         groupId: content.groupId,
         ownerId,
         referred: domainReferred,
@@ -226,7 +226,7 @@ export class ContentMapper {
       };
       return PostContent.new(contentPayload);
     } else if (content instanceof TypeormBucket) {
-      const contentPayload: CreateContentEntityPayload<"bucket", "existing"> = {
+      const contentPayload: CreateContentEntityPayload<'bucket', 'existing'> = {
         groupId: content.groupId,
         ownerId,
         referred: domainReferred,
@@ -247,7 +247,7 @@ export class ContentMapper {
       };
       return BucketContent.new(contentPayload);
     } else if (content instanceof TypeormSchedule) {
-      const contentPayload: CreateContentEntityPayload<"schedule", "existing"> =
+      const contentPayload: CreateContentEntityPayload<'schedule', 'existing'> =
         {
           groupId: content.groupId,
           ownerId,
@@ -273,7 +273,7 @@ export class ContentMapper {
     } else {
       throw Exception.new({
         code: Code.UTIL_PROCESS_ERROR,
-        overrideMessage: "Invalid content type.",
+        overrideMessage: 'Invalid content type.',
       });
     }
   }
@@ -319,7 +319,7 @@ export class ContentMapper {
     } else {
       throw Exception.new({
         code: Code.UTIL_PROCESS_ERROR,
-        overrideMessage: "Invalid content type.",
+        overrideMessage: 'Invalid content type.',
       });
     }
     ormContent.id = payload.id;

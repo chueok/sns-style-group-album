@@ -1,20 +1,20 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import { DataSource, Repository } from "typeorm";
+import { Test, TestingModule } from '@nestjs/testing';
+import { DataSource, Repository } from 'typeorm';
 
-import { TypeormUser } from "./typeorm-user.entity";
-import { join, basename } from "path";
-import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
+import { TypeormUser } from './typeorm-user.entity';
+import { join, basename } from 'path';
+import { DummyDatabaseHandler } from '@test-utils/persistence/dummy-database-handler';
 import {
   InfrastructureModule,
   typeormSqliteOptions,
-} from "../../../../../di/infrastructure.module";
+} from '../../../../../di/infrastructure.module';
 
 const parameters = {
-  testDbPath: join("db", `${basename(__filename)}.sqlite`),
-  dummyDbPath: join("db", "dummy.sqlite"),
+  testDbPath: join('db', `${basename(__filename)}.sqlite`),
+  dummyDbPath: join('db', 'dummy.sqlite'),
 };
 
-describe("TypeormUser", () => {
+describe('TypeormUser', () => {
   let module: TestingModule;
   let dataSource: DataSource;
   let repository: Repository<TypeormUser>;
@@ -49,8 +49,8 @@ describe("TypeormUser", () => {
     await module.close();
   });
 
-  describe("save", () => {
-    it("should save normally", async () => {
+  describe('save', () => {
+    it('should save normally', async () => {
       const user = testDatabaseHandler.makeDummyUser();
       await repository.save(user);
 
@@ -59,7 +59,7 @@ describe("TypeormUser", () => {
     });
   });
 
-  describe("delete", () => {
+  describe('delete', () => {
     // delete 허용하지 않음
   });
 });

@@ -1,9 +1,9 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CommentEditBody {
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   id!: string;
 
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   text!: string;
 }

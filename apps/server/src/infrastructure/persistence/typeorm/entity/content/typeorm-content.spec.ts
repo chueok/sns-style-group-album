@@ -1,6 +1,6 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import { DataSource, Repository } from "typeorm";
-import { join, basename } from "path";
+import { Test, TestingModule } from '@nestjs/testing';
+import { DataSource, Repository } from 'typeorm';
+import { join, basename } from 'path';
 import {
   TypeormBucket,
   TypeormContent,
@@ -8,22 +8,22 @@ import {
   TypeormPost,
   TypeormSchedule,
   TypeormSystemContent,
-} from "./typeorm-content.entity";
-import { ContentTypeEnum } from "@repo/be-core";
-import { TypeormComment } from "../comment/typeorm-comment.entity";
-import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
-import { TypeormLike } from "../like/typeorm-like.entity";
+} from './typeorm-content.entity';
+import { ContentTypeEnum } from '@repo/be-core';
+import { TypeormComment } from '../comment/typeorm-comment.entity';
+import { DummyDatabaseHandler } from '@test-utils/persistence/dummy-database-handler';
+import { TypeormLike } from '../like/typeorm-like.entity';
 import {
   InfrastructureModule,
   typeormSqliteOptions,
-} from "../../../../../di/infrastructure.module";
+} from '../../../../../di/infrastructure.module';
 
 const parameters = {
-  testDbPath: join("db", `${basename(__filename)}.sqlite`),
-  dummyDbPath: join("db", "dummy.sqlite"),
+  testDbPath: join('db', `${basename(__filename)}.sqlite`),
+  dummyDbPath: join('db', 'dummy.sqlite'),
 };
 
-describe("TypeormContent", () => {
+describe('TypeormContent', () => {
   let module: TestingModule;
   let dataSource: DataSource;
   let repository: Repository<TypeormContent>;
@@ -58,8 +58,8 @@ describe("TypeormContent", () => {
     await module.close();
   });
 
-  describe("save", () => {
-    it("bucket", async () => {
+  describe('save', () => {
+    it('bucket', async () => {
       const content = await testDatabaseHandler.makeDummyContent({
         type: ContentTypeEnum.BUCKET,
       });
@@ -67,7 +67,7 @@ describe("TypeormContent", () => {
       await expectEqualContent(content, savedContent);
     });
 
-    it("image", async () => {
+    it('image', async () => {
       const content = await testDatabaseHandler.makeDummyContent({
         type: ContentTypeEnum.IMAGE,
       });
@@ -75,7 +75,7 @@ describe("TypeormContent", () => {
       await expectEqualContent(content, savedContent);
     });
 
-    it("post", async () => {
+    it('post', async () => {
       const content = await testDatabaseHandler.makeDummyContent({
         type: ContentTypeEnum.POST,
       });
@@ -83,7 +83,7 @@ describe("TypeormContent", () => {
       await expectEqualContent(content, savedContent);
     });
 
-    it("schedule", async () => {
+    it('schedule', async () => {
       const content = await testDatabaseHandler.makeDummyContent({
         type: ContentTypeEnum.SCHEDULE,
       });
@@ -91,7 +91,7 @@ describe("TypeormContent", () => {
       await expectEqualContent(content, savedContent);
     });
 
-    it("system", async () => {
+    it('system', async () => {
       const content = await testDatabaseHandler.makeDummyContent({
         type: ContentTypeEnum.SYSTEM,
       });
@@ -99,7 +99,7 @@ describe("TypeormContent", () => {
       await expectEqualContent(content, savedContent);
     });
 
-    it("video", async () => {
+    it('video', async () => {
       const content = await testDatabaseHandler.makeDummyContent({
         type: ContentTypeEnum.VIDEO,
       });
@@ -108,7 +108,7 @@ describe("TypeormContent", () => {
     });
   });
 
-  describe("delete", () => {
+  describe('delete', () => {
     let targetContent: TypeormContent;
     let targetComments: TypeormComment[];
     let targetLikes: TypeormLike[];
@@ -132,43 +132,43 @@ describe("TypeormContent", () => {
       await repository.delete(targetContent.id);
     });
 
-    it("target should be defined before delete", async () => {
+    it('target should be defined before delete', async () => {
       expect(targetContent).not.toBeNull();
       expect(targetComments).not.toBeNull();
       expect(targetLikes).not.toBeNull();
       expect(targetReferred).not.toBeNull();
     });
 
-    it("should delete comment", async () => {
+    it('should delete comment', async () => {
       await Promise.all(
         targetComments.map(async (target) => {
           const foundComment = await dataSource
             .getRepository(TypeormComment)
             .findOneBy({ id: target.id });
           expect(foundComment).toBeNull();
-        }),
+        })
       );
     });
 
-    it("should delete like", async () => {
+    it('should delete like', async () => {
       await Promise.all(
         targetLikes.map(async (target) => {
           const foundLike = await dataSource
             .getRepository(TypeormLike)
             .findOneBy({ id: target.id });
           expect(foundLike).toBeNull();
-        }),
+        })
       );
     });
 
-    it("should not delete referrenced content", async () => {
+    it('should not delete referrenced content', async () => {
       await Promise.all(
         targetReferred.map(async (target) => {
           const foundContent = await dataSource
             .getRepository(TypeormContent)
             .findOneBy({ id: target.id });
           expect(foundContent).not.toBeNull();
-        }),
+        })
       );
     });
   });
@@ -191,15 +191,15 @@ async function expectEqualContent(lhs: TypeormContent, rhs: TypeormContent) {
     case ContentTypeEnum.IMAGE:
     case ContentTypeEnum.VIDEO:
       expect((lhs as TypeormMedia).largeRelativePath).toBe(
-        (rhs as TypeormMedia).largeRelativePath,
+        (rhs as TypeormMedia).largeRelativePath
       );
       expect((lhs as TypeormMedia).originalRelativePath).toBe(
-        (rhs as TypeormMedia).originalRelativePath,
+        (rhs as TypeormMedia).originalRelativePath
       );
       expect((lhs as TypeormMedia).size).toBe((rhs as TypeormMedia).size);
       expect((lhs as TypeormMedia).ext).toBe((rhs as TypeormMedia).ext);
       expect((lhs as TypeormMedia).mimetype).toBe(
-        (rhs as TypeormMedia).mimetype,
+        (rhs as TypeormMedia).mimetype
       );
       expect((await (lhs as TypeormMedia).referred).length).toBe(0);
       break;
@@ -209,16 +209,16 @@ async function expectEqualContent(lhs: TypeormContent, rhs: TypeormContent) {
       break;
     case ContentTypeEnum.SCHEDULE:
       expect((lhs as TypeormSchedule).title).toBe(
-        (rhs as TypeormSchedule).title,
+        (rhs as TypeormSchedule).title
       );
       expect((lhs as TypeormSchedule).startDateTime).toEqual(
-        (rhs as TypeormSchedule).startDateTime,
+        (rhs as TypeormSchedule).startDateTime
       );
       expect((lhs as TypeormSchedule).endDateTime).toEqual(
-        (rhs as TypeormSchedule).endDateTime,
+        (rhs as TypeormSchedule).endDateTime
       );
       expect((lhs as TypeormSchedule).isAllDay).toEqual(
-        (rhs as TypeormSchedule).isAllDay,
+        (rhs as TypeormSchedule).isAllDay
       );
       break;
     case ContentTypeEnum.BUCKET:
@@ -227,10 +227,10 @@ async function expectEqualContent(lhs: TypeormContent, rhs: TypeormContent) {
       break;
     case ContentTypeEnum.SYSTEM:
       expect((lhs as TypeormSystemContent).text).toBe(
-        (rhs as TypeormSystemContent).text,
+        (rhs as TypeormSystemContent).text
       );
       expect((lhs as TypeormSystemContent).subText).toBe(
-        (rhs as TypeormSystemContent).subText,
+        (rhs as TypeormSystemContent).subText
       );
       break;
   }

@@ -1,5 +1,5 @@
-import { UseCaseValidatableAdapter } from "@repo/be-core";
-import { IsMimeType, IsNumber, IsString, IsUUID } from "class-validator";
+import { UseCaseValidatableAdapter } from '@repo/be-core';
+import { IsMimeType, IsNumber, IsString, IsUUID } from 'class-validator';
 
 export interface IConfirmOriginalMediaUploadedPort {
   id: string;
@@ -13,7 +13,7 @@ export class ConfirmMediaUploadedAdapter
   extends UseCaseValidatableAdapter
   implements IConfirmOriginalMediaUploadedPort
 {
-  @IsUUID("4")
+  @IsUUID('4')
   id!: string;
 
   @IsString()
@@ -29,7 +29,7 @@ export class ConfirmMediaUploadedAdapter
   mimetype!: string;
 
   public static async new(
-    payload: IConfirmOriginalMediaUploadedPort,
+    payload: IConfirmOriginalMediaUploadedPort
   ): Promise<ConfirmMediaUploadedAdapter> {
     const adapter = new ConfirmMediaUploadedAdapter();
     adapter.id = payload.id;

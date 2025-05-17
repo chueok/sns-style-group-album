@@ -8,9 +8,9 @@ import {
   Patch,
   Post,
   UseGuards,
-} from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
-import { RestResponse } from "./dto/common/rest-response";
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { RestResponse } from './dto/common/rest-response';
 import {
   AcceptInvitationAdapter,
   AcceptInvitationUsecase,
@@ -32,21 +32,21 @@ import {
   GetOwnGroupListUsecase,
   InviteUserAdapter,
   InviteUserUsecase,
-} from "@repo/be-core";
-import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
-import { GroupSimpleResponseDTO } from "./dto/group/group-simple-response";
-import { GroupResponseDTO } from "./dto/group/group-response";
-import { CreateGroupBody } from "./dto/group/create-group-body";
-import { EditGroupBody } from "./dto/group/edit-group-body";
-import { UserSimpleResponseDTO } from "./dto/user/user-simple-response-dto";
-import { DiTokens } from "../../di/di-tokens";
-import { VerifiedUser } from "../auth/decorator/verified-user";
-import { VerifiedUserPayload } from "../auth/type/verified-user-payload";
-import { HttpPermissionGuard } from "../auth/guard/permission-guard";
-import { Permission, PermissionEnum } from "../auth/decorator/permission";
+} from '@repo/be-core';
+import { ApiResponseGeneric } from './dto/decorator/api-response-generic';
+import { GroupSimpleResponseDTO } from './dto/group/group-simple-response';
+import { GroupResponseDTO } from './dto/group/group-response';
+import { CreateGroupBody } from './dto/group/create-group-body';
+import { EditGroupBody } from './dto/group/edit-group-body';
+import { UserSimpleResponseDTO } from './dto/user/user-simple-response-dto';
+import { DiTokens } from '../../di/di-tokens';
+import { VerifiedUser } from '../auth/decorator/verified-user';
+import { VerifiedUserPayload } from '../auth/type/verified-user-payload';
+import { HttpPermissionGuard } from '../auth/guard/permission-guard';
+import { Permission, PermissionEnum } from '../auth/decorator/permission';
 
-@Controller("groups")
-@ApiTags("groups")
+@Controller('groups')
+@ApiTags('groups')
 export class GroupController {
   constructor(
     @Inject(DiTokens.AcceptInvitationUsecase)
@@ -74,15 +74,15 @@ export class GroupController {
     private readonly createGroupUsecase: CreateGroupUsecase,
 
     @Inject(DiTokens.DeleteGroupUsecase)
-    private readonly deleteGroupUsecase: DeleteGroupUsecase,
+    private readonly deleteGroupUsecase: DeleteGroupUsecase
   ) {}
 
-  @Patch(":groupId/accept-invitation")
+  @Patch(':groupId/accept-invitation')
   @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
   async acceptInvitation(
     @VerifiedUser() verifiedUser: VerifiedUserPayload,
-    @Param("groupId") groupId: string,
+    @Param('groupId') groupId: string
   ): Promise<RestResponse<null>> {
     const adapter = await AcceptInvitationAdapter.new({
       groupId,
@@ -94,7 +94,7 @@ export class GroupController {
     return RestResponse.success(null);
   }
 
-  @Get("own")
+  @Get('own')
   @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
@@ -102,7 +102,7 @@ export class GroupController {
     isArray: true,
   })
   async getOwnGroupList(
-    @VerifiedUser() verifiedUser: VerifiedUserPayload,
+    @VerifiedUser() verifiedUser: VerifiedUserPayload
   ): Promise<RestResponse<GroupSimpleResponseDTO[]>> {
     const adapter = await GetOwnGroupListAdapter.new({
       userId: verifiedUser.id,
@@ -115,7 +115,7 @@ export class GroupController {
     return RestResponse.success(dtos);
   }
 
-  @Get(":groupId/members")
+  @Get(':groupId/members')
   @UseGuards(HttpPermissionGuard)
   @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({
@@ -124,7 +124,7 @@ export class GroupController {
     isArray: true,
   })
   async getGroupMembers(
-    @Param("groupId") groupId: string,
+    @Param('groupId') groupId: string
   ): Promise<RestResponse<UserSimpleResponseDTO[]>> {
     const adapter = await GetGroupMembersAdaptor.new({
       groupId: groupId,
@@ -135,12 +135,12 @@ export class GroupController {
     return RestResponse.success(userList);
   }
 
-  @Get(":groupId")
+  @Get(':groupId')
   @UseGuards(HttpPermissionGuard)
   @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: GroupResponseDTO })
   async getGroup(
-    @Param("groupId") groupId: string,
+    @Param('groupId') groupId: string
   ): Promise<RestResponse<GroupResponseDTO>> {
     const adapter = await GetGroupAdapter.new({
       groupId,
@@ -153,13 +153,13 @@ export class GroupController {
     return RestResponse.success(dto);
   }
 
-  @Patch(":groupId")
+  @Patch(':groupId')
   @UseGuards(HttpPermissionGuard)
   @Permission(PermissionEnum.GROUP_OWNER)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: GroupResponseDTO })
   async editGroup(
-    @Param("groupId") groupId: string,
-    @Body() body: EditGroupBody,
+    @Param('groupId') groupId: string,
+    @Body() body: EditGroupBody
   ): Promise<RestResponse<GroupResponseDTO>> {
     const trueCount = Object.keys(body)
       .map((key) => !!body[key])
@@ -167,7 +167,7 @@ export class GroupController {
     if (trueCount > 1) {
       throw Exception.new({
         code: Code.BAD_REQUEST_ERROR,
-        overrideMessage: "Only one field can be edited at a time",
+        overrideMessage: 'Only one field can be edited at a time',
       });
     }
 
@@ -198,12 +198,12 @@ export class GroupController {
     return RestResponse.success(dto);
   }
 
-  @Delete(":groupId")
+  @Delete(':groupId')
   @UseGuards(HttpPermissionGuard)
   @Permission(PermissionEnum.GROUP_OWNER)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
   async deleteGroup(
-    @Param("groupId") groupId: string,
+    @Param('groupId') groupId: string
   ): Promise<RestResponse<null>> {
     const adapter = await DeleteGroupAdapter.new({ groupId });
 
@@ -217,7 +217,7 @@ export class GroupController {
   @ApiResponseGeneric({ code: Code.CREATED, data: GroupResponseDTO })
   async createGroup(
     @VerifiedUser() verifiedUser: VerifiedUserPayload,
-    @Body() body: CreateGroupBody,
+    @Body() body: CreateGroupBody
   ): Promise<RestResponse<GroupResponseDTO>> {
     const adapter = await CreateGroupAdapter.new({
       ownerId: verifiedUser.id,
@@ -239,7 +239,7 @@ export class GroupController {
     isArray: true,
   })
   async getGroupList(
-    @VerifiedUser() verifiedUser: VerifiedUserPayload,
+    @VerifiedUser() verifiedUser: VerifiedUserPayload
   ): Promise<RestResponse<GroupSimpleResponseDTO[]>> {
     const adapter = await GetGroupListAdapter.new({ userId: verifiedUser.id });
 

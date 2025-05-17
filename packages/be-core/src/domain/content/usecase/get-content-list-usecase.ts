@@ -1,8 +1,8 @@
-import { IUsecase } from "../../../common/usecase/usecase.interface";
-import { ContentTypeEnum } from "../enum/content-type-enum";
-import { IContentRepository } from "../repository/content-repository.interface";
-import { ContentByContentType } from "../repository/type/content-type-mapping";
-import { IGetContentListPort } from "./port/get-content-list-port";
+import { IUsecase } from '../../../common/usecase/usecase.interface';
+import { ContentTypeEnum } from '../enum/content-type-enum';
+import { IContentRepository } from '../repository/content-repository.interface';
+import { ContentByContentType } from '../repository/type/content-type-mapping';
+import { IGetContentListPort } from './port/get-content-list-port';
 
 class GetContentListUsecaseFactory {
   public static create<T extends ContentTypeEnum>(contentTypeList: T[]) {
@@ -12,12 +12,12 @@ class GetContentListUsecaseFactory {
       constructor(readonly contentRepository: IContentRepository) {}
 
       async execute(
-        port: IGetContentListPort,
+        port: IGetContentListPort
       ): Promise<ContentByContentType<T>[]> {
         let contentList: ContentByContentType<T>[];
 
         switch (port.sortBy) {
-          case "createdDateTime":
+          case 'createdDateTime':
             contentList =
               await this.contentRepository.findContentsByGroupIdAndType({
                 groupId: port.groupId,
@@ -39,5 +39,5 @@ class GetContentListUsecaseFactory {
 }
 
 export class GetMediaContentListUsecase extends GetContentListUsecaseFactory.create(
-  [ContentTypeEnum.VIDEO, ContentTypeEnum.IMAGE],
+  [ContentTypeEnum.VIDEO, ContentTypeEnum.IMAGE]
 ) {}

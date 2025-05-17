@@ -1,9 +1,9 @@
-import { ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class GetCommentListQuery {
-  @ApiPropertyOptional({ type: "string" })
+  @ApiPropertyOptional({ type: 'string' })
   userId?: string;
 
-  @ApiPropertyOptional({ type: "string" })
+  @ApiPropertyOptional({ type: 'string' })
   contentId?: string;
 }

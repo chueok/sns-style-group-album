@@ -1,7 +1,7 @@
-import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
-import { DataSource } from "typeorm";
-import assert from "assert";
-import { TypeormUser } from "../../src/infrastructure/persistence/typeorm/entity/user/typeorm-user.entity";
+import { DummyDatabaseHandler } from '@test-utils/persistence/dummy-database-handler';
+import { DataSource } from 'typeorm';
+import assert from 'assert';
+import { TypeormUser } from '../../src/infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
 
 export class UserFixture {
   private readonly dbHandler: DummyDatabaseHandler;
@@ -19,7 +19,7 @@ export class UserFixture {
       .getDbCacheList(TypeormUser)
       .filter((user) => user.deletedDateTime === null)
       .at(0);
-    assert(!!user, "there is no valid user");
+    assert(!!user, 'there is no valid user');
     return user;
   }
 
@@ -28,7 +28,7 @@ export class UserFixture {
       .getDbCacheList(TypeormUser)
       .filter((user) => user.deletedDateTime !== null)
       .at(0);
-    assert(!!user, "there is no deleted user");
+    assert(!!user, 'there is no deleted user');
     return user;
   }
 }

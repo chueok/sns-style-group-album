@@ -5,15 +5,15 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-} from "class-validator";
-import { CreateUserEntityPayload } from "./type/create-user-entity-payload";
-import { v4 } from "uuid";
-import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
-import { Nullable } from "../../../common/type/common-types";
-import { UserId } from "./type/user-id";
-import { GroupId } from "../../group/entity/type/group-id";
-import { UserGroupProfile } from "./user-group-profile";
-import { GroupInfo } from "./group-info";
+} from 'class-validator';
+import { CreateUserEntityPayload } from './type/create-user-entity-payload';
+import { v4 } from 'uuid';
+import { EntityWithCUDTime } from '../../../common/entity/entity-with-cudtime';
+import { Nullable } from '../../../common/type/common-types';
+import { UserId } from './type/user-id';
+import { GroupId } from '../../group/entity/type/group-id';
+import { UserGroupProfile } from './user-group-profile';
+import { GroupInfo } from './group-info';
 
 export class User extends EntityWithCUDTime<UserId> {
   @IsUUID()
@@ -91,7 +91,7 @@ export class User extends EntityWithCUDTime<UserId> {
       return false;
     }
     const userGroupProfile = this._userGroupProfiles.find(
-      (profile) => profile.groupId === payload.groupId,
+      (profile) => profile.groupId === payload.groupId
     );
     // user group profile이 없는 경우 생성
     if (!userGroupProfile) {
@@ -104,7 +104,7 @@ export class User extends EntityWithCUDTime<UserId> {
           groupId: payload.groupId,
           nickname,
           hasProfileImage,
-        }),
+        })
       );
       await this.validate();
       return true;
@@ -121,11 +121,11 @@ export class User extends EntityWithCUDTime<UserId> {
     return true;
   }
 
-  constructor(payload: CreateUserEntityPayload<"all">) {
+  constructor(payload: CreateUserEntityPayload<'all'>) {
     super();
     this._username = payload.username;
     this._email = payload.email;
-    if ("id" in payload) {
+    if ('id' in payload) {
       this._id = payload.id;
 
       this._hasProfileImage = payload.hasProfileImage;
@@ -155,7 +155,7 @@ export class User extends EntityWithCUDTime<UserId> {
     }
   }
 
-  static async new(payload: CreateUserEntityPayload<"all">) {
+  static async new(payload: CreateUserEntityPayload<'all'>) {
     const entity = new User(payload);
     await entity.validate();
     return entity;

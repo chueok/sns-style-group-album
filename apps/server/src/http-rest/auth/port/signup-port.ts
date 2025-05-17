@@ -1,5 +1,5 @@
-import { UseCaseValidatableAdapter } from "@repo/be-core";
-import { IsString } from "class-validator";
+import { UseCaseValidatableAdapter } from '@repo/be-core';
+import { IsString } from 'class-validator';
 
 export interface ISignupPort {
   signupToken: string;

@@ -5,8 +5,8 @@ import {
   IGroupRepository,
   IInviteUserPort,
   UserId,
-} from "../../..";
-import { IUsecase } from "../../../common/usecase/usecase.interface";
+} from '../../..';
+import { IUsecase } from '../../../common/usecase/usecase.interface';
 
 export class InviteUserUsecase implements IUsecase<IInviteUserPort, Group> {
   constructor(private readonly groupRepository: IGroupRepository) {}
@@ -15,17 +15,17 @@ export class InviteUserUsecase implements IUsecase<IInviteUserPort, Group> {
     if (!group) {
       throw Exception.new({
         code: Code.ENTITY_NOT_FOUND_ERROR,
-        overrideMessage: "Group not found",
+        overrideMessage: 'Group not found',
       });
     }
 
     const domainResult = await group.inviteUsers(
-      port.invitedUserList as UserId[],
+      port.invitedUserList as UserId[]
     );
     if (!domainResult) {
       throw Exception.new({
         code: Code.BAD_REQUEST_ERROR,
-        overrideMessage: "Failed to invite user",
+        overrideMessage: 'Failed to invite user',
       });
     }
 
@@ -33,7 +33,7 @@ export class InviteUserUsecase implements IUsecase<IInviteUserPort, Group> {
     if (!repositoryResult) {
       throw Exception.new({
         code: Code.INTERNAL_ERROR,
-        overrideMessage: "Failed to invite user",
+        overrideMessage: 'Failed to invite user',
       });
     }
 

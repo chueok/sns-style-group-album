@@ -1,12 +1,12 @@
-import Image from "next/image";
-import { Button } from "@repo/ui/button";
+import Image from 'next/image';
+import { Button } from '@repo/ui/button';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@repo/ui/accordion";
-import styles from "./page.module.css";
+} from '@repo/ui/accordion';
+import styles from './page.module.css';
 
 export default function Home() {
   return (

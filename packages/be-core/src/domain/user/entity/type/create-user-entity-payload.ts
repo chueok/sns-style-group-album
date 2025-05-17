@@ -1,8 +1,8 @@
-import { Nullable } from "../../../../common/type/common-types";
-import { GroupId } from "../../../group/entity/type/group-id";
-import { GroupInfo } from "../group-info";
-import { UserGroupProfile } from "../user-group-profile";
-import { UserId } from "./user-id";
+import { Nullable } from '../../../../common/type/common-types';
+import { GroupId } from '../../../group/entity/type/group-id';
+import { GroupInfo } from '../group-info';
+import { UserGroupProfile } from '../user-group-profile';
+import { UserId } from './user-id';
 
 type CommonCreateUserPayload = {
   username: string;

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { ChangeEvent, MouseEvent, useRef, useState } from "react";
-import { Input } from "@repo/ui/input";
-import { Button } from "@repo/ui/button";
+import { ChangeEvent, MouseEvent, useRef, useState } from 'react';
+import { Input } from '@repo/ui/input';
+import { Button } from '@repo/ui/button';
 
-const API_URL = "http://localhost:3001";
+const API_URL = 'http://localhost:3001';
 
 function blobToUrl(file: File): Promise<string> {
   const reader = new FileReader();
@@ -23,7 +23,7 @@ function blobToUrl(file: File): Promise<string> {
 
 export default function Upload() {
   const [imageList, setImageList] = useState<{ src: string; file: File }[]>([]);
-  const [groupId, setGroupId] = useState<string>("");
+  const [groupId, setGroupId] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
   const onClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -58,15 +58,15 @@ export default function Upload() {
     const body: { data: { presignedUrlList: string[] } } = await fetch(
       `${API_URL}/contents/group/${groupId}/medias`,
       {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          mode: "no-cors",
+          'Content-Type': 'application/json',
+          mode: 'no-cors',
         },
         body: JSON.stringify({
           numContent: imageList.length,
         }),
-      },
+      }
     ).then((res) => {
       if (res.ok) return res.json();
       throw res;
@@ -75,9 +75,9 @@ export default function Upload() {
       imageList.map(({ file }, index) => {
         return fetch(body.data.presignedUrlList[index] as string, {
           body: file,
-          method: "POST",
+          method: 'POST',
         });
-      }),
+      })
     );
   };
 

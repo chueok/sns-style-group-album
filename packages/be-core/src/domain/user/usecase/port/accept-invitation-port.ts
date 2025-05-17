@@ -1,5 +1,5 @@
-import { IsString } from "class-validator";
-import { UseCaseValidatableAdapter } from "../../../../common/usecase/usecase-validatable-adapter";
+import { IsString } from 'class-validator';
+import { UseCaseValidatableAdapter } from '../../../../common/usecase/usecase-validatable-adapter';
 
 export interface IAcceptInvitationPort {
   userId: string;
@@ -17,7 +17,7 @@ export class AcceptInvitationAdapter
   groupId!: string;
 
   public static async new(
-    payload: IAcceptInvitationPort,
+    payload: IAcceptInvitationPort
   ): Promise<AcceptInvitationAdapter> {
     const adapter = new AcceptInvitationAdapter();
     adapter.userId = payload.userId;

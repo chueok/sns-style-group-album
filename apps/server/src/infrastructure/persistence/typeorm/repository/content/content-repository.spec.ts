@@ -1,26 +1,26 @@
-import { join, basename } from "path";
-import { DataSource } from "typeorm";
-import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
-import { TypeormContentRepository } from "./content-repository";
-import { TypeormContent } from "../../entity/content/typeorm-content.entity";
-import { TypeormUser } from "../../entity/user/typeorm-user.entity";
-import { TypeormGroup } from "../../entity/group/typeorm-group.entity";
-import { ContentTypeEnum } from "@repo/be-core";
-import { Test, TestingModule } from "@nestjs/testing";
+import { join, basename } from 'path';
+import { DataSource } from 'typeorm';
+import { DummyDatabaseHandler } from '@test-utils/persistence/dummy-database-handler';
+import { TypeormContentRepository } from './content-repository';
+import { TypeormContent } from '../../entity/content/typeorm-content.entity';
+import { TypeormUser } from '../../entity/user/typeorm-user.entity';
+import { TypeormGroup } from '../../entity/group/typeorm-group.entity';
+import { ContentTypeEnum } from '@repo/be-core';
+import { Test, TestingModule } from '@nestjs/testing';
 import {
   InfrastructureModule,
   typeormSqliteOptions,
-} from "../../../../../di/infrastructure.module";
-import { UserFixture } from "@test-utils/fixture/user-fixture";
-import { GroupFixture } from "@test-utils/fixture/group-fixture";
-import assert from "assert";
+} from '../../../../../di/infrastructure.module';
+import { UserFixture } from '@test-utils/fixture/user-fixture';
+import { GroupFixture } from '@test-utils/fixture/group-fixture';
+import assert from 'assert';
 
 const parameters = {
-  testDbPath: join("db", `${basename(__filename)}.sqlite`),
-  dummyDbPath: join("db", "dummy.sqlite"),
+  testDbPath: join('db', `${basename(__filename)}.sqlite`),
+  dummyDbPath: join('db', 'dummy.sqlite'),
 };
 
-describe("ContentRepository", () => {
+describe('ContentRepository', () => {
   let module: TestingModule;
   let dataSource: DataSource;
   let testDatabaseHandler: DummyDatabaseHandler;
@@ -61,12 +61,12 @@ describe("ContentRepository", () => {
     await module.close();
   });
 
-  it("should be defined", () => {
+  it('should be defined', () => {
     expect(dataSource).toBeDefined();
     expect(testDatabaseHandler).toBeDefined();
   });
 
-  describe("findContentById", () => {
+  describe('findContentById', () => {
     let targetOrmContent: TypeormContent;
     beforeAll(async () => {
       targetOrmContent = testDatabaseHandler
@@ -75,31 +75,31 @@ describe("ContentRepository", () => {
         .at(-1)!;
     });
 
-    it("should find a content by id", async () => {
+    it('should find a content by id', async () => {
       const content = await contentRepository.findContentById(
-        targetOrmContent.id,
+        targetOrmContent.id
       );
 
       expect(content).not.toBeNull();
       expect(content!.id).toEqual(targetOrmContent.id);
       expect(content?.referred.length).toEqual(
-        (await targetOrmContent.referred).length,
+        (await targetOrmContent.referred).length
       );
       expect(content?.numLikes).toEqual((await targetOrmContent.likes).length);
       expect(content?.topLikeList.length).toBeLessThanOrEqual(
-        TypeormContentRepository.likeLimit,
+        TypeormContentRepository.likeLimit
       );
 
       expect(content?.numComments).toEqual(
-        (await targetOrmContent.comments).length,
+        (await targetOrmContent.comments).length
       );
       expect(content?.topCommentList.length).toBeLessThanOrEqual(
-        TypeormContentRepository.commentLimit,
+        TypeormContentRepository.commentLimit
       );
     });
   });
 
-  describe("findContentsByGroupIdAndType", () => {
+  describe('findContentsByGroupIdAndType', () => {
     let targetOrmGroup: TypeormGroup;
     beforeAll(async () => {
       targetOrmGroup = testDatabaseHandler.getDbCacheList(TypeormGroup).at(-1)!;
@@ -111,15 +111,15 @@ describe("ContentRepository", () => {
       return arr[middleIndex] || null;
     }
 
-    it("(asc) should find a content list by group id and type", async () => {
+    it('(asc) should find a content list by group id and type', async () => {
       const targetContentList = testDatabaseHandler
         .getDbCacheList(TypeormContent)
         .filter(
           (content) =>
-            content.groupId === targetOrmGroup.id && !content.deletedDateTime,
+            content.groupId === targetOrmGroup.id && !content.deletedDateTime
         )
         .sort(
-          (a, b) => b.createdDateTime.getTime() - a.createdDateTime.getTime(),
+          (a, b) => b.createdDateTime.getTime() - a.createdDateTime.getTime()
         );
 
       const cursor = getMiddleElement(targetContentList)!.createdDateTime;
@@ -129,8 +129,8 @@ describe("ContentRepository", () => {
         contentTypeList: [ContentTypeEnum.POST],
         pagination: {
           cursor,
-          sortBy: "createdDateTime",
-          sortOrder: "asc",
+          sortBy: 'createdDateTime',
+          sortOrder: 'asc',
           limit: 10,
         },
       });
@@ -142,7 +142,7 @@ describe("ContentRepository", () => {
             content.groupId === targetOrmGroup.id &&
             content.contentType === ContentTypeEnum.POST &&
             content.createdDateTime.getTime() > cursor.getTime() &&
-            !content.deletedDateTime,
+            !content.deletedDateTime
         ).length;
 
       expect(contentList).not.toBeNull();
@@ -150,15 +150,15 @@ describe("ContentRepository", () => {
       expect(contentList.length).toBeLessThanOrEqual(10);
       expect(contentList.length).toEqual(Math.min(numContents, 10));
     });
-    it("(desc) should find a content list by group id and type", async () => {
+    it('(desc) should find a content list by group id and type', async () => {
       const targetContentList = testDatabaseHandler
         .getDbCacheList(TypeormContent)
         .filter(
           (content) =>
-            content.groupId === targetOrmGroup.id && !content.deletedDateTime,
+            content.groupId === targetOrmGroup.id && !content.deletedDateTime
         )
         .sort(
-          (a, b) => a.createdDateTime.getTime() - b.createdDateTime.getTime(),
+          (a, b) => a.createdDateTime.getTime() - b.createdDateTime.getTime()
         );
 
       const cursor = getMiddleElement(targetContentList)!.createdDateTime;
@@ -168,8 +168,8 @@ describe("ContentRepository", () => {
         contentTypeList: [ContentTypeEnum.POST],
         pagination: {
           cursor,
-          sortBy: "createdDateTime",
-          sortOrder: "desc",
+          sortBy: 'createdDateTime',
+          sortOrder: 'desc',
           limit: 10,
         },
       });
@@ -181,7 +181,7 @@ describe("ContentRepository", () => {
             content.groupId === targetOrmGroup.id &&
             content.contentType === ContentTypeEnum.POST &&
             content.createdDateTime.getTime() < cursor.getTime() &&
-            !content.deletedDateTime,
+            !content.deletedDateTime
         );
 
       expect(contentList).not.toBeNull();
@@ -191,7 +191,7 @@ describe("ContentRepository", () => {
     });
   });
 
-  describe("findContentsByGroupMember", () => {
+  describe('findContentsByGroupMember', () => {
     let targetOrmUser: TypeormUser;
     let targetGroup: TypeormGroup;
     beforeAll(async () => {
@@ -199,17 +199,17 @@ describe("ContentRepository", () => {
       const { group, members } =
         await groupFixture.getGroupHavingMembersAndContents();
       const user = members.at(0);
-      assert(user, "user is null");
+      assert(user, 'user is null');
       targetOrmUser = user;
       targetGroup = group;
     });
 
-    it("should be defined", () => {
+    it('should be defined', () => {
       expect(targetOrmUser).toBeDefined();
       expect(targetGroup).toBeDefined();
     });
 
-    it("should find a content list by owner id", async () => {
+    it('should find a content list by owner id', async () => {
       const contentList = await contentRepository.findContentsByGroupMember({
         userId: targetOrmUser.id,
         groupId: targetGroup.id,
@@ -221,7 +221,7 @@ describe("ContentRepository", () => {
           (content) =>
             content.ownerId === targetOrmUser.id &&
             content.groupId === targetGroup.id &&
-            !content.deletedDateTime,
+            !content.deletedDateTime
         ).length;
 
       expect(contentList).not.toBeNull();

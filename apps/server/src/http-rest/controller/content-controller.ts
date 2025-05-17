@@ -8,9 +8,9 @@ import {
   Post,
   Query,
   UseGuards,
-} from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
-import { RestResponse } from "./dto/common/rest-response";
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { RestResponse } from './dto/common/rest-response';
 import {
   Code,
   DeleteContentAdapter,
@@ -18,29 +18,29 @@ import {
   GetContentListAdapter,
   GetMediaContentListUsecase,
   IObjectStoragePort,
-} from "@repo/be-core";
-import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
-import { GetContentListQuery } from "./dto/content/get-content-list-query";
-import { EditContentBody } from "./dto/content/edit-content-body";
-import { CreateContentBody } from "./dto/content/create-content-body";
-import { DiTokens } from "../../di/di-tokens";
-import { MediaContentResponseDTO } from "./dto/content/media-content-response-dto";
-import { HttpObjectStorageGuard } from "../auth/guard/object-storage-guard";
-import { CreateMediaListContentBody } from "./dto/content/create-media-list-content-body";
-import { MediaService } from "../media/media-service";
-import { SaveTemporaryMediaAdapter } from "../media/port/save-temporary-media-port";
-import { VerifiedUser } from "../auth/decorator/verified-user";
-import { VerifiedUserPayload } from "../auth/type/verified-user-payload";
-import { ContentUploadUrlDTO } from "./dto/content/content-upload-url-dto";
-import { MinioWebhookBody } from "./dto/content/minio-webhook-body";
-import mime from "mime";
-import { ConfirmMediaUploadedAdapter } from "../media/port/confirm-original-media-uploaded-port";
-import { ConfirmResponsiveMediaUploadedAdapter } from "../media/port/confirm-responsive-media-uploaded-port";
-import { Permission, PermissionEnum } from "../auth/decorator/permission";
-import { HttpPermissionGuard } from "../auth/guard/permission-guard";
+} from '@repo/be-core';
+import { ApiResponseGeneric } from './dto/decorator/api-response-generic';
+import { GetContentListQuery } from './dto/content/get-content-list-query';
+import { EditContentBody } from './dto/content/edit-content-body';
+import { CreateContentBody } from './dto/content/create-content-body';
+import { DiTokens } from '../../di/di-tokens';
+import { MediaContentResponseDTO } from './dto/content/media-content-response-dto';
+import { HttpObjectStorageGuard } from '../auth/guard/object-storage-guard';
+import { CreateMediaListContentBody } from './dto/content/create-media-list-content-body';
+import { MediaService } from '../media/media-service';
+import { SaveTemporaryMediaAdapter } from '../media/port/save-temporary-media-port';
+import { VerifiedUser } from '../auth/decorator/verified-user';
+import { VerifiedUserPayload } from '../auth/type/verified-user-payload';
+import { ContentUploadUrlDTO } from './dto/content/content-upload-url-dto';
+import { MinioWebhookBody } from './dto/content/minio-webhook-body';
+import mime from 'mime';
+import { ConfirmMediaUploadedAdapter } from '../media/port/confirm-original-media-uploaded-port';
+import { ConfirmResponsiveMediaUploadedAdapter } from '../media/port/confirm-responsive-media-uploaded-port';
+import { Permission, PermissionEnum } from '../auth/decorator/permission';
+import { HttpPermissionGuard } from '../auth/guard/permission-guard';
 
-@Controller("contents")
-@ApiTags("contents")
+@Controller('contents')
+@ApiTags('contents')
 export class ContentController {
   constructor(
     @Inject(DiTokens.MediaObjectStorage)
@@ -52,10 +52,10 @@ export class ContentController {
     private readonly mediaService: MediaService,
 
     @Inject(DiTokens.DeleteContentUsecase)
-    private readonly deleteContentUsecase: DeleteContentUsecase,
+    private readonly deleteContentUsecase: DeleteContentUsecase
   ) {}
 
-  @Get("group/:groupId/medias")
+  @Get('group/:groupId/medias')
   @UseGuards(HttpPermissionGuard)
   @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({
@@ -64,29 +64,29 @@ export class ContentController {
     isArray: true,
   })
   async getMediaContentList(
-    @Param("groupId") groupId: string,
-    @Query() query: GetContentListQuery,
+    @Param('groupId') groupId: string,
+    @Query() query: GetContentListQuery
   ): Promise<RestResponse<MediaContentResponseDTO[]>> {
     const adapter = await GetContentListAdapter.new({
       groupId,
       limit: query.limit || 10,
       cursor: query.cursor,
-      sortBy: query.sortBy || "createdDateTime",
-      sortOrder: query.sortOrder || "desc",
+      sortBy: query.sortBy || 'createdDateTime',
+      sortOrder: query.sortOrder || 'desc',
     });
 
     const contentList = await this.getMediaContentListUsecase.execute(adapter);
 
     const dtos = await MediaContentResponseDTO.newListFromContents(
       contentList,
-      this.mediaObjectStorage,
+      this.mediaObjectStorage
     );
 
     return RestResponse.success(dtos);
   }
 
   // TODO WEB에서 Test 필요함.
-  @Post("media-upload-hook/original")
+  @Post('media-upload-hook/original')
   @UseGuards(HttpObjectStorageGuard)
   async mediaUploadHook(@Body() body: MinioWebhookBody) {
     const promises = body.Records.map(async (record) => {
@@ -96,7 +96,7 @@ export class ContentController {
         originalRelativePath: object.key,
         size: object.size,
         mimetype: object.contentType,
-        ext: mime.extension(object.contentType) || "",
+        ext: mime.extension(object.contentType) || '',
       });
       await this.mediaService.confirmOriginalMediaUploaded(adapter);
     });
@@ -107,7 +107,7 @@ export class ContentController {
   }
 
   // TODO WEB에서 Test 필요함.
-  @Post("media-upload-hook/responsive/thumbnail")
+  @Post('media-upload-hook/responsive/thumbnail')
   @UseGuards(HttpObjectStorageGuard)
   async thumbnailMediaUploadHook(@Body() body: MinioWebhookBody) {
     const promises = body.Records.map(async (record) => {
@@ -124,7 +124,7 @@ export class ContentController {
     return;
   }
 
-  @Post("media-upload-hook/responsive/large")
+  @Post('media-upload-hook/responsive/large')
   @UseGuards(HttpObjectStorageGuard)
   async largeMediaUploadHook(@Body() body: MinioWebhookBody) {
     const promises = body.Records.map(async (record) => {
@@ -141,7 +141,7 @@ export class ContentController {
     return;
   }
 
-  @Post("group/:groupId/medias")
+  @Post('group/:groupId/medias')
   @UseGuards(HttpPermissionGuard)
   @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({
@@ -150,8 +150,8 @@ export class ContentController {
   })
   async createMediaContentList(
     @VerifiedUser() user: VerifiedUserPayload,
-    @Param("groupId") groupId: string,
-    @Body() body: CreateMediaListContentBody,
+    @Param('groupId') groupId: string,
+    @Body() body: CreateMediaListContentBody
   ): Promise<RestResponse<ContentUploadUrlDTO>> {
     // type이 정해지지 않음...
     // 1. db에 type없이 저장 이후 webhook 요청이 오면 업데이트
@@ -172,7 +172,7 @@ export class ContentController {
 
     await Promise.allSettled(promises).then((results) => {
       results.forEach((result) => {
-        if (result.status === "fulfilled") {
+        if (result.status === 'fulfilled') {
           ret.presignedUrlList.push(result.value);
         }
       });
@@ -189,12 +189,12 @@ export class ContentController {
   //   throw new Error("Not implemented");
   // }
 
-  @Delete("group/:groupId/content/:contentId")
+  @Delete('group/:groupId/content/:contentId')
   @UseGuards(HttpPermissionGuard)
   @Permission(PermissionEnum.CONTENT_OWNER)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
   async deleteContent(
-    @Param("contentId") contentId: string,
+    @Param('contentId') contentId: string
   ): Promise<RestResponse<null>> {
     const adapter = await DeleteContentAdapter.new({
       contentId,

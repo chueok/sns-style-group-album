@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   Comment,
   CommentId,
@@ -6,36 +6,36 @@ import {
   ContentId,
   SystemComment,
   UserComment,
-} from "@repo/be-core";
+} from '@repo/be-core';
 
 class CommentUserTagResponseDTO {
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   userId!: string;
 
-  @ApiProperty({ type: "number", isArray: true })
+  @ApiProperty({ type: 'number', isArray: true })
   at!: number[];
 }
 
 export class CommentResponseDTO {
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   id!: CommentId;
 
   @ApiProperty({ enum: CommentTypeEnum })
   type!: CommentTypeEnum;
 
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   contentId!: ContentId;
 
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   text!: string;
 
   @ApiProperty({ type: CommentUserTagResponseDTO, isArray: true })
   userTags!: CommentUserTagResponseDTO[];
 
-  @ApiPropertyOptional({ type: "string" })
+  @ApiPropertyOptional({ type: 'string' })
   ownerId?: string;
 
-  @ApiPropertyOptional({ type: "string" })
+  @ApiPropertyOptional({ type: 'string' })
   subText?: string;
 
   public static newFromComment(comment: Comment): CommentResponseDTO {
@@ -57,7 +57,7 @@ export class CommentResponseDTO {
 
   public static newListFromComments(comments: Comment[]): CommentResponseDTO[] {
     return comments.map((comment) =>
-      CommentResponseDTO.newFromComment(comment),
+      CommentResponseDTO.newFromComment(comment)
     );
   }
 }

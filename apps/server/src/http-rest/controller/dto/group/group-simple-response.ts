@@ -1,11 +1,11 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Group } from "@repo/be-core";
+import { ApiProperty } from '@nestjs/swagger';
+import { Group } from '@repo/be-core';
 
 export class GroupSimpleResponseDTO {
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   id!: string;
 
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   name!: string;
 
   static newFromGroup(group: Group): GroupSimpleResponseDTO {

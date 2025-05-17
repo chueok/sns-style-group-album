@@ -1,5 +1,5 @@
-import { Nullable } from "../../../common/type/common-types";
-import { ContentTypeEnum } from "../enum/content-type-enum";
+import { Nullable } from '../../../common/type/common-types';
+import { ContentTypeEnum } from '../enum/content-type-enum';
 
 export class ReferredContent {
   readonly id: string;

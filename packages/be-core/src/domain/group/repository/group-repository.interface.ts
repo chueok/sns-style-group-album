@@ -1,5 +1,5 @@
-import { Nullable } from "../../../common/type/common-types";
-import { Group } from "../entity/group";
+import { Nullable } from '../../../common/type/common-types';
+import { Group } from '../entity/group';
 
 export interface IGroupRepository {
   createGroup(group: Group): Promise<boolean>;

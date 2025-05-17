@@ -7,10 +7,10 @@ import {
   Param,
   Patch,
   UseGuards,
-} from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
-import { RestResponse } from "./dto/common/rest-response";
-import { UserResponseDTO } from "./dto/user/user-response-dto";
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { RestResponse } from './dto/common/rest-response';
+import { UserResponseDTO } from './dto/user/user-response-dto';
 import {
   Code,
   DeleteUserAdapter,
@@ -22,20 +22,20 @@ import {
   GetUserAdaptor,
   GetUserUsecase,
   IObjectStoragePort,
-} from "@repo/be-core";
-import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
-import { EditUserBody } from "./dto/user/edit-user-body";
-import { DiTokens } from "../../di/di-tokens";
-import { GetUserGroupProfileImageUploadUrlResponseDTO } from "./dto/user/get-user-group-profile-image-upload-url-response-dto";
-import { GetProfileImageUploadUrlResponseDTO } from "./dto/user/get-profile-image-upload-url-response-dto";
-import { UserGroupProfileBody } from "./dto/user/edit-user-group-profile-body";
-import { VerifiedUser } from "../auth/decorator/verified-user";
-import { VerifiedUserPayload } from "../auth/type/verified-user-payload";
-import { HttpPermissionGuard } from "../auth/guard/permission-guard";
-import { Permission, PermissionEnum } from "../auth/decorator/permission";
+} from '@repo/be-core';
+import { ApiResponseGeneric } from './dto/decorator/api-response-generic';
+import { EditUserBody } from './dto/user/edit-user-body';
+import { DiTokens } from '../../di/di-tokens';
+import { GetUserGroupProfileImageUploadUrlResponseDTO } from './dto/user/get-user-group-profile-image-upload-url-response-dto';
+import { GetProfileImageUploadUrlResponseDTO } from './dto/user/get-profile-image-upload-url-response-dto';
+import { UserGroupProfileBody } from './dto/user/edit-user-group-profile-body';
+import { VerifiedUser } from '../auth/decorator/verified-user';
+import { VerifiedUserPayload } from '../auth/type/verified-user-payload';
+import { HttpPermissionGuard } from '../auth/guard/permission-guard';
+import { Permission, PermissionEnum } from '../auth/decorator/permission';
 
-@Controller("users")
-@ApiTags("users")
+@Controller('users')
+@ApiTags('users')
 export class UserController {
   constructor(
     @Inject(DiTokens.GetUserUsecase)
@@ -47,14 +47,14 @@ export class UserController {
     @Inject(DiTokens.EditUserUsecase)
     private readonly editUserUsecase: EditUserUsecase,
     @Inject(DiTokens.EditUserGroupProfileUsecase)
-    private readonly editUserGroupProfileUsecase: EditUserGroupProfileUsecase,
+    private readonly editUserGroupProfileUsecase: EditUserGroupProfileUsecase
   ) {}
 
   @Get()
   @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDTO })
   async getUser(
-    @VerifiedUser() verifiedUser: VerifiedUserPayload,
+    @VerifiedUser() verifiedUser: VerifiedUserPayload
   ): Promise<RestResponse<UserResponseDTO>> {
     const adapter = await GetUserAdaptor.new({ id: verifiedUser.id });
 
@@ -62,7 +62,7 @@ export class UserController {
 
     const userDto = await UserResponseDTO.newFromUser(
       user,
-      this.mediaObjectStorage,
+      this.mediaObjectStorage
     );
     return RestResponse.success(userDto);
   }
@@ -71,7 +71,7 @@ export class UserController {
   @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
   async deleteUser(
-    @VerifiedUser() verifiedUser: VerifiedUserPayload,
+    @VerifiedUser() verifiedUser: VerifiedUserPayload
   ): Promise<RestResponse<null>> {
     const adapter = await DeleteUserAdapter.new({ id: verifiedUser.id });
 
@@ -85,7 +85,7 @@ export class UserController {
   @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDTO })
   async editUser(
     @VerifiedUser() verifiedUser: VerifiedUserPayload,
-    @Body() body: EditUserBody,
+    @Body() body: EditUserBody
   ): Promise<RestResponse<UserResponseDTO>> {
     const adapter = await EditUserAdapter.new({
       userId: verifiedUser.id,
@@ -96,47 +96,47 @@ export class UserController {
 
     const dto = await UserResponseDTO.newFromUser(
       user,
-      this.mediaObjectStorage,
+      this.mediaObjectStorage
     );
     return RestResponse.success(dto);
   }
 
   // TODO : email 변경 구현 (email 인증 구현 필요)
-  @Patch("email")
+  @Patch('email')
   @UseGuards(HttpPermissionGuard)
   async editEmail() {}
 
-  @Get("profile-image-upload-url")
+  @Get('profile-image-upload-url')
   @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
     data: GetProfileImageUploadUrlResponseDTO,
   })
   async getProfileImageUploadURL(
-    @VerifiedUser() verifiedUser: VerifiedUserPayload,
+    @VerifiedUser() verifiedUser: VerifiedUserPayload
   ): Promise<RestResponse<GetProfileImageUploadUrlResponseDTO>> {
     const response = await GetProfileImageUploadUrlResponseDTO.new(
       verifiedUser.id,
-      this.mediaObjectStorage,
+      this.mediaObjectStorage
     );
 
     return RestResponse.success(response);
   }
 
   // TODO : ObjectServer 웹훅 구현 필요
-  @Patch(":userId/profile-image")
+  @Patch(':userId/profile-image')
   @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDTO })
   async editProfileImage() {}
 
   // user group profile 변경
-  @Patch("profile/:groupId")
+  @Patch('profile/:groupId')
   @UseGuards(HttpPermissionGuard)
   @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDTO })
   async editUserGroupProfile(
     @VerifiedUser() verifiedUser: VerifiedUserPayload,
-    @Param("groupId") groupId: string,
-    @Body() body: UserGroupProfileBody,
+    @Param('groupId') groupId: string,
+    @Body() body: UserGroupProfileBody
   ): Promise<RestResponse<UserResponseDTO>> {
     const adapter = await EditUserGroupProfileAdapter.new({
       userId: verifiedUser.id,
@@ -148,12 +148,12 @@ export class UserController {
 
     const dto = await UserResponseDTO.newFromUser(
       user,
-      this.mediaObjectStorage,
+      this.mediaObjectStorage
     );
     return RestResponse.success(dto);
   }
 
-  @Get("profile/:groupId/profile-image-upload-url")
+  @Get('profile/:groupId/profile-image-upload-url')
   @UseGuards(HttpPermissionGuard)
   @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({
@@ -162,18 +162,18 @@ export class UserController {
   })
   async getUserGroupProfileImageUploadURL(
     @VerifiedUser() verifiedUser: VerifiedUserPayload,
-    @Param("groupId") groupId: string,
+    @Param('groupId') groupId: string
   ): Promise<RestResponse<GetUserGroupProfileImageUploadUrlResponseDTO>> {
     const response = await GetUserGroupProfileImageUploadUrlResponseDTO.new(
       verifiedUser.id,
       groupId,
-      this.mediaObjectStorage,
+      this.mediaObjectStorage
     );
 
     return RestResponse.success(response);
   }
 
   // TODO : ObjectServer 웹훅 구현 필요
-  @Patch(":userId/profile/:groupId/profile-image")
+  @Patch(':userId/profile/:groupId/profile-image')
   async editUserGroupProfileImage() {}
 }

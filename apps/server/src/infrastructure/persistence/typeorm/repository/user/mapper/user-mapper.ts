@@ -3,10 +3,10 @@ import {
   GroupInfo,
   User,
   UserGroupProfile,
-} from "@repo/be-core";
-import { TypeormUser } from "../../../entity/user/typeorm-user.entity";
-import { TypeormGroup } from "../../../entity/group/typeorm-group.entity";
-import { TypeormUserGroupProfile } from "../../../entity/user-group-profile/typeorm-user-group-profile.entity";
+} from '@repo/be-core';
+import { TypeormUser } from '../../../entity/user/typeorm-user.entity';
+import { TypeormGroup } from '../../../entity/group/typeorm-group.entity';
+import { TypeormUserGroupProfile } from '../../../entity/user-group-profile/typeorm-user-group-profile.entity';
 
 // TODO : 복잡성 낮출 방법을 고민해보자.
 type ToDomainPayloadType = {
@@ -35,7 +35,7 @@ type ToOrmReturnType = {
 
 export class UserMapper {
   public static async toDomainEntity(
-    payload: ToDomainPayloadType,
+    payload: ToDomainPayloadType
   ): Promise<ToDomainReturnType> {
     const results: User[] = [];
     const errors: Error[] = [];
@@ -56,7 +56,7 @@ export class UserMapper {
           const { group, memberProfiles, owner } = invitedGroupElement;
           const ownerNickname: string =
             memberProfiles.filter(
-              (profile) => profile.userId === group.ownerId,
+              (profile) => profile.userId === group.ownerId
             )[0]?.nickname || owner.username;
 
           return new GroupInfo({
@@ -65,10 +65,10 @@ export class UserMapper {
             ownerId: group.ownerId,
             ownerNickname,
           });
-        },
+        }
       );
 
-      const userPayload: CreateUserEntityPayload<"existing"> = {
+      const userPayload: CreateUserEntityPayload<'existing'> = {
         username: user.username,
         email: user.email,
         hasProfileImage: user.hasProfileImage,
@@ -94,7 +94,7 @@ export class UserMapper {
 
     await Promise.allSettled(promiseList).then((promiseResults) => {
       promiseResults.forEach((result) => {
-        if (result.status === "fulfilled") {
+        if (result.status === 'fulfilled') {
           results.push(result.value);
         } else {
           errors.push(result.reason);

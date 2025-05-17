@@ -1,4 +1,4 @@
-import { IUsecase } from "./usecase.interface";
+import { IUsecase } from './usecase.interface';
 
 export interface ITransactionalUseCase<TUseCasePort, TUseCaseResult>
   extends IUsecase<TUseCasePort, TUseCaseResult> {

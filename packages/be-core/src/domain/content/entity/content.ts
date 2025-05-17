@@ -6,13 +6,13 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-} from "class-validator";
-import { ContentTypeEnum } from "../enum/content-type-enum";
-import { BucketStatusEnum } from "../enum/bucket-status";
-import { Content } from "./content.abstract";
+} from 'class-validator';
+import { ContentTypeEnum } from '../enum/content-type-enum';
+import { BucketStatusEnum } from '../enum/bucket-status';
+import { Content } from './content.abstract';
 
-import { Nullable } from "../../../common/type/common-types";
-import { CreateContentEntityPayload } from "./type/create-content-entity-payload";
+import { Nullable } from '../../../common/type/common-types';
+import { CreateContentEntityPayload } from './type/create-content-entity-payload';
 
 export class SystemContent extends Content {
   override readonly _type: ContentTypeEnum.SYSTEM = ContentTypeEnum.SYSTEM;
@@ -30,13 +30,13 @@ export class SystemContent extends Content {
     return this._subText;
   }
 
-  constructor(payload: CreateContentEntityPayload<"system", "all">) {
+  constructor(payload: CreateContentEntityPayload<'system', 'all'>) {
     super(payload);
     this._text = payload.text;
     this._subText = payload.subText;
   }
 
-  static async new(payload: CreateContentEntityPayload<"system", "all">) {
+  static async new(payload: CreateContentEntityPayload<'system', 'all'>) {
     const entity = new SystemContent(payload);
     await entity.validate();
     return entity;
@@ -80,7 +80,7 @@ export class MediaContent extends Content {
     return this._mimetype;
   }
 
-  constructor(payload: CreateContentEntityPayload<"media", "all">) {
+  constructor(payload: CreateContentEntityPayload<'media', 'all'>) {
     super(payload);
     this._type = payload.type;
     this._largeRelativePath = payload.largeRelativePath;
@@ -90,7 +90,7 @@ export class MediaContent extends Content {
     this._mimetype = payload.mimeType;
   }
 
-  static async new(payload: CreateContentEntityPayload<"media", "all">) {
+  static async new(payload: CreateContentEntityPayload<'media', 'all'>) {
     const entity = new MediaContent(payload);
     await entity.validate();
     return entity;
@@ -100,11 +100,11 @@ export class MediaContent extends Content {
 export class ImageContent extends MediaContent {
   override _type: ContentTypeEnum.IMAGE = ContentTypeEnum.IMAGE;
 
-  constructor(payload: CreateContentEntityPayload<"image", "all">) {
+  constructor(payload: CreateContentEntityPayload<'image', 'all'>) {
     super({ ...payload, type: ContentTypeEnum.IMAGE });
   }
 
-  static async new(payload: CreateContentEntityPayload<"image", "all">) {
+  static async new(payload: CreateContentEntityPayload<'image', 'all'>) {
     const entity = new ImageContent(payload);
     await entity.validate();
     return entity;
@@ -114,11 +114,11 @@ export class ImageContent extends MediaContent {
 export class VideoContent extends MediaContent {
   override _type: ContentTypeEnum.VIDEO = ContentTypeEnum.VIDEO;
 
-  constructor(payload: CreateContentEntityPayload<"video", "all">) {
+  constructor(payload: CreateContentEntityPayload<'video', 'all'>) {
     super({ ...payload, type: ContentTypeEnum.VIDEO, largeRelativePath: null });
   }
 
-  static async new(payload: CreateContentEntityPayload<"video", "all">) {
+  static async new(payload: CreateContentEntityPayload<'video', 'all'>) {
     const entity = new VideoContent(payload);
     await entity.validate();
     return entity;
@@ -140,13 +140,13 @@ export class PostContent extends Content {
     return this._text;
   }
 
-  constructor(payload: CreateContentEntityPayload<"post", "all">) {
+  constructor(payload: CreateContentEntityPayload<'post', 'all'>) {
     super(payload);
     this._title = payload.title;
     this._text = payload.text;
   }
 
-  static async new(payload: CreateContentEntityPayload<"post", "all">) {
+  static async new(payload: CreateContentEntityPayload<'post', 'all'>) {
     const entity = new PostContent(payload);
     await entity.validate();
     return entity;
@@ -168,13 +168,13 @@ export class BucketContent extends Content {
     return this._status;
   }
 
-  constructor(payload: CreateContentEntityPayload<"bucket", "all">) {
+  constructor(payload: CreateContentEntityPayload<'bucket', 'all'>) {
     super(payload);
     this._title = payload.title;
     this._status = payload.status;
   }
 
-  static async new(payload: CreateContentEntityPayload<"bucket", "all">) {
+  static async new(payload: CreateContentEntityPayload<'bucket', 'all'>) {
     const entity = new BucketContent(payload);
     await entity.validate();
     return entity;
@@ -209,7 +209,7 @@ export class ScheduleContent extends Content {
     return this._isAllDay;
   }
 
-  constructor(payload: CreateContentEntityPayload<"schedule", "all">) {
+  constructor(payload: CreateContentEntityPayload<'schedule', 'all'>) {
     super(payload);
     this._title = payload.title;
     this._startDateTime = payload.startDateTime;
@@ -217,7 +217,7 @@ export class ScheduleContent extends Content {
     this._isAllDay = payload.isAllDay;
   }
 
-  static async new(payload: CreateContentEntityPayload<"schedule", "all">) {
+  static async new(payload: CreateContentEntityPayload<'schedule', 'all'>) {
     const entity = new ScheduleContent(payload);
     await entity.validate();
     return entity;

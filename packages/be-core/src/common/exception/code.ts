@@ -8,97 +8,97 @@ export class Code {
 
   public static SUCCESS: CodeDescription = {
     code: 200,
-    message: "Success.",
+    message: 'Success.',
   };
 
   public static CREATED: CodeDescription = {
     code: 201,
-    message: "Created.",
+    message: 'Created.',
   };
 
   public static BAD_REQUEST_ERROR: CodeDescription = {
     code: 400,
-    message: "Bad request.",
+    message: 'Bad request.',
   };
 
   public static UNAUTHORIZED_ERROR: CodeDescription = {
     code: 401,
-    message: "Unauthorized error.",
+    message: 'Unauthorized error.',
   };
 
   public static WRONG_CREDENTIALS_ERROR: CodeDescription = {
     code: 402,
-    message: "Wrong Credentials.",
+    message: 'Wrong Credentials.',
   };
 
   public static ACCESS_DENIED_ERROR: CodeDescription = {
     code: 403,
-    message: "Access denied.",
+    message: 'Access denied.',
   };
 
   public static INTERNAL_ERROR: CodeDescription = {
     code: 500,
-    message: "Internal error.",
+    message: 'Internal error.',
   };
 
   //
 
   public static UTIL_PARAM_TYPE_ERROR: CodeDescription = {
     code: 1000,
-    message: "Parameter type error.",
+    message: 'Parameter type error.',
   };
 
   public static UTIL_VALIDATION_ERROR: CodeDescription = {
     code: 1001,
-    message: "Class validation error.",
+    message: 'Class validation error.',
   };
 
   public static UTIL_PROCESS_ERROR: CodeDescription = {
     code: 1002,
-    message: "Process error.",
+    message: 'Process error.',
   };
 
   public static UTIL_ALREADY_EXISTS_ERROR: CodeDescription = {
     code: 1100,
-    message: "Already exists.",
+    message: 'Already exists.',
   };
 
   public static UTIL_NOT_FOUND_ERROR: CodeDescription = {
     code: 1101,
-    message: "Not found.",
+    message: 'Not found.',
   };
 
   public static ENTITY_NOT_FOUND_ERROR: CodeDescription = {
     code: 2000,
-    message: "Entity not found.",
+    message: 'Entity not found.',
   };
 
   public static ENTITY_VALIDATION_ERROR: CodeDescription = {
     code: 2001,
-    message: "Entity validation error.",
+    message: 'Entity validation error.',
   };
 
   public static ENTITY_ALREADY_EXISTS_ERROR: CodeDescription = {
     code: 2004,
-    message: "Entity already exists.",
+    message: 'Entity already exists.',
   };
 
   public static VALUE_OBJECT_VALIDATION_ERROR: CodeDescription = {
     code: 3000,
-    message: "Value object validation error.",
+    message: 'Value object validation error.',
   };
   public static PROPERTY_NOT_DEFINED_ERROR: CodeDescription = {
     code: 3001,
-    message: "Property not defined error.",
+    message: 'Property not defined error.',
   };
 
   public static CORE_BAD_PASSWORD_ERROR: CodeDescription = {
     code: 4000,
-    message: "Bad password.",
+    message: 'Bad password.',
   };
 
   public static USE_CASE_PORT_VALIDATION_ERROR: CodeDescription = {
     code: 5000,
-    message: "Use-case port validation error.",
+    message: 'Use-case port validation error.',
   };
 }

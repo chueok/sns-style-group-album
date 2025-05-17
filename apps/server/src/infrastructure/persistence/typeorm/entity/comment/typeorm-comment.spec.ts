@@ -1,19 +1,19 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import { DataSource, Repository } from "typeorm";
-import { join, basename } from "path";
-import { TypeormComment } from "./typeorm-comment.entity";
-import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
+import { Test, TestingModule } from '@nestjs/testing';
+import { DataSource, Repository } from 'typeorm';
+import { join, basename } from 'path';
+import { TypeormComment } from './typeorm-comment.entity';
+import { DummyDatabaseHandler } from '@test-utils/persistence/dummy-database-handler';
 import {
   InfrastructureModule,
   typeormSqliteOptions,
-} from "../../../../../di/infrastructure.module";
+} from '../../../../../di/infrastructure.module';
 
 const parameters = {
-  testDbPath: join("db", `${basename(__filename)}.sqlite`),
-  dummyDbPath: join("db", "dummy.sqlite"),
+  testDbPath: join('db', `${basename(__filename)}.sqlite`),
+  dummyDbPath: join('db', 'dummy.sqlite'),
 };
 
-describe("TypeormComment", () => {
+describe('TypeormComment', () => {
   let module: TestingModule;
   let dataSource: DataSource;
   let repository: Repository<TypeormComment>;
@@ -48,26 +48,26 @@ describe("TypeormComment", () => {
     await module.close();
   });
 
-  describe("save", () => {
-    it("should save normally", async () => {
+  describe('save', () => {
+    it('should save normally', async () => {
       const comment = testDatabaseHandler.makeDummyComment();
       const savedComment = await repository.save(comment);
       expectEqualComment(comment, savedComment);
     });
   });
 
-  describe("delete", () => {
+  describe('delete', () => {
     let target!: TypeormComment;
     beforeEach(async () => {
       target = testDatabaseHandler.makeDummyComment();
       target = await repository.save(target);
     });
 
-    it("should exist before delete", async () => {
+    it('should exist before delete', async () => {
       expect(target.id).not.toBeNull();
     });
 
-    it("should delete normally", async () => {
+    it('should delete normally', async () => {
       await repository.delete(target.id);
       const deletedComment = await repository.findOneBy({ id: target.id });
       expect(deletedComment).toBeNull();
@@ -77,7 +77,7 @@ describe("TypeormComment", () => {
 
 function expectEqualComment(
   comment: TypeormComment,
-  savedComment: TypeormComment,
+  savedComment: TypeormComment
 ) {
   expect(comment.id).toBe(savedComment.id);
   expect(comment.commentType).toBe(savedComment.commentType);

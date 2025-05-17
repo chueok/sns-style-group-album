@@ -1,34 +1,34 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Content, ContentTypeEnum, IObjectStoragePort } from "@repo/be-core";
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Content, ContentTypeEnum, IObjectStoragePort } from '@repo/be-core';
 
 export class ContentSimpleResponseDTO {
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   id!: string;
 
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   groupId!: string;
 
   @ApiProperty({ enum: ContentTypeEnum })
   type!: ContentTypeEnum;
 
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   ownerId!: string;
 
-  @ApiPropertyOptional({ type: "string" })
+  @ApiPropertyOptional({ type: 'string' })
   thumbnailRelativePath?: string;
 
-  @ApiProperty({ type: "number" })
+  @ApiProperty({ type: 'number' })
   numLikes!: number;
 
-  @ApiProperty({ type: "number" })
+  @ApiProperty({ type: 'number' })
   numComments!: number;
 
-  @ApiProperty({ type: "number" })
+  @ApiProperty({ type: 'number' })
   createdTimestamp!: number;
 
   public static async newFromContent(
     content: Content,
-    mediaObjectStorage: IObjectStoragePort,
+    mediaObjectStorage: IObjectStoragePort
   ): Promise<ContentSimpleResponseDTO> {
     const dto = new ContentSimpleResponseDTO();
     dto.id = content.id;
@@ -37,7 +37,7 @@ export class ContentSimpleResponseDTO {
     dto.ownerId = content.ownerId;
     dto.thumbnailRelativePath = content.thumbnailRelativePath
       ? await mediaObjectStorage.getPresignedUrlForDownload(
-          content.thumbnailRelativePath,
+          content.thumbnailRelativePath
         )
       : undefined;
     dto.numLikes = content.numLikes;
@@ -48,12 +48,12 @@ export class ContentSimpleResponseDTO {
 
   public static async newListFromContents(
     contents: Content[],
-    mediaObjectStorage: IObjectStoragePort,
+    mediaObjectStorage: IObjectStoragePort
   ) {
     return Promise.all(
       contents.map((content) =>
-        ContentSimpleResponseDTO.newFromContent(content, mediaObjectStorage),
-      ),
+        ContentSimpleResponseDTO.newFromContent(content, mediaObjectStorage)
+      )
     );
   }
 }

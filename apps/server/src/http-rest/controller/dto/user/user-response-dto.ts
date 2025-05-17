@@ -1,50 +1,50 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IObjectStoragePort, User } from "@repo/be-core";
-import { ObjectStorageKeyFactory } from "../../../../infrastructure/persistence/object-storage/key-factory/object-storage-key-factory";
-import { plainToInstance } from "class-transformer";
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IObjectStoragePort, User } from '@repo/be-core';
+import { ObjectStorageKeyFactory } from '../../../../infrastructure/persistence/object-storage/key-factory/object-storage-key-factory';
+import { plainToInstance } from 'class-transformer';
 
 export class UserGroupProfileResponseDTO {
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   groupId!: string;
 
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   nickname!: string;
 
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   profileImagePath!: string;
 }
 
 export class GroupInfoResponseDTO {
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   groupId!: string;
 
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   name!: string;
 
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   ownerId!: string;
 
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   ownerNickname!: string;
 }
 
 export class UserResponseDTO {
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   id: string;
 
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   username: string;
 
-  @ApiPropertyOptional({ type: "string" })
+  @ApiPropertyOptional({ type: 'string' })
   email?: string;
 
-  @ApiPropertyOptional({ type: "string" })
+  @ApiPropertyOptional({ type: 'string' })
   profileImagePath?: string;
 
-  @ApiProperty({ type: "string", isArray: true })
+  @ApiProperty({ type: 'string', isArray: true })
   groups: string[];
 
-  @ApiProperty({ type: "string", isArray: true })
+  @ApiProperty({ type: 'string', isArray: true })
   ownGroups: string[];
 
   @ApiProperty({ type: UserGroupProfileResponseDTO, isArray: true })
@@ -53,10 +53,10 @@ export class UserResponseDTO {
   @ApiProperty({ type: GroupInfoResponseDTO, isArray: true })
   invitedGroups: GroupInfoResponseDTO[];
 
-  @ApiProperty({ type: "number" })
+  @ApiProperty({ type: 'number' })
   createdTimestamp: number;
 
-  @ApiPropertyOptional({ type: "number" })
+  @ApiPropertyOptional({ type: 'number' })
   updatedTimestamp?: number;
 
   constructor(payload: UserResponseDTO) {
@@ -74,12 +74,12 @@ export class UserResponseDTO {
 
   public static async newFromUser(
     user: User,
-    mediaObjectStorage: IObjectStoragePort,
+    mediaObjectStorage: IObjectStoragePort
   ): Promise<UserResponseDTO> {
     let profileImagePath: string | undefined = undefined;
     if (user.hasProfile) {
       profileImagePath = await mediaObjectStorage.getPresignedUrlForDownload(
-        ObjectStorageKeyFactory.getUserProfilePath(user.id),
+        ObjectStorageKeyFactory.getUserProfilePath(user.id)
       );
     }
 
@@ -89,8 +89,8 @@ export class UserResponseDTO {
           await mediaObjectStorage.getPresignedUrlForDownload(
             ObjectStorageKeyFactory.getUserGroupProfilePath(
               profile.groupId,
-              user.id,
-            ),
+              user.id
+            )
           );
 
         return {
@@ -98,14 +98,14 @@ export class UserResponseDTO {
           nickname: profile.nickname,
           profileImagePath,
         };
-      },
+      }
     );
 
     const userGroupProfiles: UserGroupProfileResponseDTO[] = [];
     const error: Error[] = []; // TODO : error logging 필요
     await Promise.allSettled(userGroupProfilesPromises).then((results) => {
       results.forEach((result) => {
-        if (result.status === "fulfilled") {
+        if (result.status === 'fulfilled') {
           userGroupProfiles.push(result.value);
         } else {
           error.push(result.reason);
@@ -123,7 +123,7 @@ export class UserResponseDTO {
       userGroupProfiles,
       invitedGroups: plainToInstance(
         GroupInfoResponseDTO,
-        user.invitedGroupList,
+        user.invitedGroupList
       ),
       createdTimestamp: user.createdDateTime.getTime(),
       updatedTimestamp: user.updatedDateTime?.getTime(),
@@ -134,12 +134,12 @@ export class UserResponseDTO {
 
   public static async newListFromUsers(
     users: User[],
-    mediaObjectStorage: IObjectStoragePort,
+    mediaObjectStorage: IObjectStoragePort
   ): Promise<UserResponseDTO[]> {
     const dtos = await Promise.all(
       users.map(async (user) =>
-        UserResponseDTO.newFromUser(user, mediaObjectStorage),
-      ),
+        UserResponseDTO.newFromUser(user, mediaObjectStorage)
+      )
     );
     return dtos;
   }

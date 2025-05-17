@@ -1,21 +1,21 @@
-import { join, basename } from "path";
-import { DataSource } from "typeorm";
-import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
-import { TypeormContent } from "../../../entity/content/typeorm-content.entity";
-import { ContentMapper } from "./content-mapper";
-import { Content } from "@repo/be-core";
-import { Test, TestingModule } from "@nestjs/testing";
+import { join, basename } from 'path';
+import { DataSource } from 'typeorm';
+import { DummyDatabaseHandler } from '@test-utils/persistence/dummy-database-handler';
+import { TypeormContent } from '../../../entity/content/typeorm-content.entity';
+import { ContentMapper } from './content-mapper';
+import { Content } from '@repo/be-core';
+import { Test, TestingModule } from '@nestjs/testing';
 import {
   InfrastructureModule,
   typeormSqliteOptions,
-} from "../../../../../../di/infrastructure.module";
+} from '../../../../../../di/infrastructure.module';
 
 const parameters = {
-  testDbPath: join("db", `${basename(__filename)}.sqlite`),
-  dummyDbPath: join("db", "dummy.sqlite"),
+  testDbPath: join('db', `${basename(__filename)}.sqlite`),
+  dummyDbPath: join('db', 'dummy.sqlite'),
 };
 
-describe("ContentMapper", () => {
+describe('ContentMapper', () => {
   let module: TestingModule;
   let dataSource: DataSource;
   let testDatabaseHandler: DummyDatabaseHandler;
@@ -46,13 +46,13 @@ describe("ContentMapper", () => {
     await module.close();
   });
 
-  it("should be defined", () => {
+  it('should be defined', () => {
     expect(dataSource).toBeDefined();
     expect(testDatabaseHandler).toBeDefined();
   });
 
-  describe("toDomainEntity", () => {
-    it("[array] should convert orm entity to domain entity", async () => {
+  describe('toDomainEntity', () => {
+    it('[array] should convert orm entity to domain entity', async () => {
       const ormContentList = testDatabaseHandler.getDbCacheList(TypeormContent);
 
       const inputList = await Promise.all(
@@ -68,7 +68,7 @@ describe("ContentMapper", () => {
             commentList,
             referred,
           };
-        }),
+        })
       );
 
       const mapResult = await ContentMapper.toDomainEntity({
@@ -85,7 +85,7 @@ describe("ContentMapper", () => {
     });
   });
 
-  describe("toOrmEntity", () => {
+  describe('toOrmEntity', () => {
     let domainContentList: Content[];
     beforeAll(async () => {
       const ormContentList = testDatabaseHandler.getDbCacheList(TypeormContent);
@@ -102,7 +102,7 @@ describe("ContentMapper", () => {
             commentList,
             referred,
           };
-        }),
+        })
       );
 
       const mapResult = await ContentMapper.toDomainEntity({
@@ -111,7 +111,7 @@ describe("ContentMapper", () => {
 
       domainContentList = mapResult.results;
     });
-    it("[array] should convert domain entity to orm entity", async () => {
+    it('[array] should convert domain entity to orm entity', async () => {
       const mapResult = ContentMapper.toOrmEntity({
         elements: domainContentList,
       });
@@ -121,7 +121,7 @@ describe("ContentMapper", () => {
       ormContentList.forEach((ormContent, index) => {
         expect(ormContent).not.toBeNull();
         expect(ormContent.likeList.length).toEqual(
-          domainContentList.at(index)!.topLikeList.length,
+          domainContentList.at(index)!.topLikeList.length
         );
       });
     });

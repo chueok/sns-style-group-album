@@ -1,8 +1,8 @@
-import { Nullable } from "../../../common/type/common-types";
-import { Content } from "../entity/content.abstract";
-import { ContentTypeEnum } from "../enum/content-type-enum";
-import { ContentPaginationOptions } from "./type/content-pagination-options";
-import { ContentByContentType } from "./type/content-type-mapping";
+import { Nullable } from '../../../common/type/common-types';
+import { Content } from '../entity/content.abstract';
+import { ContentTypeEnum } from '../enum/content-type-enum';
+import { ContentPaginationOptions } from './type/content-pagination-options';
+import { ContentByContentType } from './type/content-type-mapping';
 
 export interface IContentRepository {
   createContent(content: Content): Promise<boolean>;

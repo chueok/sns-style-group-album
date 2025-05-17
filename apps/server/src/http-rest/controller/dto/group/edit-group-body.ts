@@ -1,23 +1,23 @@
-import { ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class EditGroupBody {
-  @ApiPropertyOptional({ type: "string", description: "change group name" })
+  @ApiPropertyOptional({ type: 'string', description: 'change group name' })
   name?: string;
 
-  @ApiPropertyOptional({ type: "string", description: "change group owner" })
+  @ApiPropertyOptional({ type: 'string', description: 'change group owner' })
   ownerId?: string;
 
   @ApiPropertyOptional({
-    type: "string",
+    type: 'string',
     isArray: true,
-    description: "invite user",
+    description: 'invite user',
   })
   invitedUserList?: string[];
 
   @ApiPropertyOptional({
-    type: "string",
+    type: 'string',
     isArray: true,
-    description: "drop out members",
+    description: 'drop out members',
   })
   dropOutUserList?: string[];
 }

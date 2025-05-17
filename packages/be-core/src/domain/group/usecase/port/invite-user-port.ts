@@ -1,5 +1,5 @@
-import { ArrayNotEmpty, IsArray, IsNotEmpty, IsString } from "class-validator";
-import { UseCaseValidatableAdapter } from "../../../../common/usecase/usecase-validatable-adapter";
+import { ArrayNotEmpty, IsArray, IsNotEmpty, IsString } from 'class-validator';
+import { UseCaseValidatableAdapter } from '../../../../common/usecase/usecase-validatable-adapter';
 
 export interface IInviteUserPort {
   groupId: string;

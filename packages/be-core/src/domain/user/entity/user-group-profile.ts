@@ -1,4 +1,4 @@
-import { GroupId } from "../../group/entity/type/group-id";
+import { GroupId } from '../../group/entity/type/group-id';
 
 export class UserGroupProfile {
   groupId: GroupId;

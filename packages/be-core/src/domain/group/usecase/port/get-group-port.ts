@@ -1,5 +1,5 @@
-import { IsString } from "class-validator";
-import { UseCaseValidatableAdapter } from "../../../../common/usecase/usecase-validatable-adapter";
+import { IsString } from 'class-validator';
+import { UseCaseValidatableAdapter } from '../../../../common/usecase/usecase-validatable-adapter';
 
 export interface IGetGroupPort {
   groupId: string;

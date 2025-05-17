@@ -4,11 +4,11 @@ import {
   IGroupRepository,
   Nullable,
   UserId,
-} from "@repo/be-core";
-import { DataSource, Repository } from "typeorm";
-import { TypeormGroup } from "../../entity/group/typeorm-group.entity";
-import { GroupMapper } from "./mapper/group-mapper";
-import { Logger, LoggerService, Optional } from "@nestjs/common";
+} from '@repo/be-core';
+import { DataSource, Repository } from 'typeorm';
+import { TypeormGroup } from '../../entity/group/typeorm-group.entity';
+import { GroupMapper } from './mapper/group-mapper';
+import { Logger, LoggerService, Optional } from '@nestjs/common';
 
 export class TypeormGroupRepository implements IGroupRepository {
   private typeormGroupRepository: Repository<TypeormGroup>;
@@ -49,11 +49,11 @@ export class TypeormGroupRepository implements IGroupRepository {
 
   async findGroupById(groupId: GroupId): Promise<Nullable<Group>> {
     const ormGroup = await this.typeormGroupRepository
-      .createQueryBuilder("group")
-      .leftJoinAndSelect("group.members", "members")
-      .leftJoinAndSelect("group.invitedUsers", "invitedUsers")
-      .where("group.id = :groupId", { groupId })
-      .andWhere("group.deletedDateTime is null")
+      .createQueryBuilder('group')
+      .leftJoinAndSelect('group.members', 'members')
+      .leftJoinAndSelect('group.invitedUsers', 'invitedUsers')
+      .where('group.id = :groupId', { groupId })
+      .andWhere('group.deletedDateTime is null')
       .getOne();
 
     if (!ormGroup) {
@@ -83,11 +83,11 @@ export class TypeormGroupRepository implements IGroupRepository {
 
   async findGroupListByOwnerId(ownerId: UserId): Promise<Group[]> {
     const ormGroups = await this.typeormGroupRepository
-      .createQueryBuilder("group")
-      .leftJoinAndSelect("group.members", "members")
-      .leftJoinAndSelect("group.invitedUsers", "invitedUsers")
-      .where("group.ownerId = :ownerId", { ownerId })
-      .andWhere("group.deletedDateTime is null")
+      .createQueryBuilder('group')
+      .leftJoinAndSelect('group.members', 'members')
+      .leftJoinAndSelect('group.invitedUsers', 'invitedUsers')
+      .where('group.ownerId = :ownerId', { ownerId })
+      .andWhere('group.deletedDateTime is null')
       .getMany();
 
     const groupElements = await Promise.all(
@@ -99,7 +99,7 @@ export class TypeormGroupRepository implements IGroupRepository {
           members: members.map((member) => member.id),
           invitedUsers: invitedUsers.map((invitedUser) => invitedUser.id),
         };
-      }),
+      })
     );
 
     const mapResult = await GroupMapper.toDomainEntity({
@@ -114,11 +114,11 @@ export class TypeormGroupRepository implements IGroupRepository {
 
   async findGroupListByUserId(userId: UserId): Promise<Group[]> {
     const ormGroups = await this.typeormGroupRepository
-      .createQueryBuilder("group")
-      .innerJoinAndSelect("group.members", "members")
-      .leftJoinAndSelect("group.invitedUsers", "invitedUsers")
-      .where("members.id = :userId", { userId })
-      .andWhere("group.deletedDateTime is null")
+      .createQueryBuilder('group')
+      .innerJoinAndSelect('group.members', 'members')
+      .leftJoinAndSelect('group.invitedUsers', 'invitedUsers')
+      .where('members.id = :userId', { userId })
+      .andWhere('group.deletedDateTime is null')
       .getMany();
 
     const groupElements = await Promise.all(
@@ -130,7 +130,7 @@ export class TypeormGroupRepository implements IGroupRepository {
           members: members.map((member) => member.id),
           invitedUsers: invitedUsers.map((invitedUser) => invitedUser.id),
         };
-      }),
+      })
     );
 
     const mapResult = await GroupMapper.toDomainEntity({

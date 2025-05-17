@@ -4,7 +4,7 @@ import {
   IsUrl,
   IsEmail,
   IsNumber,
-} from "class-validator";
+} from 'class-validator';
 
 export class JwtSignupModel {
   @IsString()
@@ -43,7 +43,7 @@ export type JwtSignupPayload = {
 };
 
 export function isHttpJwtOauthPayload(
-  input: object,
+  input: object
 ): input is JwtSignupPayload {
-  return "provider" in input;
+  return 'provider' in input;
 }

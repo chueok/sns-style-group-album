@@ -1,5 +1,5 @@
-import { UseCaseValidatableAdapter } from "@repo/be-core";
-import { IsUUID } from "class-validator";
+import { UseCaseValidatableAdapter } from '@repo/be-core';
+import { IsUUID } from 'class-validator';
 
 export interface ISaveTemporaryMediaPort {
   groupId: string;
@@ -10,10 +10,10 @@ export class SaveTemporaryMediaAdapter
   extends UseCaseValidatableAdapter
   implements ISaveTemporaryMediaPort
 {
-  @IsUUID("4")
+  @IsUUID('4')
   groupId!: string;
 
-  @IsUUID("4")
+  @IsUUID('4')
   ownerId!: string;
 
   public static async new(payload: ISaveTemporaryMediaPort) {

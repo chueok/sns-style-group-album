@@ -1,11 +1,11 @@
-import { IsEnum, IsInstance, IsString, IsUUID } from "class-validator";
-import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
-import { CommentTypeEnum } from "../enum/comment-type-enum";
-import { CreateCommentEntityPayload } from "./type/create-comment-entity-payload";
-import { v4 } from "uuid";
-import { CommentId } from "./type/comment-id";
-import { ContentId } from "../../content/entity/type/content-id";
-import { CommentUserTag } from "./comment-user-tag";
+import { IsEnum, IsInstance, IsString, IsUUID } from 'class-validator';
+import { EntityWithCUDTime } from '../../../common/entity/entity-with-cudtime';
+import { CommentTypeEnum } from '../enum/comment-type-enum';
+import { CreateCommentEntityPayload } from './type/create-comment-entity-payload';
+import { v4 } from 'uuid';
+import { CommentId } from './type/comment-id';
+import { ContentId } from '../../content/entity/type/content-id';
+import { CommentUserTag } from './comment-user-tag';
 
 export abstract class Comment extends EntityWithCUDTime<CommentId> {
   // TODO : isUserId 같은 util 함수를 만들어, 검사하는 로직 만들 것
@@ -38,7 +38,7 @@ export abstract class Comment extends EntityWithCUDTime<CommentId> {
 
   public async changeComment(
     text: string,
-    userTags: CommentUserTag[],
+    userTags: CommentUserTag[]
   ): Promise<void> {
     this._text = text;
     this._userTags = userTags;
@@ -47,12 +47,12 @@ export abstract class Comment extends EntityWithCUDTime<CommentId> {
     await this.validate();
   }
 
-  constructor(payload: CreateCommentEntityPayload<"base", "all">) {
+  constructor(payload: CreateCommentEntityPayload<'base', 'all'>) {
     super();
     this._text = payload.text;
     this._contentId = payload.contentId;
     this._userTags = payload.userTags;
-    if ("id" in payload) {
+    if ('id' in payload) {
       this._id = payload.id;
       this._createdDateTime = payload.createdDateTime;
       this._updatedDateTime = payload.updatedDateTime || null;

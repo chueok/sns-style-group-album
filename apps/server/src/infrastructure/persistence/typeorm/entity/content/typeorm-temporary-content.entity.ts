@@ -1,5 +1,5 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
-import { TableAlias } from "../table-alias";
+import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { TableAlias } from '../table-alias';
 
 @Entity(TableAlias.TEMPORARY_CONTENT)
 export class TypeormTemporaryContent {

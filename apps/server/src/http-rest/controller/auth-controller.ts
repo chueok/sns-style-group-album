@@ -6,39 +6,39 @@ import {
   Post,
   Req,
   UseGuards,
-} from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
-import { VerifiedUser } from "../auth/decorator/verified-user";
-import { ServerConfig } from "../../config/server-config";
-import assert from "assert";
-import { VerifiedUserPayload } from "../auth/type/verified-user-payload";
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { VerifiedUser } from '../auth/decorator/verified-user';
+import { ServerConfig } from '../../config/server-config';
+import assert from 'assert';
+import { VerifiedUserPayload } from '../auth/type/verified-user-payload';
 import {
   OauthUserPayload,
   isHttpOauthUserPayload,
-} from "../auth/type/oauth-user-payload";
-import { RestAuthSignupBody } from "./dto/auth/rest-auth-signup-body";
-import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
-import { RestResponseSignupJwt } from "./dto/auth/rest-response-signup-jwt";
-import { RestResponseJwt } from "./dto/auth/rest-response-jwt";
-import { Code, Exception } from "@repo/be-core";
-import { RestResponse } from "./dto/common/rest-response";
-import { HttpGoogleAuthGuard } from "../auth/guard/google-auth-guard";
-import { ExtractJwt } from "passport-jwt";
-import { DiTokens } from "../../di/di-tokens";
-import { IAuthService } from "../auth/auth-service.interface";
-import { SignupAdaptor } from "../auth/port/signup-port";
+} from '../auth/type/oauth-user-payload';
+import { RestAuthSignupBody } from './dto/auth/rest-auth-signup-body';
+import { ApiResponseGeneric } from './dto/decorator/api-response-generic';
+import { RestResponseSignupJwt } from './dto/auth/rest-response-signup-jwt';
+import { RestResponseJwt } from './dto/auth/rest-response-jwt';
+import { Code, Exception } from '@repo/be-core';
+import { RestResponse } from './dto/common/rest-response';
+import { HttpGoogleAuthGuard } from '../auth/guard/google-auth-guard';
+import { ExtractJwt } from 'passport-jwt';
+import { DiTokens } from '../../di/di-tokens';
+import { IAuthService } from '../auth/auth-service.interface';
+import { SignupAdaptor } from '../auth/port/signup-port';
 
-const AUTH_PATH_NAME = "auth";
+const AUTH_PATH_NAME = 'auth';
 const googleCallbackPath = validateCallbackPath();
 
 @Controller(AUTH_PATH_NAME)
 @ApiTags(AUTH_PATH_NAME)
 export class AuthController {
   constructor(
-    @Inject(DiTokens.AuthService) private readonly authService: IAuthService,
+    @Inject(DiTokens.AuthService) private readonly authService: IAuthService
   ) {}
 
-  @Get("login/google")
+  @Get('login/google')
   @UseGuards(HttpGoogleAuthGuard)
   googleAuth() {
     // redirect google login page
@@ -52,7 +52,7 @@ export class AuthController {
     data: RestResponseSignupJwt,
   })
   async googleAuthCallback(
-    @VerifiedUser() user: VerifiedUserPayload | OauthUserPayload,
+    @VerifiedUser() user: VerifiedUserPayload | OauthUserPayload
   ): Promise<RestResponse<RestResponseSignupJwt | RestResponseJwt | null>> {
     if (isHttpOauthUserPayload(user)) {
       const token: RestResponseSignupJwt =
@@ -60,7 +60,7 @@ export class AuthController {
       return RestResponse.error(
         Code.WRONG_CREDENTIALS_ERROR.code,
         Code.WRONG_CREDENTIALS_ERROR.message,
-        token,
+        token
       );
     } else {
       const token: RestResponseJwt = await this.authService.getLoginToken(user);
@@ -68,11 +68,11 @@ export class AuthController {
     }
   }
 
-  @Post("signup")
+  @Post('signup')
   @ApiResponseGeneric({ code: Code.CREATED, data: RestResponseJwt })
   async signup(
     @Req() req: Request,
-    @Body() body: RestAuthSignupBody,
+    @Body() body: RestAuthSignupBody
   ): Promise<RestResponse<RestResponseJwt>> {
     const jwt = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
     if (!jwt) {
@@ -95,7 +95,7 @@ function validateCallbackPath() {
   const googleRedirect = ServerConfig.OAUTH_GOOGLE_REDIRECT;
   assert(
     googleRedirect.includes(AUTH_PATH_NAME),
-    `oauth redirect path must include ${AUTH_PATH_NAME}`,
+    `oauth redirect path must include ${AUTH_PATH_NAME}`
   );
   const [_, callbackPath] = googleRedirect.split(AUTH_PATH_NAME);
   assert(!!callbackPath, `callback path must be defined`);

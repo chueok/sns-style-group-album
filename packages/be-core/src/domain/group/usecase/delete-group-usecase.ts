@@ -1,5 +1,5 @@
-import { Code, Exception, IDeleteGroupPort, IGroupRepository } from "../../..";
-import { IUsecase } from "../../../common/usecase/usecase.interface";
+import { Code, Exception, IDeleteGroupPort, IGroupRepository } from '../../..';
+import { IUsecase } from '../../../common/usecase/usecase.interface';
 
 export class DeleteGroupUsecase implements IUsecase<IDeleteGroupPort, void> {
   constructor(private readonly groupRepository: IGroupRepository) {}
@@ -9,7 +9,7 @@ export class DeleteGroupUsecase implements IUsecase<IDeleteGroupPort, void> {
     if (!group) {
       throw Exception.new({
         code: Code.ENTITY_NOT_FOUND_ERROR,
-        overrideMessage: "Group not found",
+        overrideMessage: 'Group not found',
       });
     }
 
@@ -17,7 +17,7 @@ export class DeleteGroupUsecase implements IUsecase<IDeleteGroupPort, void> {
     if (!result) {
       throw Exception.new({
         code: Code.BAD_REQUEST_ERROR,
-        overrideMessage: "Group has members",
+        overrideMessage: 'Group has members',
       });
     }
 
@@ -25,7 +25,7 @@ export class DeleteGroupUsecase implements IUsecase<IDeleteGroupPort, void> {
     if (!repositoryResult) {
       throw Exception.new({
         code: Code.INTERNAL_ERROR,
-        overrideMessage: "Failed to delete group",
+        overrideMessage: 'Failed to delete group',
       });
     }
   }

@@ -1,5 +1,5 @@
-import { IsString, IsOptional } from "class-validator";
-import { UseCaseValidatableAdapter } from "../../../../common/usecase/usecase-validatable-adapter";
+import { IsString, IsOptional } from 'class-validator';
+import { UseCaseValidatableAdapter } from '../../../../common/usecase/usecase-validatable-adapter';
 
 export interface IEditUserGroupProfilePort {
   userId: string;
@@ -22,7 +22,7 @@ export class EditUserGroupProfileAdapter
   nickname?: string;
 
   static async new(
-    payload: IEditUserGroupProfilePort,
+    payload: IEditUserGroupProfilePort
   ): Promise<IEditUserGroupProfilePort> {
     const adapter = new EditUserGroupProfileAdapter();
     adapter.userId = payload.userId;

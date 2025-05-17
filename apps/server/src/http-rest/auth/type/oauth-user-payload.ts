@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, IsUrl } from "class-validator";
+import { IsEmail, IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class OauthUserModel {
   @IsString()
@@ -33,9 +33,9 @@ export type OauthUserPayload = {
 };
 
 export function isHttpOauthUserPayload(
-  payload: object,
+  payload: object
 ): payload is OauthUserPayload {
-  return "provider" in payload && "providerId" in payload;
+  return 'provider' in payload && 'providerId' in payload;
 }
 
 export type HttpRequestWithOauthUser = Request & {

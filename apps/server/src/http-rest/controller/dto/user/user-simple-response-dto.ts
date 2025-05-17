@@ -1,15 +1,15 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IObjectStoragePort, User } from "@repo/be-core";
-import { ObjectStorageKeyFactory } from "../../../../infrastructure/persistence/object-storage/key-factory/object-storage-key-factory";
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IObjectStoragePort, User } from '@repo/be-core';
+import { ObjectStorageKeyFactory } from '../../../../infrastructure/persistence/object-storage/key-factory/object-storage-key-factory';
 
 export class UserSimpleResponseDTO {
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   id: string;
 
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   username: string;
 
-  @ApiPropertyOptional({ type: "string" })
+  @ApiPropertyOptional({ type: 'string' })
   profileImagePath?: string;
 
   constructor(payload: UserSimpleResponseDTO) {
@@ -26,11 +26,11 @@ export class UserSimpleResponseDTO {
     const { user, groupId, mediaObjectStorage } = payload;
     let profileImagePath: string | undefined = undefined;
     const userGroupProfile = user.userGroupProfiles.find(
-      (profile) => profile.groupId === groupId,
+      (profile) => profile.groupId === groupId
     );
     if (userGroupProfile && userGroupProfile.hasProfileImage) {
       profileImagePath = await mediaObjectStorage.getPresignedUrlForDownload(
-        ObjectStorageKeyFactory.getUserGroupProfilePath(groupId, user.id),
+        ObjectStorageKeyFactory.getUserGroupProfilePath(groupId, user.id)
       );
     }
     const dto: UserSimpleResponseDTO = new UserSimpleResponseDTO({

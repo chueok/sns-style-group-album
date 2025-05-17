@@ -1,9 +1,9 @@
-import { Code } from "../../../common/exception/code";
-import { Exception } from "../../../common/exception/exception";
-import { IUsecase } from "../../../common/usecase/usecase.interface";
-import { Group } from "../entity/group";
-import { IGroupRepository } from "../repository/group-repository.interface";
-import { IGetGroupListPort } from "./port/get-group-list-port";
+import { Code } from '../../../common/exception/code';
+import { Exception } from '../../../common/exception/exception';
+import { IUsecase } from '../../../common/usecase/usecase.interface';
+import { Group } from '../entity/group';
+import { IGroupRepository } from '../repository/group-repository.interface';
+import { IGetGroupListPort } from './port/get-group-list-port';
 
 export class GetGroupListUsecase
   implements IUsecase<IGetGroupListPort, Group[]>
@@ -12,12 +12,12 @@ export class GetGroupListUsecase
 
   async execute(port: IGetGroupListPort): Promise<Group[]> {
     const groupList = await this.groupRepository.findGroupListByUserId(
-      port.userId,
+      port.userId
     );
     if (groupList.length === 0) {
       throw Exception.new({
         code: Code.ENTITY_NOT_FOUND_ERROR,
-        overrideMessage: "Group not found",
+        overrideMessage: 'Group not found',
       });
     }
 

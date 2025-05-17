@@ -1,5 +1,5 @@
-import { DataSource } from "typeorm";
-import { DummyDatabaseHandler } from "../../../test-utils/persistence/dummy-database-handler";
+import { DataSource } from 'typeorm';
+import { DummyDatabaseHandler } from '../../../test-utils/persistence/dummy-database-handler';
 
 export async function makeDummyDB(
   entitiesPath: string,
@@ -11,10 +11,10 @@ export async function makeDummyDB(
     numContent: number;
     numComment: number;
     numLike: number;
-  },
+  }
 ) {
   const dataSource = new DataSource({
-    type: "sqlite",
+    type: 'sqlite',
     database: dbPath,
     logging: false,
     entities: [entitiesPath],

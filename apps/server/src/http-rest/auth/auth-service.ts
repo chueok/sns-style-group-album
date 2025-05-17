@@ -4,8 +4,8 @@ import {
   Logger,
   LoggerService,
   Optional as OptionalInject,
-} from "@nestjs/common";
-import { VerifiedUserPayload } from "./type/verified-user-payload";
+} from '@nestjs/common';
+import { VerifiedUserPayload } from './type/verified-user-payload';
 import {
   Code,
   CreateUserEntityPayload,
@@ -13,24 +13,24 @@ import {
   IUserRepository,
   Nullable,
   User,
-} from "@repo/be-core";
-import { JwtService } from "@nestjs/jwt";
-import { DataSource, Repository } from "typeorm";
-import { TypeormOauth } from "../../infrastructure/persistence/typeorm/entity/oauth/typeorm-oauth.entity";
-import { OauthUserPayload } from "./type/oauth-user-payload";
-import { RestResponseJwt } from "../controller/dto/auth/rest-response-jwt";
-import { RestResponseSignupJwt } from "../controller/dto/auth/rest-response-signup-jwt";
-import { DiTokens } from "../../di/di-tokens";
-import { TypeormUser } from "../../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity";
-import { TypeormGroup } from "../../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity";
-import { plainToInstance } from "class-transformer";
-import { validateSync } from "class-validator";
-import { IAuthService } from "./auth-service.interface";
-import { JwtSignupModel, JwtSignupPayload } from "./type/jwt-signup-payload";
-import { ISignupPort } from "./port/signup-port";
-import { TypeormContent } from "../../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity";
-import { TypeormComment } from "../../infrastructure/persistence/typeorm/entity/comment/typeorm-comment.entity";
-import { JwtUserModel, JwtUserPayload } from "./type/jwt-user-payload";
+} from '@repo/be-core';
+import { JwtService } from '@nestjs/jwt';
+import { DataSource, Repository } from 'typeorm';
+import { TypeormOauth } from '../../infrastructure/persistence/typeorm/entity/oauth/typeorm-oauth.entity';
+import { OauthUserPayload } from './type/oauth-user-payload';
+import { RestResponseJwt } from '../controller/dto/auth/rest-response-jwt';
+import { RestResponseSignupJwt } from '../controller/dto/auth/rest-response-signup-jwt';
+import { DiTokens } from '../../di/di-tokens';
+import { TypeormUser } from '../../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
+import { TypeormGroup } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
+import { plainToInstance } from 'class-transformer';
+import { validateSync } from 'class-validator';
+import { IAuthService } from './auth-service.interface';
+import { JwtSignupModel, JwtSignupPayload } from './type/jwt-signup-payload';
+import { ISignupPort } from './port/signup-port';
+import { TypeormContent } from '../../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
+import { TypeormComment } from '../../infrastructure/persistence/typeorm/entity/comment/typeorm-comment.entity';
+import { JwtUserModel, JwtUserPayload } from './type/jwt-user-payload';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -47,7 +47,7 @@ export class AuthService implements IAuthService {
     private readonly userRepository: IUserRepository,
     private readonly jwtService: JwtService,
     readonly dataSource: DataSource,
-    @OptionalInject() logger?: LoggerService,
+    @OptionalInject() logger?: LoggerService
   ) {
     this.typeormOauthRepository = dataSource.getRepository(TypeormOauth);
     this.typeormUserRepository = dataSource.getRepository(TypeormUser);
@@ -77,7 +77,7 @@ export class AuthService implements IAuthService {
     };
 
     const signupToken = this.jwtService.sign(signupPayload, {
-      expiresIn: "30m",
+      expiresIn: '30m',
     });
 
     const oauth = new TypeormOauth();
@@ -110,7 +110,7 @@ export class AuthService implements IAuthService {
 
     // NOTE : 현재는 signup 시에는 profile image등록이 불가 함.
     // 필요시 변경 필요
-    const newUserPayload: CreateUserEntityPayload<"new"> = {
+    const newUserPayload: CreateUserEntityPayload<'new'> = {
       username: payload.username,
       email: payload.email,
     };
@@ -121,7 +121,7 @@ export class AuthService implements IAuthService {
       this.logger.log(`createUser failed: ${newUserPayload}`);
       throw Exception.new({
         code: Code.BAD_REQUEST_ERROR,
-        overrideMessage: "create user failed",
+        overrideMessage: 'create user failed',
       });
     }
 
@@ -133,14 +133,14 @@ export class AuthService implements IAuthService {
    */
   async getOauthUser(
     provider: string,
-    providerId: string,
+    providerId: string
   ): Promise<Nullable<VerifiedUserPayload>> {
     const user = await this.typeormUserRepository
-      .createQueryBuilder("user")
-      .andWhere("user.deletedDateTime is null")
-      .innerJoinAndSelect("user.oauths", "oauth")
-      .where("oauth.provider = :provider", { provider })
-      .where("oauth.providerId = :providerId", { providerId })
+      .createQueryBuilder('user')
+      .andWhere('user.deletedDateTime is null')
+      .innerJoinAndSelect('user.oauths', 'oauth')
+      .where('oauth.provider = :provider', { provider })
+      .where('oauth.providerId = :providerId', { providerId })
       .getOne();
     if (!user) {
       return null;
@@ -153,9 +153,9 @@ export class AuthService implements IAuthService {
 
   async getUser(payload: { id: string }): Promise<VerifiedUserPayload> {
     const user = await this.typeormUserRepository
-      .createQueryBuilder("user")
-      .where("user.id = :id", { id: payload.id })
-      .andWhere("user.deletedDateTime is null")
+      .createQueryBuilder('user')
+      .where('user.id = :id', { id: payload.id })
+      .andWhere('user.deletedDateTime is null')
       .getOne();
 
     if (!user) {
@@ -177,10 +177,10 @@ export class AuthService implements IAuthService {
       this.getUser({ id: userId }),
 
       this.typeormUserRepository
-        .createQueryBuilder("user")
-        .leftJoinAndSelect("user.groups", "group")
-        .where("user.id = :userId", { userId })
-        .andWhere("group.id = :groupId", { groupId })
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.groups', 'group')
+        .where('user.id = :userId', { userId })
+        .andWhere('group.id = :groupId', { groupId })
         .getCount()
         .then((count) => count > 0),
     ]);
@@ -204,9 +204,9 @@ export class AuthService implements IAuthService {
       this.getUser({ id: userId }),
 
       this.typeormGroupRepository
-        .createQueryBuilder("group")
-        .where("group.id = :groupId", { groupId })
-        .andWhere("group.ownerId = :userId", { userId })
+        .createQueryBuilder('group')
+        .where('group.id = :groupId', { groupId })
+        .andWhere('group.ownerId = :userId', { userId })
         .getCount()
         .then((count) => count > 0),
     ]);
@@ -230,9 +230,9 @@ export class AuthService implements IAuthService {
     const [groupMember, isContentOwner] = await Promise.all([
       this.getGroupMember({ userId, groupId }),
       this.typeormContentRepository
-        .createQueryBuilder("content")
-        .where("content.id = :contentId", { contentId })
-        .andWhere("content.ownerId = :userId", { userId })
+        .createQueryBuilder('content')
+        .where('content.id = :contentId', { contentId })
+        .andWhere('content.ownerId = :userId', { userId })
         .getCount()
         .then((count) => count > 0),
     ]);
@@ -257,9 +257,9 @@ export class AuthService implements IAuthService {
       this.getGroupMember({ userId, groupId }),
 
       await this.typeormCommentRepository
-        .createQueryBuilder("comment")
-        .where("comment.id = :commentId", { commentId })
-        .andWhere("comment.ownerId = :userId", { userId })
+        .createQueryBuilder('comment')
+        .where('comment.id = :commentId', { commentId })
+        .andWhere('comment.ownerId = :userId', { userId })
         .getCount()
         .then((count) => count > 0),
     ]);

@@ -24,10 +24,10 @@ type RequestParameters = {
 };
 
 type ResponseElements = {
-  "x-amz-id-2": string;
-  "x-amz-request-id": string;
-  "x-minio-deployment-id": string;
-  "x-minio-origin-endpoint": string;
+  'x-amz-id-2': string;
+  'x-amz-request-id': string;
+  'x-minio-deployment-id': string;
+  'x-minio-origin-endpoint': string;
 };
 
 type S3 = {
@@ -57,7 +57,7 @@ type S3Object = {
 };
 
 type UserMetadata = {
-  "content-type": string;
+  'content-type': string;
 };
 
 type Source = {

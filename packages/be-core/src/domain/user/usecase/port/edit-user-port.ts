@@ -1,5 +1,5 @@
-import { IsOptional, IsString } from "class-validator";
-import { UseCaseValidatableAdapter } from "../../../../common/usecase/usecase-validatable-adapter";
+import { IsOptional, IsString } from 'class-validator';
+import { UseCaseValidatableAdapter } from '../../../../common/usecase/usecase-validatable-adapter';
 
 export interface IEditUserPort {
   userId: string;

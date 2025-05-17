@@ -1,4 +1,4 @@
-import { IsString } from "class-validator";
+import { IsString } from 'class-validator';
 
 export class JwtUserModel {
   @IsString()
@@ -15,5 +15,5 @@ export type JwtUserPayload = {
 };
 
 export function isHttpUserPayload(input: object): input is JwtUserPayload {
-  return "id" in input && typeof input.id === "string";
+  return 'id' in input && typeof input.id === 'string';
 }

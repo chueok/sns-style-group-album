@@ -1,21 +1,21 @@
-import { join, basename } from "path";
-import { DataSource } from "typeorm";
-import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
-import { TypeormGroup } from "../../../entity/group/typeorm-group.entity";
-import { GroupMapper } from "./group-mapper";
-import { Group } from "@repo/be-core";
-import { Test, TestingModule } from "@nestjs/testing";
+import { join, basename } from 'path';
+import { DataSource } from 'typeorm';
+import { DummyDatabaseHandler } from '@test-utils/persistence/dummy-database-handler';
+import { TypeormGroup } from '../../../entity/group/typeorm-group.entity';
+import { GroupMapper } from './group-mapper';
+import { Group } from '@repo/be-core';
+import { Test, TestingModule } from '@nestjs/testing';
 import {
   InfrastructureModule,
   typeormSqliteOptions,
-} from "../../../../../../di/infrastructure.module";
+} from '../../../../../../di/infrastructure.module';
 
 const parameters = {
-  testDbPath: join("db", `${basename(__filename)}.sqlite`),
-  dummyDbPath: join("db", "dummy.sqlite"),
+  testDbPath: join('db', `${basename(__filename)}.sqlite`),
+  dummyDbPath: join('db', 'dummy.sqlite'),
 };
 
-describe("GroupMapper", () => {
+describe('GroupMapper', () => {
   let module: TestingModule;
   let dataSource: DataSource;
   let testDatabaseHandler: DummyDatabaseHandler;
@@ -46,27 +46,27 @@ describe("GroupMapper", () => {
     await module.close();
   });
 
-  it("should be defined", () => {
+  it('should be defined', () => {
     expect(dataSource).toBeDefined();
     expect(testDatabaseHandler).toBeDefined();
   });
 
-  describe("toDomainEntity", () => {
-    it("[array] should convert orm entity to domain entity", async () => {
+  describe('toDomainEntity', () => {
+    it('[array] should convert orm entity to domain entity', async () => {
       const ormGroupList = testDatabaseHandler.getDbCacheList(TypeormGroup);
 
       const groupElements = await Promise.all(
         ormGroupList.map(async (ormGroup) => {
           const members = (await ormGroup.members).map((member) => member.id);
           const invitedUsers = (await ormGroup.invitedUsers).map(
-            (user) => user.id,
+            (user) => user.id
           );
           return {
             group: ormGroup,
             members,
             invitedUsers,
           };
-        }),
+        })
       );
 
       const domainGroupList = await GroupMapper.toDomainEntity({
@@ -76,7 +76,7 @@ describe("GroupMapper", () => {
     });
   });
 
-  describe("toOrmEntity", () => {
+  describe('toOrmEntity', () => {
     let domainGroupList: Group[];
     beforeAll(async () => {
       const ormGroupList = testDatabaseHandler.getDbCacheList(TypeormGroup);
@@ -84,21 +84,21 @@ describe("GroupMapper", () => {
         ormGroupList.map(async (ormGroup) => {
           const members = (await ormGroup.members).map((member) => member.id);
           const invitedUsers = (await ormGroup.invitedUsers).map(
-            (user) => user.id,
+            (user) => user.id
           );
           return {
             group: ormGroup,
             members,
             invitedUsers,
           };
-        }),
+        })
       );
       const mapResult = await GroupMapper.toDomainEntity({
         elements: groupElements,
       });
       domainGroupList = mapResult.results;
     });
-    it("[array] should convert domain entity to orm entity", () => {
+    it('[array] should convert domain entity to orm entity', () => {
       const ormGroupList = GroupMapper.toOrmEntity(domainGroupList);
       expect(ormGroupList).toBeInstanceOf(Array);
       expect(ormGroupList.length).toEqual(domainGroupList.length);

@@ -1,9 +1,9 @@
-import { Nullable, Optional } from "../type/common-types";
+import { Nullable, Optional } from '../type/common-types';
 
 export class CustomAssert {
   public static isTrue(
     expression: boolean,
-    exception: Error,
+    exception: Error
   ): asserts expression {
     if (!expression) {
       throw exception;
@@ -12,7 +12,7 @@ export class CustomAssert {
 
   public static isFalse(
     expression: boolean,
-    exception: Error,
+    exception: Error
   ): asserts expression {
     if (expression) {
       throw exception;

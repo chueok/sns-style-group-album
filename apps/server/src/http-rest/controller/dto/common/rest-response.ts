@@ -1,17 +1,17 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Code, Nullable } from "@repo/be-core";
+import { ApiProperty } from '@nestjs/swagger';
+import { Code, Nullable } from '@repo/be-core';
 
 export class RestResponse<TData = unknown> {
-  @ApiProperty({ type: "number" })
+  @ApiProperty({ type: 'number' })
   public readonly code: number;
 
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   public readonly message: string;
 
-  @ApiProperty({ description: "timestamp in ms", type: "number" })
+  @ApiProperty({ description: 'timestamp in ms', type: 'number' })
   public readonly timestamp: number;
 
-  @ApiProperty({ type: "object", nullable: true })
+  @ApiProperty({ type: 'object', nullable: true })
   public readonly data: Nullable<TData>;
 
   private constructor(code: number, message: string, data?: TData) {
@@ -23,7 +23,7 @@ export class RestResponse<TData = unknown> {
 
   public static success<TData>(
     data?: TData,
-    message?: string,
+    message?: string
   ): RestResponse<TData> {
     const resultCode: number = Code.SUCCESS.code;
     const resultMessage: string = message || Code.SUCCESS.message;
@@ -34,7 +34,7 @@ export class RestResponse<TData = unknown> {
   public static error<TData>(
     code?: number,
     message?: string,
-    data?: TData,
+    data?: TData
   ): RestResponse<TData> {
     const resultCode: number = code || Code.INTERNAL_ERROR.code;
     const resultMessage: string = message || Code.INTERNAL_ERROR.message;

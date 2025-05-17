@@ -5,9 +5,9 @@ import {
   PostContent,
   BucketContent,
   ScheduleContent,
-} from "../../entity/content";
-import { Content } from "../../entity/content.abstract";
-import { ContentTypeEnum } from "../../enum/content-type-enum";
+} from '../../entity/content';
+import { Content } from '../../entity/content.abstract';
+import { ContentTypeEnum } from '../../enum/content-type-enum';
 
 export type ContentTypeToContentMap = {
   [ContentTypeEnum.SYSTEM]: SystemContent;

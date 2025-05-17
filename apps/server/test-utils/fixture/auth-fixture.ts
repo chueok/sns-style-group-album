@@ -1,13 +1,13 @@
-import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
-import { DataSource } from "typeorm";
-import { IAuthService } from "../../src/http-rest/auth/auth-service.interface";
-import { TypeormGroup } from "../../src/infrastructure/persistence/typeorm/entity/group/typeorm-group.entity";
-import assert from "assert";
-import { TypeormUser } from "../../src/infrastructure/persistence/typeorm/entity/user/typeorm-user.entity";
-import { JwtService } from "@nestjs/jwt";
-import { JwtUserPayload } from "../../src/http-rest/auth/type/jwt-user-payload";
-import { v4 } from "uuid";
-import { TypeormContent } from "../../src/infrastructure/persistence/typeorm/entity/content/typeorm-content.entity";
+import { DummyDatabaseHandler } from '@test-utils/persistence/dummy-database-handler';
+import { DataSource } from 'typeorm';
+import { IAuthService } from '../../src/http-rest/auth/auth-service.interface';
+import { TypeormGroup } from '../../src/infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
+import assert from 'assert';
+import { TypeormUser } from '../../src/infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
+import { JwtService } from '@nestjs/jwt';
+import { JwtUserPayload } from '../../src/http-rest/auth/type/jwt-user-payload';
+import { v4 } from 'uuid';
+import { TypeormContent } from '../../src/infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
 
 export class AuthFixture {
   private readonly dbHandler: DummyDatabaseHandler;
@@ -15,7 +15,7 @@ export class AuthFixture {
   constructor(
     private readonly dataSource: DataSource,
     private readonly authService: IAuthService,
-    private readonly jwtService?: JwtService,
+    private readonly jwtService?: JwtService
   ) {
     this.dbHandler = new DummyDatabaseHandler(dataSource);
   }
@@ -32,7 +32,7 @@ export class AuthFixture {
       .getDbCacheList(TypeormUser)
       .filter((user) => !user.deletedDateTime)
       .at(0);
-    assert(!!user, "there is no valid user");
+    assert(!!user, 'there is no valid user');
 
     const loginToken = await this.authService.getLoginToken({
       id: user.id,
@@ -48,7 +48,7 @@ export class AuthFixture {
       .getDbCacheList(TypeormUser)
       .filter((user) => user.deletedDateTime !== null)
       .at(0);
-    assert(!!user, "there is no deleted user");
+    assert(!!user, 'there is no deleted user');
 
     const loginToken = await this.authService.getLoginToken({
       id: user.id,
@@ -60,19 +60,19 @@ export class AuthFixture {
     accessToken: string;
     user: TypeormUser;
   }> {
-    assert(!!this.jwtService, "jwtService is not exist");
+    assert(!!this.jwtService, 'jwtService is not exist');
 
     const validUser = this.dbHandler
       .getDbCacheList(TypeormUser)
       .filter((user) => user.deletedDateTime === null)
       .at(0);
-    assert(!!validUser, "user list is empty");
+    assert(!!validUser, 'user list is empty');
 
     const payload: JwtUserPayload = {
       id: validUser.id,
     };
     const accessToken = this.jwtService.sign(payload, {
-      secret: "fake-scret-asdjkfhlb",
+      secret: 'fake-scret-asdjkfhlb',
     });
     return {
       accessToken,
@@ -84,7 +84,7 @@ export class AuthFixture {
     accessToken: string;
     payload: JwtUserPayload;
   }> {
-    assert(!!this.jwtService, "jwtService is not exist");
+    assert(!!this.jwtService, 'jwtService is not exist');
 
     const payload: JwtUserPayload = {
       id: v4(),
@@ -113,14 +113,14 @@ export class AuthFixture {
         targetGroup = group;
       }
     }
-    assert(targetGroup, "group not found");
+    assert(targetGroup, 'group not found');
 
     const user = (await targetGroup.members)
       .filter((member) => {
         return member.id !== targetGroup.ownerId && !member.deletedDateTime;
       })
       .at(0);
-    assert(user && !user.deletedDateTime, "user not found");
+    assert(user && !user.deletedDateTime, 'user not found');
 
     const loginToken = await this.authService.getLoginToken({
       id: user.id,
@@ -140,9 +140,9 @@ export class AuthFixture {
   }> {
     const groupList = this.dbHandler.getDbCacheList(TypeormGroup);
     const group = groupList.filter((group) => !group.deletedDateTime).at(0);
-    assert(group && !group.deletedDateTime, "group not found");
+    assert(group && !group.deletedDateTime, 'group not found');
     const user = await group.owner;
-    assert(user && !user.deletedDateTime, "user not found");
+    assert(user && !user.deletedDateTime, 'user not found');
 
     const loginToken = await this.authService.getLoginToken({
       id: user.id,
@@ -161,7 +161,7 @@ export class AuthFixture {
       .getDbCacheList(TypeormUser)
       .filter((user) => user.id !== userId)
       .at(0);
-    assert(!!unrelatedUser, "unrelatedUser is not exist");
+    assert(!!unrelatedUser, 'unrelatedUser is not exist');
 
     const newGroup = this.dbHandler.makeDummyGroup();
     newGroup.members = Promise.resolve([unrelatedUser]);
@@ -184,12 +184,12 @@ export class AuthFixture {
       .getDbCacheList(TypeormGroup)
       .filter((group) => group.id === groupId)
       .at(0);
-    assert(!!group, "group not found");
+    assert(!!group, 'group not found');
 
     const users = this.dbHandler.getDbCacheList(TypeormUser);
     const members = await group.members;
     const usersNotInGroup = users.filter(
-      (user) => !members.find((member) => member.id === user.id),
+      (user) => !members.find((member) => member.id === user.id)
     );
     return usersNotInGroup;
   }
@@ -203,8 +203,8 @@ export class AuthFixture {
     const group = await this.getGroupUserNotIn(user.id);
     await this.dataSource
       .getRepository(TypeormGroup)
-      .createQueryBuilder("group")
-      .relation("invitedUsers")
+      .createQueryBuilder('group')
+      .relation('invitedUsers')
       .of(group)
       .add(user);
     return { user, group, accessToken };
@@ -234,7 +234,7 @@ export class AuthFixture {
         break;
       }
     }
-    assert(targetContent, "content not found");
+    assert(targetContent, 'content not found');
 
     return {
       content: targetContent,

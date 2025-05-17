@@ -1,8 +1,8 @@
-import { Code } from "../../../common/exception/code";
-import { Exception } from "../../../common/exception/exception";
-import { IUsecase } from "../../../common/usecase/usecase.interface";
-import { IUserRepository } from "../repository/user-repository.interface";
-import { IDeleteUserPort } from "./port/delete-user-port";
+import { Code } from '../../../common/exception/code';
+import { Exception } from '../../../common/exception/exception';
+import { IUsecase } from '../../../common/usecase/usecase.interface';
+import { IUserRepository } from '../repository/user-repository.interface';
+import { IDeleteUserPort } from './port/delete-user-port';
 
 export class DeleteUserUsecase implements IUsecase<IDeleteUserPort, void> {
   constructor(private readonly userRepository: IUserRepository) {}
@@ -12,7 +12,7 @@ export class DeleteUserUsecase implements IUsecase<IDeleteUserPort, void> {
     if (!user) {
       throw Exception.new({
         code: Code.ENTITY_NOT_FOUND_ERROR,
-        overrideMessage: "user is not exist",
+        overrideMessage: 'user is not exist',
       });
     }
 
@@ -20,7 +20,7 @@ export class DeleteUserUsecase implements IUsecase<IDeleteUserPort, void> {
     if (!domainResult) {
       throw Exception.new({
         code: Code.BAD_REQUEST_ERROR,
-        overrideMessage: "user is owner of any group",
+        overrideMessage: 'user is owner of any group',
       });
     }
 
@@ -29,7 +29,7 @@ export class DeleteUserUsecase implements IUsecase<IDeleteUserPort, void> {
     if (!repositoryResult) {
       throw Exception.new({
         code: Code.INTERNAL_ERROR,
-        overrideMessage: "update user error",
+        overrideMessage: 'update user error',
       });
     }
   }

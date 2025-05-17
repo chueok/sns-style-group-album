@@ -1,10 +1,10 @@
-import { VerifiedUserPayload } from "./type/verified-user-payload";
-import { OauthUserPayload } from "./type/oauth-user-payload";
-import { RestResponseJwt } from "../controller/dto/auth/rest-response-jwt";
-import { RestResponseSignupJwt } from "../controller/dto/auth/rest-response-signup-jwt";
-import { Nullable } from "@repo/be-core";
-import { ISignupPort } from "./port/signup-port";
-import { JwtUserPayload } from "./type/jwt-user-payload";
+import { VerifiedUserPayload } from './type/verified-user-payload';
+import { OauthUserPayload } from './type/oauth-user-payload';
+import { RestResponseJwt } from '../controller/dto/auth/rest-response-jwt';
+import { RestResponseSignupJwt } from '../controller/dto/auth/rest-response-signup-jwt';
+import { Nullable } from '@repo/be-core';
+import { ISignupPort } from './port/signup-port';
+import { JwtUserPayload } from './type/jwt-user-payload';
 
 export interface IAuthService {
   getLoginToken(user: VerifiedUserPayload): Promise<RestResponseJwt>;
@@ -17,7 +17,7 @@ export interface IAuthService {
   // for oauth
   getOauthUser(
     provider: string,
-    providerId: string,
+    providerId: string
   ): Promise<Nullable<VerifiedUserPayload>>;
 
   getUser(payload: { id: string }): Promise<VerifiedUserPayload>;

@@ -1,7 +1,7 @@
-import { Column, Entity, ManyToOne, PrimaryColumn } from "typeorm";
-import { TableAlias } from "../table-alias";
-import { TypeormUser } from "../user/typeorm-user.entity";
-import { Nullable, Optional } from "@repo/be-core";
+import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { TableAlias } from '../table-alias';
+import { TypeormUser } from '../user/typeorm-user.entity';
+import { Nullable, Optional } from '@repo/be-core';
 
 @Entity(TableAlias.OAUTH)
 export class TypeormOauth {
@@ -11,13 +11,13 @@ export class TypeormOauth {
   @PrimaryColumn()
   providerId!: string;
 
-  @Column({ type: "text", nullable: true })
+  @Column({ type: 'text', nullable: true })
   email!: Nullable<string>;
 
-  @Column({ type: "text", nullable: true })
+  @Column({ type: 'text', nullable: true })
   secretToken!: Nullable<string>;
 
-  @Column({ type: "datetime", nullable: false })
+  @Column({ type: 'datetime', nullable: false })
   createdDateTime!: Date;
 
   /**
@@ -26,6 +26,6 @@ export class TypeormOauth {
   @ManyToOne(() => TypeormUser, (user) => user.oauths)
   user!: Promise<Nullable<TypeormUser>>;
   __user__: Optional<Nullable<TypeormUser>>;
-  @Column({ type: "text", nullable: true })
-  userId!: Nullable<TypeormUser["id"]>;
+  @Column({ type: 'text', nullable: true })
+  userId!: Nullable<TypeormUser['id']>;
 }

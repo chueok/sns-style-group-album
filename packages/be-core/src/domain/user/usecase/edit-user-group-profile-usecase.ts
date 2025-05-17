@@ -1,10 +1,10 @@
-import { Code } from "../../../common/exception/code";
-import { Exception } from "../../../common/exception/exception";
-import { IUsecase } from "../../../common/usecase/usecase.interface";
-import { GroupId } from "../../group/entity/type/group-id";
-import { User } from "../entity/user";
-import { IUserRepository } from "../repository/user-repository.interface";
-import { IEditUserGroupProfilePort } from "./port/edit-user-group-profile-port";
+import { Code } from '../../../common/exception/code';
+import { Exception } from '../../../common/exception/exception';
+import { IUsecase } from '../../../common/usecase/usecase.interface';
+import { GroupId } from '../../group/entity/type/group-id';
+import { User } from '../entity/user';
+import { IUserRepository } from '../repository/user-repository.interface';
+import { IEditUserGroupProfilePort } from './port/edit-user-group-profile-port';
 
 export class EditUserGroupProfileUsecase
   implements IUsecase<IEditUserGroupProfilePort, User>
@@ -15,7 +15,7 @@ export class EditUserGroupProfileUsecase
     if (!user) {
       throw Exception.new({
         code: Code.ENTITY_NOT_FOUND_ERROR,
-        overrideMessage: "User not found",
+        overrideMessage: 'User not found',
       });
     }
 
@@ -28,7 +28,7 @@ export class EditUserGroupProfileUsecase
     if (!result) {
       throw Exception.new({
         code: Code.INTERNAL_ERROR,
-        overrideMessage: "Failed to update user",
+        overrideMessage: 'Failed to update user',
       });
     }
 

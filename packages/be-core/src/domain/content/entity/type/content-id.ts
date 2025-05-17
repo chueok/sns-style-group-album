@@ -1,3 +1,3 @@
-import { Brand } from "../../../../common/type/brand";
+import { Brand } from '../../../../common/type/brand';
 
-export type ContentId = Brand<string, "contentId">;
+export type ContentId = Brand<string, 'contentId'>;

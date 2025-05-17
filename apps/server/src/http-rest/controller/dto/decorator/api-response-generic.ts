@@ -1,7 +1,7 @@
-import { applyDecorators } from "@nestjs/common";
-import { ApiExtraModels, ApiResponse, getSchemaPath } from "@nestjs/swagger";
-import { RestResponse } from "../common/rest-response";
-import { CodeDescription, Constructor } from "@repo/be-core";
+import { applyDecorators } from '@nestjs/common';
+import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import { RestResponse } from '../common/rest-response';
+import { CodeDescription, Constructor } from '@repo/be-core';
 
 export const ApiResponseGeneric = <
   GenericType extends Constructor<unknown> | null,
@@ -30,7 +30,7 @@ export const ApiResponseGeneric = <
             properties: {
               data: data
                 ? isArray
-                  ? { items: { $ref: getSchemaPath(data) }, type: "array" }
+                  ? { items: { $ref: getSchemaPath(data) }, type: 'array' }
                   : {
                       $ref: getSchemaPath(data),
                     }
@@ -50,6 +50,6 @@ export const ApiResponseGeneric = <
           },
         ],
       },
-    }),
+    })
   );
 };

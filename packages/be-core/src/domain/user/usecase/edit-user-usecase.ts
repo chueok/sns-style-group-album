@@ -1,9 +1,9 @@
-import { Code } from "../../../common/exception/code";
-import { Exception } from "../../../common/exception/exception";
-import { IUsecase } from "../../../common/usecase/usecase.interface";
-import { User } from "../entity/user";
-import { IUserRepository } from "../repository/user-repository.interface";
-import { IEditUserPort } from "./port/edit-user-port";
+import { Code } from '../../../common/exception/code';
+import { Exception } from '../../../common/exception/exception';
+import { IUsecase } from '../../../common/usecase/usecase.interface';
+import { User } from '../entity/user';
+import { IUserRepository } from '../repository/user-repository.interface';
+import { IEditUserPort } from './port/edit-user-port';
 
 export class EditUserUsecase implements IUsecase<IEditUserPort, User> {
   constructor(private readonly userRepository: IUserRepository) {}
@@ -13,7 +13,7 @@ export class EditUserUsecase implements IUsecase<IEditUserPort, User> {
     if (!user) {
       throw Exception.new({
         code: Code.ENTITY_NOT_FOUND_ERROR,
-        overrideMessage: "User not found",
+        overrideMessage: 'User not found',
       });
     }
 
@@ -22,7 +22,7 @@ export class EditUserUsecase implements IUsecase<IEditUserPort, User> {
       if (!result) {
         throw Exception.new({
           code: Code.INTERNAL_ERROR,
-          overrideMessage: "Failed to change username",
+          overrideMessage: 'Failed to change username',
         });
       }
     }
@@ -31,7 +31,7 @@ export class EditUserUsecase implements IUsecase<IEditUserPort, User> {
     if (!repositoryResult) {
       throw Exception.new({
         code: Code.INTERNAL_ERROR,
-        overrideMessage: "Failed to update user",
+        overrideMessage: 'Failed to update user',
       });
     }
 

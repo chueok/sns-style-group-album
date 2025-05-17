@@ -1,10 +1,10 @@
-import { Code } from "../../../common/exception/code";
-import { Exception } from "../../../common/exception/exception";
-import { IUsecase } from "../../../common/usecase/usecase.interface";
-import { UserId } from "../../user/entity/type/user-id";
-import { Group } from "../entity/group";
-import { IGroupRepository } from "../repository/group-repository.interface";
-import { IEditGroupPort } from "./port/edit-group-port";
+import { Code } from '../../../common/exception/code';
+import { Exception } from '../../../common/exception/exception';
+import { IUsecase } from '../../../common/usecase/usecase.interface';
+import { UserId } from '../../user/entity/type/user-id';
+import { Group } from '../entity/group';
+import { IGroupRepository } from '../repository/group-repository.interface';
+import { IEditGroupPort } from './port/edit-group-port';
 
 export class EditGroupUsecase implements IUsecase<IEditGroupPort, Group> {
   constructor(private readonly groupRepository: IGroupRepository) {}
@@ -14,7 +14,7 @@ export class EditGroupUsecase implements IUsecase<IEditGroupPort, Group> {
     if (!group) {
       throw Exception.new({
         code: Code.ENTITY_NOT_FOUND_ERROR,
-        overrideMessage: "Group not found",
+        overrideMessage: 'Group not found',
       });
     }
 
@@ -23,7 +23,7 @@ export class EditGroupUsecase implements IUsecase<IEditGroupPort, Group> {
       if (!result) {
         throw Exception.new({
           code: Code.BAD_REQUEST_ERROR,
-          overrideMessage: "Owner not found",
+          overrideMessage: 'Owner not found',
         });
       }
     } else if (port.name) {
@@ -36,7 +36,7 @@ export class EditGroupUsecase implements IUsecase<IEditGroupPort, Group> {
       }
     } else if (port.dropOutUserList) {
       const result = await group.dropOutMembers(
-        port.dropOutUserList as UserId[],
+        port.dropOutUserList as UserId[]
       );
       if (!result) {
         throw Exception.new({
@@ -50,7 +50,7 @@ export class EditGroupUsecase implements IUsecase<IEditGroupPort, Group> {
     if (!repositoryResult) {
       throw Exception.new({
         code: Code.INTERNAL_ERROR,
-        overrideMessage: "Failed to update group",
+        overrideMessage: 'Failed to update group',
       });
     }
 

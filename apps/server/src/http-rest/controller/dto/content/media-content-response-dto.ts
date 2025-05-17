@@ -1,51 +1,51 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   ContentTypeEnum,
   IObjectStoragePort,
   MediaContent,
-} from "@repo/be-core";
-import { CommentResponseDTO } from "../comment/comment-response-dto";
+} from '@repo/be-core';
+import { CommentResponseDTO } from '../comment/comment-response-dto';
 
 export class MediaContentResponseDTO {
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   id!: string;
 
   @ApiProperty({ enum: [ContentTypeEnum.IMAGE, ContentTypeEnum.VIDEO] })
   type!: ContentTypeEnum.IMAGE | ContentTypeEnum.VIDEO;
 
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   ownerId!: string;
 
-  @ApiPropertyOptional({ type: "string" })
+  @ApiPropertyOptional({ type: 'string' })
   thumbnailPath?: string;
 
-  @ApiPropertyOptional({ type: "string" })
+  @ApiPropertyOptional({ type: 'string' })
   largePath?: string;
 
-  @ApiPropertyOptional({ type: "string" })
+  @ApiPropertyOptional({ type: 'string' })
   originalPath?: string;
 
-  @ApiProperty({ type: "number" })
+  @ApiProperty({ type: 'number' })
   numLikes!: number;
 
-  @ApiProperty({ type: "string", isArray: true })
+  @ApiProperty({ type: 'string', isArray: true })
   topLikeUserIds!: string[];
 
-  @ApiProperty({ type: "number" })
+  @ApiProperty({ type: 'number' })
   numComments!: number;
 
   @ApiProperty({ type: CommentResponseDTO, isArray: true })
   topComments!: CommentResponseDTO[];
 
-  @ApiProperty({ type: "number" })
+  @ApiProperty({ type: 'number' })
   createdTimestamp!: number;
 
-  @ApiProperty({ type: "number" })
+  @ApiProperty({ type: 'number' })
   updatedTimestamp?: number;
 
   public static async newFromContent(
     content: MediaContent,
-    mediaObjectStorage: IObjectStoragePort,
+    mediaObjectStorage: IObjectStoragePort
   ): Promise<MediaContentResponseDTO> {
     const dto = new MediaContentResponseDTO();
 
@@ -61,7 +61,7 @@ export class MediaContentResponseDTO {
           return presignedUrl;
         }
         return undefined;
-      }),
+      })
     );
 
     dto.id = content.id;
@@ -82,12 +82,12 @@ export class MediaContentResponseDTO {
 
   public static async newListFromContents(
     contents: MediaContent[],
-    mediaObjectStorage: IObjectStoragePort,
+    mediaObjectStorage: IObjectStoragePort
   ) {
     return Promise.all(
       contents.map((content) =>
-        MediaContentResponseDTO.newFromContent(content, mediaObjectStorage),
-      ),
+        MediaContentResponseDTO.newFromContent(content, mediaObjectStorage)
+      )
     );
   }
 }

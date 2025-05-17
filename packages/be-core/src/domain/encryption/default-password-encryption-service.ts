@@ -1,5 +1,5 @@
-import { IPasswordEncryptionService } from "./password-encryption-service.interface";
-import bcrypt from "bcrypt";
+import { IPasswordEncryptionService } from './password-encryption-service.interface';
+import bcrypt from 'bcrypt';
 
 /**
  * 변경 가능성이 낮아, core에 위치시킴

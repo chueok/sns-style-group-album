@@ -5,34 +5,34 @@ import {
   Entity,
   OneToMany,
   JoinTable,
-} from "typeorm";
-import { TypeormGroup } from "../group/typeorm-group.entity";
-import { Nullable, Optional, UserId } from "@repo/be-core";
-import { TableAlias } from "../table-alias";
-import { TypeormOauth } from "../oauth/typeorm-oauth.entity";
-import { TypeormUserGroupProfile } from "../user-group-profile/typeorm-user-group-profile.entity";
+} from 'typeorm';
+import { TypeormGroup } from '../group/typeorm-group.entity';
+import { Nullable, Optional, UserId } from '@repo/be-core';
+import { TableAlias } from '../table-alias';
+import { TypeormOauth } from '../oauth/typeorm-oauth.entity';
+import { TypeormUserGroupProfile } from '../user-group-profile/typeorm-user-group-profile.entity';
 
 @Entity(TableAlias.USER)
 export class TypeormUser {
-  @PrimaryColumn({ type: "text" })
+  @PrimaryColumn({ type: 'text' })
   id!: UserId;
 
   @Column({ nullable: false })
   username!: string;
 
-  @Column({ type: "text", nullable: true })
+  @Column({ type: 'text', nullable: true })
   email!: Nullable<string>;
 
-  @Column({ type: "boolean", nullable: false })
+  @Column({ type: 'boolean', nullable: false })
   hasProfileImage!: boolean;
 
-  @Column({ type: "datetime", nullable: false })
+  @Column({ type: 'datetime', nullable: false })
   createdDateTime!: Date;
 
-  @Column({ type: "datetime", nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   updatedDateTime!: Nullable<Date>;
 
-  @Column({ type: "datetime", nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   deletedDateTime!: Nullable<Date>;
 
   /**
@@ -58,29 +58,29 @@ export class TypeormUser {
   @ManyToMany(() => TypeormGroup, (group) => group.invitedUsers, {
     cascade: false,
   })
-  @JoinTable({ name: "GroupInvitedUsersRelation" })
+  @JoinTable({ name: 'GroupInvitedUsersRelation' })
   invitedGroups!: Promise<TypeormGroup[]>;
   __invitedGroups__: Optional<TypeormGroup[]>;
 }
 
 type TypeormUserWithOauths = TypeormUser & {
-  __oauths__: NonNullable<TypeormUser["__oauths__"]>;
+  __oauths__: NonNullable<TypeormUser['__oauths__']>;
 };
 
 type TypeormUserWithGroups = TypeormUser & {
-  __groups__: NonNullable<TypeormUser["__groups__"]>;
+  __groups__: NonNullable<TypeormUser['__groups__']>;
 };
 
 type TypeormUserWithOwnGroups = TypeormUser & {
-  __ownGroups__: NonNullable<TypeormUser["__ownGroups__"]>;
+  __ownGroups__: NonNullable<TypeormUser['__ownGroups__']>;
 };
 
 type TypeormUserWithUserGroupProfiles = TypeormUser & {
-  __userGroupProfiles__: NonNullable<TypeormUser["__userGroupProfiles__"]>;
+  __userGroupProfiles__: NonNullable<TypeormUser['__userGroupProfiles__']>;
 };
 
 type TypeormUserWithInvitedGroups = TypeormUser & {
-  __invitedGroups__: NonNullable<TypeormUser["__invitedGroups__"]>;
+  __invitedGroups__: NonNullable<TypeormUser['__invitedGroups__']>;
 };
 
 export type TypeormUserWith = {
@@ -93,18 +93,18 @@ export type TypeormUserWith = {
 
 export function isTypeormUserWith<T extends keyof TypeormUserWith>(
   user: TypeormUser,
-  key: T,
+  key: T
 ): user is TypeormUserWith[T] {
   switch (key) {
-    case "oauths":
+    case 'oauths':
       return !!user.__oauths__;
-    case "groups":
+    case 'groups':
       return !!user.__groups__;
-    case "ownGroups":
+    case 'ownGroups':
       return !!user.__ownGroups__;
-    case "userGroupProfiles":
+    case 'userGroupProfiles':
       return !!user.__userGroupProfiles__;
-    case "invitedGroups":
+    case 'invitedGroups':
       return !!user.__invitedGroups__;
     default:
       return false;

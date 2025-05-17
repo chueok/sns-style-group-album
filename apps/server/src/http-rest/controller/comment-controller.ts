@@ -7,25 +7,25 @@ import {
   Patch,
   Post,
   Query,
-} from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
-import { ApiResponseGeneric } from "./dto/decorator/api-response-generic";
-import { CreateUserCommentBody } from "./dto/comment/comment-create-body";
-import { CommentResponseDTO } from "./dto/comment/comment-response-dto";
-import { CommentEditBody } from "./dto/comment/comment-edit-body";
-import { Code } from "@repo/be-core";
-import { GetCommentListQuery } from "./dto/comment/get-comment-list-query";
-import { RestResponse } from "./dto/common/rest-response";
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { ApiResponseGeneric } from './dto/decorator/api-response-generic';
+import { CreateUserCommentBody } from './dto/comment/comment-create-body';
+import { CommentResponseDTO } from './dto/comment/comment-response-dto';
+import { CommentEditBody } from './dto/comment/comment-edit-body';
+import { Code } from '@repo/be-core';
+import { GetCommentListQuery } from './dto/comment/get-comment-list-query';
+import { RestResponse } from './dto/common/rest-response';
 
-@Controller("comments")
-@ApiTags("comments")
+@Controller('comments')
+@ApiTags('comments')
 export class CommentController {
-  @Post("group/:groupId")
+  @Post('group/:groupId')
   @ApiResponseGeneric({ code: Code.CREATED, data: CommentResponseDTO })
   async createUserComment(
-    @Body() body: CreateUserCommentBody,
+    @Body() body: CreateUserCommentBody
   ): Promise<RestResponse<CommentResponseDTO>> {
-    throw new Error("Not implemented");
+    throw new Error('Not implemented');
   }
 
   @Get()
@@ -36,38 +36,38 @@ export class CommentController {
   })
   // TODO : pagenation 구현 필요 (content에 해당하는 comment를 가져오기 위함)
   async getCommentList(
-    @Query() query: GetCommentListQuery,
+    @Query() query: GetCommentListQuery
   ): Promise<RestResponse<CommentResponseDTO[] | null>> {
-    throw new Error("Not implemented");
+    throw new Error('Not implemented');
   }
 
-  @Get(":commentId")
+  @Get(':commentId')
   @ApiResponseGeneric({ code: Code.SUCCESS, data: CommentResponseDTO })
   async getComment(
-    @Param("commentId") commentId: string,
+    @Param('commentId') commentId: string
   ): Promise<RestResponse<CommentResponseDTO | null>> {
-    throw new Error("Not implemented");
+    throw new Error('Not implemented');
   }
 
-  @Patch(":commentId")
+  @Patch(':commentId')
   @ApiResponseGeneric({ code: Code.SUCCESS, data: CommentResponseDTO })
   async editComment(
-    @Param("commentId") commentId: string,
-    @Body() body: CommentEditBody,
+    @Param('commentId') commentId: string,
+    @Body() body: CommentEditBody
   ): Promise<RestResponse<CommentResponseDTO | null>> {
-    throw new Error("Not implemented");
+    throw new Error('Not implemented');
   }
 
-  @Delete(":commentId")
+  @Delete(':commentId')
   @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
   async deleteComment(
-    @Param("commentId") commentId: string,
+    @Param('commentId') commentId: string
   ): Promise<RestResponse<null>> {
-    throw new Error("Not implemented");
+    throw new Error('Not implemented');
   }
 
-  @Post(":commentId/like")
+  @Post(':commentId/like')
   @ApiResponseGeneric({ code: Code.CREATED, data: null })
   // TODO : like pagenation 구현 필요
-  async likeComment(@Param("commentId") commentId: string) {}
+  async likeComment(@Param('commentId') commentId: string) {}
 }

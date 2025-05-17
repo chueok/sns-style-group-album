@@ -1,16 +1,16 @@
-import { ApiPropertyOptional } from "@nestjs/swagger";
-import { ContentPaginationOptions } from "@repo/be-core";
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ContentPaginationOptions } from '@repo/be-core';
 
 export class GetContentListQuery {
-  @ApiPropertyOptional({ type: "number" })
+  @ApiPropertyOptional({ type: 'number' })
   limit?: number;
 
-  @ApiPropertyOptional({ type: "string" })
+  @ApiPropertyOptional({ type: 'string' })
   cursor?: string;
 
-  @ApiPropertyOptional({ type: "createdDateTime" })
-  sortBy?: ContentPaginationOptions["sortBy"];
+  @ApiPropertyOptional({ type: 'createdDateTime' })
+  sortBy?: ContentPaginationOptions['sortBy'];
 
-  @ApiPropertyOptional({ type: "asc | desc" })
-  sortOrder?: ContentPaginationOptions["sortOrder"];
+  @ApiPropertyOptional({ type: 'asc | desc' })
+  sortOrder?: ContentPaginationOptions['sortOrder'];
 }

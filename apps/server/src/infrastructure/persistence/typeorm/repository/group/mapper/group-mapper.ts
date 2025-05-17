@@ -1,6 +1,6 @@
-import { CreateGroupEntityPayload, Group, UserId } from "@repo/be-core";
-import { TypeormGroup } from "../../../entity/group/typeorm-group.entity";
-import { TypeormUser } from "../../../entity/user/typeorm-user.entity";
+import { CreateGroupEntityPayload, Group, UserId } from '@repo/be-core';
+import { TypeormGroup } from '../../../entity/group/typeorm-group.entity';
+import { TypeormUser } from '../../../entity/user/typeorm-user.entity';
 
 type ToDomainPayloadType = {
   elements: {
@@ -17,14 +17,14 @@ type ToDomainReturnType = {
 
 export class GroupMapper {
   public static async toDomainEntity(
-    payload: ToDomainPayloadType,
+    payload: ToDomainPayloadType
   ): Promise<ToDomainReturnType> {
     const { elements } = payload;
     const results: Group[] = [];
     const errors: Error[] = [];
 
     const promiseList = elements.map(async (item) => {
-      const groupPayload: CreateGroupEntityPayload<"existing"> = {
+      const groupPayload: CreateGroupEntityPayload<'existing'> = {
         ownerId: item.group.ownerId,
         name: item.group.name,
         id: item.group.id,
@@ -40,7 +40,7 @@ export class GroupMapper {
 
     await Promise.allSettled(promiseList).then((promiseResults) => {
       promiseResults.forEach((result) => {
-        if (result.status === "fulfilled") {
+        if (result.status === 'fulfilled') {
           results.push(result.value);
         } else {
           errors.push(result.reason);
@@ -63,7 +63,7 @@ export class GroupMapper {
           const member = new TypeormUser();
           member.id = userId;
           return member;
-        }),
+        })
       );
 
       typeormGroup.createdDateTime = item.createdDateTime;

@@ -1,14 +1,14 @@
-import { CanActivate, ExecutionContext, Inject } from "@nestjs/common";
-import { DiTokens } from "../../../di/di-tokens";
-import { IAuthService } from "../auth-service.interface";
-import { ExtractJwt } from "passport-jwt";
-import { Reflector } from "@nestjs/core";
-import { Permission, PermissionEnum } from "../decorator/permission";
+import { CanActivate, ExecutionContext, Inject } from '@nestjs/common';
+import { DiTokens } from '../../../di/di-tokens';
+import { IAuthService } from '../auth-service.interface';
+import { ExtractJwt } from 'passport-jwt';
+import { Reflector } from '@nestjs/core';
+import { Permission, PermissionEnum } from '../decorator/permission';
 import {
   HttpRequestWithUser,
   VerifiedUserPayload,
-} from "../type/verified-user-payload";
-import { Code, Exception } from "@repo/be-core";
+} from '../type/verified-user-payload';
+import { Code, Exception } from '@repo/be-core';
 
 /**
  * user 권한 확인.
@@ -19,7 +19,7 @@ import { Code, Exception } from "@repo/be-core";
 export class HttpPermissionGuard implements CanActivate {
   constructor(
     @Inject(DiTokens.AuthService) private readonly authService: IAuthService,
-    private reflector: Reflector,
+    private reflector: Reflector
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
@@ -46,7 +46,7 @@ export class HttpPermissionGuard implements CanActivate {
 
       case PermissionEnum.GROUP_OWNER:
         groupId = (request as any)?.params?.groupId;
-        if (!groupId || typeof groupId !== "string") {
+        if (!groupId || typeof groupId !== 'string') {
           throw Exception.new({
             code: Code.BAD_REQUEST_ERROR,
           });
@@ -59,7 +59,7 @@ export class HttpPermissionGuard implements CanActivate {
 
       case PermissionEnum.GROUP_MEMBER:
         groupId = (request as any)?.params?.groupId;
-        if (!groupId || typeof groupId !== "string") {
+        if (!groupId || typeof groupId !== 'string') {
           throw Exception.new({
             code: Code.BAD_REQUEST_ERROR,
           });
@@ -75,9 +75,9 @@ export class HttpPermissionGuard implements CanActivate {
         contentId = (request as any)?.params?.contentId;
         if (
           !groupId ||
-          typeof groupId !== "string" ||
+          typeof groupId !== 'string' ||
           !contentId ||
-          typeof contentId !== "string"
+          typeof contentId !== 'string'
         ) {
           throw Exception.new({
             code: Code.BAD_REQUEST_ERROR,
@@ -94,9 +94,9 @@ export class HttpPermissionGuard implements CanActivate {
         commentId = (request as any)?.params?.commentId;
         if (
           !groupId ||
-          typeof groupId !== "string" ||
+          typeof groupId !== 'string' ||
           !commentId ||
-          typeof commentId !== "string"
+          typeof commentId !== 'string'
         ) {
           throw Exception.new({
             code: Code.BAD_REQUEST_ERROR,

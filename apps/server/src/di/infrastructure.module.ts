@@ -1,15 +1,15 @@
-import { Global, Module, Provider } from "@nestjs/common";
-import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
-import { join } from "path";
-import { ServerConfig } from "../config/server-config";
-import { DiTokens } from "./di-tokens";
-import { TypeormUserRepository } from "../infrastructure/persistence/typeorm/repository/user/user-repository";
-import { TypeormCommentRepository } from "../infrastructure/persistence/typeorm/repository/comment/comment-repository";
-import { TypeormGroupRepository } from "../infrastructure/persistence/typeorm/repository/group/group-repository";
-import { TypeormContentRepository } from "../infrastructure/persistence/typeorm/repository/content/content-repository";
-import { TYPEORM_DIRECTORY } from "../infrastructure/persistence/typeorm/typeorm-directory";
-import { APP_FILTER } from "@nestjs/core";
-import { NestHttpExceptionFilter } from "../http-rest/exception-filter/nest-http-exception-filter";
+import { Global, Module, Provider } from '@nestjs/common';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { join } from 'path';
+import { ServerConfig } from '../config/server-config';
+import { DiTokens } from './di-tokens';
+import { TypeormUserRepository } from '../infrastructure/persistence/typeorm/repository/user/user-repository';
+import { TypeormCommentRepository } from '../infrastructure/persistence/typeorm/repository/comment/comment-repository';
+import { TypeormGroupRepository } from '../infrastructure/persistence/typeorm/repository/group/group-repository';
+import { TypeormContentRepository } from '../infrastructure/persistence/typeorm/repository/content/content-repository';
+import { TYPEORM_DIRECTORY } from '../infrastructure/persistence/typeorm/typeorm-directory';
+import { APP_FILTER } from '@nestjs/core';
+import { NestHttpExceptionFilter } from '../http-rest/exception-filter/nest-http-exception-filter';
 import {
   AcceptInvitationUsecase,
   CreateGroupUsecase,
@@ -29,17 +29,17 @@ import {
   InviteUserUsecase,
   IUserRepository,
   DeleteContentUsecase,
-} from "@repo/be-core";
-import { MinioObjectStorageFactory } from "../infrastructure/persistence/object-storage/minio/minio-adapter";
-import assert from "assert";
-import { MediaService } from "../http-rest/media/media-service";
+} from '@repo/be-core';
+import { MinioObjectStorageFactory } from '../infrastructure/persistence/object-storage/minio/minio-adapter';
+import assert from 'assert';
+import { MediaService } from '../http-rest/media/media-service';
 
 export const typeormSqliteOptions = {
-  type: "sqlite",
-  database: join("db", ServerConfig.DB_FILE),
+  type: 'sqlite',
+  database: join('db', ServerConfig.DB_FILE),
   autoLoadEntities: true,
   logging: ServerConfig.DB_LOG_ENABLE,
-  entities: [join(TYPEORM_DIRECTORY, "entity", "**", "*.entity.{ts,js}")],
+  entities: [join(TYPEORM_DIRECTORY, 'entity', '**', '*.entity.{ts,js}')],
 
   synchronize: false,
   dropSchema: false,
@@ -181,7 +181,7 @@ const objectStorageProviders: Provider[] = [
       } catch (error) {
         if (ServerConfig.isProduction) {
           console.error(error);
-          assert(false, "Object storage initialization failed");
+          assert(false, 'Object storage initialization failed');
         }
       }
       return objectStorage;
@@ -191,7 +191,7 @@ const objectStorageProviders: Provider[] = [
     provide: DiTokens.MediaObjectStorage,
     useFactory: async (factory: MinioObjectStorageFactory) => {
       return factory.getObjectStorageAdapter(
-        ServerConfig.OBJECT_STORAGE_MEDIA_BUCKET,
+        ServerConfig.OBJECT_STORAGE_MEDIA_BUCKET
       );
     },
     inject: [DiTokens.ObjectStorageFactory],

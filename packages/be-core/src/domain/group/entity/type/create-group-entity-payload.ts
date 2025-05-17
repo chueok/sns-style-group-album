@@ -1,6 +1,6 @@
-import { Nullable } from "../../../../common/type/common-types";
-import { UserId } from "../../../user/entity/type/user-id";
-import { GroupId } from "./group-id";
+import { Nullable } from '../../../../common/type/common-types';
+import { UserId } from '../../../user/entity/type/user-id';
+import { GroupId } from './group-id';
 
 type CreateNewGroupEntityPayload = {
   ownerId: UserId;

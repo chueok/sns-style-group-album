@@ -1,7 +1,7 @@
-import { Code, Exception, IObjectStoragePort } from "@repo/be-core";
-import { ServerConfig } from "../../../../config/server-config";
-import { Client } from "minio";
-import { Injectable, Logger } from "@nestjs/common";
+import { Code, Exception, IObjectStoragePort } from '@repo/be-core';
+import { ServerConfig } from '../../../../config/server-config';
+import { Client } from 'minio';
+import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
 export class MinioObjectStorageFactory {
@@ -22,7 +22,7 @@ export class MinioObjectStorageFactory {
   async init() {}
 
   async getObjectStorageAdapter(
-    bucketName: string,
+    bucketName: string
   ): Promise<IObjectStoragePort> {
     return {
       uploadFile: async (key: string, filePath: string) => {
@@ -43,7 +43,7 @@ export class MinioObjectStorageFactory {
   async uploadFile(
     bucketName: string,
     key: string,
-    filePath: string,
+    filePath: string
   ): Promise<void> {
     await this.client.fPutObject(bucketName, key, filePath);
   }
@@ -51,37 +51,37 @@ export class MinioObjectStorageFactory {
   async getPresignedUrlForUpload(
     bucketName: string,
     key: string,
-    expires?: number,
+    expires?: number
   ): Promise<string> {
     return this.client.presignedPutObject(
       bucketName,
       key,
-      expires || this.defaultExpires,
+      expires || this.defaultExpires
     );
   }
 
   async getPresignedUrlForDownload(
     bucketName: string,
     key: string,
-    expires?: number,
+    expires?: number
   ): Promise<string> {
     return this.client.presignedGetObject(
       bucketName,
       key,
-      expires || this.defaultExpires,
+      expires || this.defaultExpires
     );
   }
 
   async getPublicUrlForDownload(
     bucketName: string,
-    key: string,
+    key: string
   ): Promise<string> {
-    if (key.length > 0 && key[0] === "/") {
+    if (key.length > 0 && key[0] === '/') {
       key = key.slice(1);
     } else {
       throw Exception.new({
         code: Code.INTERNAL_ERROR,
-        overrideMessage: "key is invalid",
+        overrideMessage: 'key is invalid',
       });
     }
     return `${this.basePath}/${bucketName}/${key}`;

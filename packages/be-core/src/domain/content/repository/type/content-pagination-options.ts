@@ -1,11 +1,11 @@
 type PaginationCommon = {
   limit: number;
-  sortOrder: "asc" | "desc";
+  sortOrder: 'asc' | 'desc';
 };
 
 type PaginationByCreatedDateTime = {
   cursor?: Date;
-  sortBy: "createdDateTime";
+  sortBy: 'createdDateTime';
 };
 
 export type ContentPaginationOptionsTypeMap = {
@@ -13,4 +13,4 @@ export type ContentPaginationOptionsTypeMap = {
 };
 
 export type ContentPaginationOptions =
-  ContentPaginationOptionsTypeMap["createdDateTime"];
+  ContentPaginationOptionsTypeMap['createdDateTime'];

@@ -1,9 +1,9 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserCommentBody {
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   contentId!: string;
 
-  @ApiProperty({ type: "string" })
+  @ApiProperty({ type: 'string' })
   text!: string;
 }

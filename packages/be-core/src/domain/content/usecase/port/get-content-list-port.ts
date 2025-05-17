@@ -1,13 +1,13 @@
-import { IsIn, IsNumber, IsOptional, IsString } from "class-validator";
-import { UseCaseValidatableAdapter } from "../../../../common/usecase/usecase-validatable-adapter";
+import { IsIn, IsNumber, IsOptional, IsString } from 'class-validator';
+import { UseCaseValidatableAdapter } from '../../../../common/usecase/usecase-validatable-adapter';
 
 export interface IGetContentListPort {
   groupId: string;
 
   limit: number;
   cursor?: string;
-  sortBy: "createdDateTime";
-  sortOrder: "asc" | "desc";
+  sortBy: 'createdDateTime';
+  sortOrder: 'asc' | 'desc';
 }
 
 export class GetContentListAdapter
@@ -24,14 +24,14 @@ export class GetContentListAdapter
   @IsString()
   cursor?: string;
 
-  @IsIn(["createdDateTime"])
-  sortBy!: "createdDateTime";
+  @IsIn(['createdDateTime'])
+  sortBy!: 'createdDateTime';
 
-  @IsIn(["asc", "desc"])
-  sortOrder!: "asc" | "desc";
+  @IsIn(['asc', 'desc'])
+  sortOrder!: 'asc' | 'desc';
 
   static async new(
-    payload: IGetContentListPort,
+    payload: IGetContentListPort
   ): Promise<GetContentListAdapter> {
     const adapter = new GetContentListAdapter();
     adapter.groupId = payload.groupId;

@@ -6,13 +6,13 @@ import {
   ContentTypeEnum,
   IContentRepository,
   Nullable,
-} from "@repo/be-core";
-import { Brackets, DataSource, Repository } from "typeorm";
-import { TypeormContent } from "../../entity/content/typeorm-content.entity";
-import { TypeormComment } from "../../entity/comment/typeorm-comment.entity";
-import { TypeormLike } from "../../entity/like/typeorm-like.entity";
-import { ContentMapper } from "./mapper/content-mapper";
-import { Logger, LoggerService, Optional } from "@nestjs/common";
+} from '@repo/be-core';
+import { Brackets, DataSource, Repository } from 'typeorm';
+import { TypeormContent } from '../../entity/content/typeorm-content.entity';
+import { TypeormComment } from '../../entity/comment/typeorm-comment.entity';
+import { TypeormLike } from '../../entity/like/typeorm-like.entity';
+import { ContentMapper } from './mapper/content-mapper';
+import { Logger, LoggerService, Optional } from '@nestjs/common';
 
 export class TypeormContentRepository implements IContentRepository {
   public static commentLimit = 5;
@@ -84,16 +84,16 @@ export class TypeormContentRepository implements IContentRepository {
     const [content, likeList, numLikes, commentList, numComments] =
       await Promise.all([
         this.typeormContentRepository
-          .createQueryBuilder("content")
-          .leftJoinAndSelect("content.referred", "referred")
-          .where("content.id = :contentId", { contentId })
-          .andWhere("content.deletedDateTime is null")
+          .createQueryBuilder('content')
+          .leftJoinAndSelect('content.referred', 'referred')
+          .where('content.id = :contentId', { contentId })
+          .andWhere('content.deletedDateTime is null')
           .getOne(),
         this.getRecentLikeList(contentId, TypeormContentRepository.likeLimit),
         this.getNumLikes(contentId),
         this.getRecentCommentList(
           contentId,
-          TypeormContentRepository.commentLimit,
+          TypeormContentRepository.commentLimit
         ),
         this.getNumComments(contentId),
       ]);
@@ -108,7 +108,7 @@ export class TypeormContentRepository implements IContentRepository {
           comment,
           tags: await comment.tags,
         };
-      }),
+      })
     );
 
     const { results, errors } = await ContentMapper.toDomainEntity({
@@ -138,10 +138,10 @@ export class TypeormContentRepository implements IContentRepository {
     const contentTypeList = Array.from(contentTypeSet); // 중복 제거
 
     const query = this.typeormContentRepository
-      .createQueryBuilder("content")
-      .innerJoin("content.group", "group")
-      .where("group.id = :groupId", { groupId: payload.groupId })
-      .andWhere("content.deletedDateTime is null")
+      .createQueryBuilder('content')
+      .innerJoin('content.group', 'group')
+      .where('group.id = :groupId', { groupId: payload.groupId })
+      .andWhere('content.deletedDateTime is null')
       // .andWhere("content.contentType = :contentType", {
       //   contentType: payload.contentType,
       // })
@@ -158,11 +158,11 @@ export class TypeormContentRepository implements IContentRepository {
               });
             }
           });
-        }),
+        })
       )
       .orderBy(
         `content.${payload.pagination.sortBy}`,
-        payload.pagination.sortOrder === "asc" ? "ASC" : "DESC",
+        payload.pagination.sortOrder === 'asc' ? 'ASC' : 'DESC'
       )
       /**
        * https://orkhan.gitbook.io/typeorm/docs/select-query-builder
@@ -171,7 +171,7 @@ export class TypeormContentRepository implements IContentRepository {
       .take(payload.pagination.limit);
 
     if (payload.pagination.cursor) {
-      if (payload.pagination.sortOrder === "desc") {
+      if (payload.pagination.sortOrder === 'desc') {
         query.andWhere(`content.${payload.pagination.sortBy} < :cursor`, {
           cursor: payload.pagination.cursor,
         });
@@ -183,14 +183,14 @@ export class TypeormContentRepository implements IContentRepository {
     }
 
     const ormContentList = await query
-      .leftJoinAndSelect("content.referred", "referred")
+      .leftJoinAndSelect('content.referred', 'referred')
       .getMany();
 
     const mapperPayload = await Promise.all(
       ormContentList.map(async (content) => ({
         content,
         referred: await content.referred,
-      })),
+      }))
     );
 
     return this.ormEntityList2DomainEntityList({
@@ -203,59 +203,59 @@ export class TypeormContentRepository implements IContentRepository {
     groupId: string;
   }): Promise<Content[]> {
     const ormContentList = await this.typeormContentRepository
-      .createQueryBuilder("content")
-      .leftJoinAndSelect("content.referred", "referred")
-      .where("content.ownerId = :userId", { userId: payload.userId })
-      .andWhere("content.groupId = :groupId", { groupId: payload.groupId })
-      .andWhere("content.deletedDateTime is null")
+      .createQueryBuilder('content')
+      .leftJoinAndSelect('content.referred', 'referred')
+      .where('content.ownerId = :userId', { userId: payload.userId })
+      .andWhere('content.groupId = :groupId', { groupId: payload.groupId })
+      .andWhere('content.deletedDateTime is null')
       .getMany();
 
     const mapperPayload = await Promise.all(
       ormContentList.map(async (content) => ({
         content,
         referred: await content.referred,
-      })),
+      }))
     );
     return this.ormEntityList2DomainEntityList({ elements: mapperPayload });
   }
 
   private async getNumLikes(contentId: string): Promise<number> {
     return this.typeormLikeRepository
-      .createQueryBuilder("like")
-      .where("like.contentId = :contentId", { contentId })
+      .createQueryBuilder('like')
+      .where('like.contentId = :contentId', { contentId })
       .getCount();
   }
 
   private async getRecentLikeList(
     contentId: string,
-    limit: number,
+    limit: number
   ): Promise<TypeormLike[]> {
     return this.typeormLikeRepository
-      .createQueryBuilder("like")
-      .where("like.contentId = :contentId", { contentId })
-      .orderBy("like.createdDateTime", "DESC")
+      .createQueryBuilder('like')
+      .where('like.contentId = :contentId', { contentId })
+      .orderBy('like.createdDateTime', 'DESC')
       .limit(limit)
       .getMany();
   }
 
   private async getNumComments(contentId: string): Promise<number> {
     return this.typeormCommentRepository
-      .createQueryBuilder("comment")
-      .where("comment.contentId = :contentId", { contentId })
+      .createQueryBuilder('comment')
+      .where('comment.contentId = :contentId', { contentId })
       .getCount();
   }
 
   private async getRecentCommentList(
     contentId: string,
-    limit: number,
+    limit: number
   ): Promise<TypeormComment[]> {
     return this.typeormCommentRepository
-      .createQueryBuilder("comment")
-      .where("comment.contentId = :contentId", { contentId })
-      .andWhere("comment.deletedDateTime is null")
-      .orderBy("comment.createdDateTime", "DESC")
+      .createQueryBuilder('comment')
+      .where('comment.contentId = :contentId', { contentId })
+      .andWhere('comment.deletedDateTime is null')
+      .orderBy('comment.createdDateTime', 'DESC')
       .limit(limit)
-      .leftJoinAndSelect("comment.tags", "tags")
+      .leftJoinAndSelect('comment.tags', 'tags')
       .getMany();
   }
 
@@ -269,7 +269,7 @@ export class TypeormContentRepository implements IContentRepository {
         this.getNumLikes(content.id),
         this.getRecentCommentList(
           content.id,
-          TypeormContentRepository.commentLimit,
+          TypeormContentRepository.commentLimit
         ),
         this.getNumComments(content.id),
       ]);

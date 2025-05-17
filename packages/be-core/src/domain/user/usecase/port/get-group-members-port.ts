@@ -1,5 +1,5 @@
-import { IsString } from "class-validator";
-import { UseCaseValidatableAdapter } from "../../../../common/usecase/usecase-validatable-adapter";
+import { IsString } from 'class-validator';
+import { UseCaseValidatableAdapter } from '../../../../common/usecase/usecase-validatable-adapter';
 
 export interface IGetGroupMembersPort {
   groupId: string;
@@ -13,7 +13,7 @@ export class GetGroupMembersAdaptor
   groupId!: string;
 
   static async new(
-    payload: IGetGroupMembersPort,
+    payload: IGetGroupMembersPort
   ): Promise<IGetGroupMembersPort> {
     const adapter = new GetGroupMembersAdaptor();
     adapter.groupId = payload.groupId;

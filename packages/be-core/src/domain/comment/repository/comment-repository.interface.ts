@@ -1,10 +1,10 @@
-import { Nullable } from "../../../common/type/common-types";
-import { Comment } from "../entity/comment.abstract";
+import { Nullable } from '../../../common/type/common-types';
+import { Comment } from '../entity/comment.abstract';
 
 export type CommentPagenationType = {
   cursor?: Date;
-  by: "createdDateTime";
-  direction: "asc" | "desc";
+  by: 'createdDateTime';
+  direction: 'asc' | 'desc';
   limit: number;
 };
 

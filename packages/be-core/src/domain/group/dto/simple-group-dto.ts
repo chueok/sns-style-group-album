@@ -1,5 +1,5 @@
-import { UserId } from "../../user/entity/type/user-id";
-import { GroupId } from "../entity/type/group-id";
+import { UserId } from '../../user/entity/type/user-id';
+import { GroupId } from '../entity/type/group-id';
 
 export class SimpleGroupDTO {
   readonly id: GroupId;

@@ -4,23 +4,23 @@ import {
   Logger,
   LoggerService,
   Optional,
-} from "@nestjs/common";
-import { DataSource, Repository } from "typeorm";
-import { TypeormTemporaryContent } from "../../infrastructure/persistence/typeorm/entity/content/typeorm-temporary-content.entity";
+} from '@nestjs/common';
+import { DataSource, Repository } from 'typeorm';
+import { TypeormTemporaryContent } from '../../infrastructure/persistence/typeorm/entity/content/typeorm-temporary-content.entity';
 import {
   ContentId,
   ContentTypeEnum,
   GroupId,
   IObjectStoragePort,
   UserId,
-} from "@repo/be-core";
-import { v4 } from "uuid";
-import { TypeormMedia } from "../../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity";
-import { ISaveTemporaryMediaPort } from "./port/save-temporary-media-port";
-import { IConfirmOriginalMediaUploadedPort } from "./port/confirm-original-media-uploaded-port";
-import { IConfirmResponsiveMediaUploadedPort } from "./port/confirm-responsive-media-uploaded-port";
-import { ObjectStorageKeyFactory } from "../../infrastructure/persistence/object-storage/key-factory/object-storage-key-factory";
-import { DiTokens } from "../../di/di-tokens";
+} from '@repo/be-core';
+import { v4 } from 'uuid';
+import { TypeormMedia } from '../../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
+import { ISaveTemporaryMediaPort } from './port/save-temporary-media-port';
+import { IConfirmOriginalMediaUploadedPort } from './port/confirm-original-media-uploaded-port';
+import { IConfirmResponsiveMediaUploadedPort } from './port/confirm-responsive-media-uploaded-port';
+import { ObjectStorageKeyFactory } from '../../infrastructure/persistence/object-storage/key-factory/object-storage-key-factory';
+import { DiTokens } from '../../di/di-tokens';
 
 @Injectable()
 export class MediaService {
@@ -31,10 +31,10 @@ export class MediaService {
     readonly dataSource: DataSource,
     @Inject(DiTokens.MediaObjectStorage)
     private readonly mediaObjectStorage: IObjectStoragePort,
-    @Optional() logger?: LoggerService,
+    @Optional() logger?: LoggerService
   ) {
     this.temporaryContentRepository = dataSource.getRepository(
-      TypeormTemporaryContent,
+      TypeormTemporaryContent
     );
     this.contentRepository = dataSource.getRepository(TypeormMedia);
 
@@ -42,7 +42,7 @@ export class MediaService {
   }
 
   public async saveTemporaryMedia(
-    payload: ISaveTemporaryMediaPort,
+    payload: ISaveTemporaryMediaPort
   ): Promise<string> {
     const temporaryContent = new TypeormTemporaryContent();
     temporaryContent.id = v4();
@@ -52,21 +52,21 @@ export class MediaService {
 
     const mediaUploadUrl = ObjectStorageKeyFactory.getOriginalPath(
       temporaryContent.groupId,
-      temporaryContent.id,
+      temporaryContent.id
     );
 
     return this.mediaObjectStorage.getPresignedUrlForUpload(mediaUploadUrl);
   }
 
   public async confirmOriginalMediaUploaded(
-    payload: IConfirmOriginalMediaUploadedPort,
+    payload: IConfirmOriginalMediaUploadedPort
   ): Promise<void> {
     const tempContent = await this.temporaryContentRepository.findOneBy({
       id: payload.id,
     });
     if (!tempContent) {
       this.logger.error(
-        `tempContent not found: ${payload.id}, check media upload process`,
+        `tempContent not found: ${payload.id}, check media upload process`
       );
       return;
     }
@@ -79,9 +79,9 @@ export class MediaService {
     content.size = payload.size;
     content.ext = payload.ext;
     content.mimetype = payload.mimetype;
-    if (content.mimetype.startsWith("image/")) {
+    if (content.mimetype.startsWith('image/')) {
       content.contentType = ContentTypeEnum.IMAGE;
-    } else if (content.mimetype.startsWith("video/")) {
+    } else if (content.mimetype.startsWith('video/')) {
       content.contentType = ContentTypeEnum.VIDEO;
     } else {
       this.logger.error(`unsupported mimetype: ${content.mimetype}`);
@@ -97,7 +97,7 @@ export class MediaService {
   }
 
   public async confirmResponsiveMediaUploaded(
-    payload: IConfirmResponsiveMediaUploadedPort,
+    payload: IConfirmResponsiveMediaUploadedPort
   ): Promise<void> {
     const content = await this.contentRepository.findOneBy({
       id: payload.id as ContentId,
@@ -111,7 +111,7 @@ export class MediaService {
       return;
     }
 
-    const updateObj: Omit<IConfirmResponsiveMediaUploadedPort, "id"> = {};
+    const updateObj: Omit<IConfirmResponsiveMediaUploadedPort, 'id'> = {};
     if (payload.thumbnailRelativePath) {
       updateObj.thumbnailRelativePath = payload.thumbnailRelativePath;
     }

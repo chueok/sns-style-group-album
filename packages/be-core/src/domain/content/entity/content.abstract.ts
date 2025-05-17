@@ -6,18 +6,18 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-} from "class-validator";
-import { EntityWithCUDTime } from "../../../common/entity/entity-with-cudtime";
-import { ContentTypeEnum } from "../enum/content-type-enum";
-import { CreateContentEntityPayload } from "./type/create-content-entity-payload";
-import { v4 } from "uuid";
-import { Nullable } from "../../../common/type/common-types";
-import { ReferredContent } from "./referred-content";
-import { ContentLike } from "./content-like";
-import { Comment } from "../../comment/entity/comment.abstract";
-import { ContentId } from "./type/content-id";
-import { GroupId } from "../../group/entity/type/group-id";
-import { UserId } from "../../user/entity/type/user-id";
+} from 'class-validator';
+import { EntityWithCUDTime } from '../../../common/entity/entity-with-cudtime';
+import { ContentTypeEnum } from '../enum/content-type-enum';
+import { CreateContentEntityPayload } from './type/create-content-entity-payload';
+import { v4 } from 'uuid';
+import { Nullable } from '../../../common/type/common-types';
+import { ReferredContent } from './referred-content';
+import { ContentLike } from './content-like';
+import { Comment } from '../../comment/entity/comment.abstract';
+import { ContentId } from './type/content-id';
+import { GroupId } from '../../group/entity/type/group-id';
+import { UserId } from '../../user/entity/type/user-id';
 
 export abstract class Content extends EntityWithCUDTime<ContentId> {
   @IsUUID()
@@ -32,7 +32,7 @@ export abstract class Content extends EntityWithCUDTime<ContentId> {
     return this._type;
   }
 
-  @IsUUID("all")
+  @IsUUID('all')
   readonly ownerId: UserId;
 
   @IsArray()
@@ -90,7 +90,7 @@ export abstract class Content extends EntityWithCUDTime<ContentId> {
     return true;
   }
 
-  constructor(payload: CreateContentEntityPayload<"base", "all">) {
+  constructor(payload: CreateContentEntityPayload<'base', 'all'>) {
     super();
 
     this.groupId = payload.groupId;
@@ -98,7 +98,7 @@ export abstract class Content extends EntityWithCUDTime<ContentId> {
     this._referred = payload.referred;
     this._thumbnailRelativePath = payload.thumbnailRelativePath;
 
-    if ("id" in payload) {
+    if ('id' in payload) {
       this._id = payload.id;
       this._createdDateTime = payload.createdDateTime;
       this._updatedDateTime = payload.updatedDateTime || null;

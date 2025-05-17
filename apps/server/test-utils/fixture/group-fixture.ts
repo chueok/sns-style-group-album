@@ -1,10 +1,10 @@
-import { DummyDatabaseHandler } from "@test-utils/persistence/dummy-database-handler";
-import { DataSource } from "typeorm";
-import { TypeormGroup } from "../../src/infrastructure/persistence/typeorm/entity/group/typeorm-group.entity";
-import { GroupId } from "@repo/be-core";
-import { TypeormContent } from "../../src/infrastructure/persistence/typeorm/entity/content/typeorm-content.entity";
-import { TypeormUser } from "../../src/infrastructure/persistence/typeorm/entity/user/typeorm-user.entity";
-import assert from "assert";
+import { DummyDatabaseHandler } from '@test-utils/persistence/dummy-database-handler';
+import { DataSource } from 'typeorm';
+import { TypeormGroup } from '../../src/infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
+import { GroupId } from '@repo/be-core';
+import { TypeormContent } from '../../src/infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
+import { TypeormUser } from '../../src/infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
+import assert from 'assert';
 
 export class GroupFixture {
   public dbHandler: DummyDatabaseHandler;
@@ -20,9 +20,9 @@ export class GroupFixture {
   async getExistingGroup(): Promise<TypeormGroup> {
     const groupList = this.dbHandler.getDbCacheList(TypeormGroup);
     const filteredGroupList = groupList.filter(
-      (group) => !group.deletedDateTime,
+      (group) => !group.deletedDateTime
     );
-    assert(filteredGroupList.length > 0, "there is no existing group");
+    assert(filteredGroupList.length > 0, 'there is no existing group');
     return filteredGroupList[0]!;
   }
 
@@ -52,18 +52,18 @@ export class GroupFixture {
         break;
       }
     }
-    assert(!!group, "there is no group having contents");
-    assert(!!owner, "there is no owner");
-    assert(!!members, "there is no members");
-    assert(!!contents, "there is no contents");
+    assert(!!group, 'there is no group having contents');
+    assert(!!owner, 'there is no owner');
+    assert(!!members, 'there is no members');
+    assert(!!contents, 'there is no contents');
     return { group, owner, members, contents };
   }
 
   private getGroupContents(groupId: GroupId) {
     return this.dataSource
       .getRepository(TypeormContent)
-      .createQueryBuilder("content")
-      .where("content.groupId = :groupId", { groupId })
+      .createQueryBuilder('content')
+      .where('content.groupId = :groupId', { groupId })
       .getMany();
   }
 
@@ -86,8 +86,8 @@ export class GroupFixture {
         break;
       }
     }
-    assert(!!user, "there is no user");
-    assert(!!groups, "there is no groups");
+    assert(!!user, 'there is no user');
+    assert(!!groups, 'there is no groups');
     return { user, groups };
   }
 }

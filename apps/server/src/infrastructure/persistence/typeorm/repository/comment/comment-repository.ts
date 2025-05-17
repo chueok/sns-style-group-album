@@ -5,11 +5,11 @@ import {
   ICommentRepository,
   Nullable,
   UserId,
-} from "@repo/be-core";
-import { DataSource, Repository } from "typeorm";
-import { TypeormComment } from "../../entity/comment/typeorm-comment.entity";
-import { CommentMapper } from "./mapper/comment-mapper";
-import { Logger, LoggerService, Optional } from "@nestjs/common";
+} from '@repo/be-core';
+import { DataSource, Repository } from 'typeorm';
+import { TypeormComment } from '../../entity/comment/typeorm-comment.entity';
+import { CommentMapper } from './mapper/comment-mapper';
+import { Logger, LoggerService, Optional } from '@nestjs/common';
 
 export class TypeormCommentRepository implements ICommentRepository {
   private readonly typeormCommentRepository: Repository<TypeormComment>;
@@ -86,12 +86,12 @@ export class TypeormCommentRepository implements ICommentRepository {
     pageSize: number;
   }): Promise<Comment[]> {
     const ormCommentList = await this.typeormCommentRepository
-      .createQueryBuilder("comment")
-      .where("comment.contentId = :contentId", { contentId: payload.contentId })
-      .orderBy("comment.createdDateTime", "DESC")
+      .createQueryBuilder('comment')
+      .where('comment.contentId = :contentId', { contentId: payload.contentId })
+      .orderBy('comment.createdDateTime', 'DESC')
       .skip((payload.page - 1) * payload.pageSize)
       .take(payload.pageSize)
-      .leftJoinAndSelect("comment.tags", "tags")
+      .leftJoinAndSelect('comment.tags', 'tags')
       .getMany();
 
     const elements = await Promise.all(
@@ -100,7 +100,7 @@ export class TypeormCommentRepository implements ICommentRepository {
           comment: ormComment,
           tags: await ormComment.tags,
         };
-      }),
+      })
     );
 
     const { results, errors } = await CommentMapper.toDomainEntity({
@@ -118,18 +118,18 @@ export class TypeormCommentRepository implements ICommentRepository {
     pagination: CommentPagenationType;
   }): Promise<Comment[]> {
     const query = this.typeormCommentRepository
-      .createQueryBuilder("comment")
-      .innerJoinAndSelect("comment.content", "content")
-      .leftJoinAndSelect("comment.tags", "tags")
-      .where("content.groupId = :groupId", { groupId: payload.groupId })
+      .createQueryBuilder('comment')
+      .innerJoinAndSelect('comment.content', 'content')
+      .leftJoinAndSelect('comment.tags', 'tags')
+      .where('content.groupId = :groupId', { groupId: payload.groupId })
       .orderBy(
         `comment.${payload.pagination.by}`,
-        payload.pagination.direction === "desc" ? "DESC" : "ASC",
+        payload.pagination.direction === 'desc' ? 'DESC' : 'ASC'
       )
       .take(payload.pagination.limit);
 
     if (payload.pagination.cursor) {
-      if (payload.pagination.direction === "desc") {
+      if (payload.pagination.direction === 'desc') {
         query.andWhere(`comment.${payload.pagination.by} < :cursor`, {
           cursor: payload.pagination.cursor,
         });
@@ -147,7 +147,7 @@ export class TypeormCommentRepository implements ICommentRepository {
           comment: ormComment,
           tags: await ormComment.tags,
         };
-      }),
+      })
     );
 
     const { results, errors } = await CommentMapper.toDomainEntity({

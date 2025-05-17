@@ -1,20 +1,20 @@
-import { DataSource } from "typeorm";
-import { DummyDatabaseHandler } from "./dummy-database-handler";
-import { Test, TestingModule } from "@nestjs/testing";
-import { TypeormUser } from "../../src/infrastructure/persistence/typeorm/entity/user/typeorm-user.entity";
-import { TypeormGroup } from "../../src/infrastructure/persistence/typeorm/entity/group/typeorm-group.entity";
-import { TypeormContent } from "../../src/infrastructure/persistence/typeorm/entity/content/typeorm-content.entity";
-import { TypeormComment } from "../../src/infrastructure/persistence/typeorm/entity/comment/typeorm-comment.entity";
-import { join, basename } from "path";
-import { TypeormLike } from "../../src/infrastructure/persistence/typeorm/entity/like/typeorm-like.entity";
+import { DataSource } from 'typeorm';
+import { DummyDatabaseHandler } from './dummy-database-handler';
+import { Test, TestingModule } from '@nestjs/testing';
+import { TypeormUser } from '../../src/infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
+import { TypeormGroup } from '../../src/infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
+import { TypeormContent } from '../../src/infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
+import { TypeormComment } from '../../src/infrastructure/persistence/typeorm/entity/comment/typeorm-comment.entity';
+import { join, basename } from 'path';
+import { TypeormLike } from '../../src/infrastructure/persistence/typeorm/entity/like/typeorm-like.entity';
 import {
   InfrastructureModule,
   typeormSqliteOptions,
-} from "../../src/di/infrastructure.module";
+} from '../../src/di/infrastructure.module';
 
 const parameters = {
-  testDbPath: join("db", `${basename(__filename)}.sqlite`),
-  dummyDbPath: join("db", "dummy.sqlite"),
+  testDbPath: join('db', `${basename(__filename)}.sqlite`),
+  dummyDbPath: join('db', 'dummy.sqlite'),
 };
 
 /**
@@ -23,7 +23,7 @@ const parameters = {
  * 2. 각각의 unit test를 describe로 감쌈
  */
 
-describe("TestDatabaseHandler", () => {
+describe('TestDatabaseHandler', () => {
   let module: TestingModule;
   let dataSource: DataSource;
   let testDatabaseHandler: DummyDatabaseHandler;
@@ -55,7 +55,7 @@ describe("TestDatabaseHandler", () => {
     await module.close();
   });
 
-  it("should create a dummy user", async () => {
+  it('should create a dummy user', async () => {
     const dummyUser = testDatabaseHandler.makeDummyUser();
     expect(dummyUser instanceof TypeormUser).toBe(true);
 
@@ -68,7 +68,7 @@ describe("TestDatabaseHandler", () => {
     expect(foundUser?.id).toBe(dummyUser.id);
   });
 
-  it("should create a dummy group", async () => {
+  it('should create a dummy group', async () => {
     // for group owner
     testDatabaseHandler.makeDummyUser(false);
 
@@ -85,7 +85,7 @@ describe("TestDatabaseHandler", () => {
     expect(foundGroup?.id).toBe(dummyGroup.id);
   });
 
-  it("should create a dummy content", async () => {
+  it('should create a dummy content', async () => {
     testDatabaseHandler.makeDummyUser(false);
     testDatabaseHandler.makeDummyGroup();
 
@@ -102,7 +102,7 @@ describe("TestDatabaseHandler", () => {
     expect(foundContent?.id).toBe(dummyContent.id);
   });
 
-  it("should create a dummy comment", async () => {
+  it('should create a dummy comment', async () => {
     testDatabaseHandler.makeDummyUser(false);
     testDatabaseHandler.makeDummyGroup();
     testDatabaseHandler.makeDummyContent();
@@ -120,11 +120,11 @@ describe("TestDatabaseHandler", () => {
     expect(foundComment?.id).toBe(dummyComment.id);
   });
 
-  describe("shoud create many dummies", () => {
+  describe('shoud create many dummies', () => {
     beforeEach(async () => {
       await testDatabaseHandler.clearDatabase();
     });
-    it("shoud create many dummies", async () => {
+    it('shoud create many dummies', async () => {
       const payload = {
         numUser: 10,
         numDeletedUser: 5,
@@ -154,7 +154,7 @@ describe("TestDatabaseHandler", () => {
     });
   });
 
-  it("should loaded db and dummy db", async () => {
+  it('should loaded db and dummy db', async () => {
     await testDatabaseHandler.load(parameters.dummyDbPath);
 
     const targetUsers = await dataSource.getRepository(TypeormUser).find();
@@ -204,7 +204,7 @@ describe("TestDatabaseHandler", () => {
     expect(copiedLike).toStrictEqual(firstLike);
   });
 
-  it("should make dummy after load", async () => {
+  it('should make dummy after load', async () => {
     await testDatabaseHandler.load(parameters.dummyDbPath);
 
     const newComment = testDatabaseHandler.makeDummyComment();

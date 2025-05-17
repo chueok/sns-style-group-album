@@ -1,5 +1,5 @@
-import { faker } from "@faker-js/faker";
-import { IObjectStoragePort } from "@repo/be-core";
+import { faker } from '@faker-js/faker';
+import { IObjectStoragePort } from '@repo/be-core';
 
 export class MockObjectStorage implements IObjectStoragePort {
   async uploadFile(key: string, filePath: string): Promise<void> {
@@ -7,13 +7,13 @@ export class MockObjectStorage implements IObjectStoragePort {
   }
   async getPresignedUrlForUpload(
     key: string,
-    expires?: number,
+    expires?: number
   ): Promise<string> {
     return faker.internet.url();
   }
   async getPresignedUrlForDownload(
     key: string,
-    expires?: number,
+    expires?: number
   ): Promise<string> {
     return faker.internet.url();
   }

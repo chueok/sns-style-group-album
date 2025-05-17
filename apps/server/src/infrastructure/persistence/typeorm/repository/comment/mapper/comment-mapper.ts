@@ -7,13 +7,13 @@ import {
   Exception,
   Code,
   CommentUserTag,
-} from "@repo/be-core";
+} from '@repo/be-core';
 import {
   TypeormComment,
   TypeormSystemComment,
   TypeormUserComment,
-} from "../../../entity/comment/typeorm-comment.entity";
-import { TypeormCommentUserTag } from "../../../entity/commet-user-tag/typeorm-comment-user-tag.entity";
+} from '../../../entity/comment/typeorm-comment.entity';
+import { TypeormCommentUserTag } from '../../../entity/commet-user-tag/typeorm-comment-user-tag.entity';
 
 export type CommentMapperToDomainPayloadType = {
   elements: { comment: TypeormComment; tags: TypeormCommentUserTag[] }[];
@@ -35,7 +35,7 @@ type ToOrmReturnType = {
 
 export class CommentMapper {
   public static async toDomainEntity(
-    payload: CommentMapperToDomainPayloadType,
+    payload: CommentMapperToDomainPayloadType
   ): Promise<ToDomainReturnType> {
     const { elements } = payload;
 
@@ -48,7 +48,7 @@ export class CommentMapper {
 
     const promiseAllSettledResult = await Promise.allSettled(promiseList);
     promiseAllSettledResult.forEach((result) => {
-      if (result.status === "fulfilled") {
+      if (result.status === 'fulfilled') {
         results.push(result.value);
       } else {
         errors.push(result.reason);
@@ -86,11 +86,11 @@ export class CommentMapper {
   private static async mapToDomainCommentForUtil({
     comment,
     tags: typeormTags,
-  }: CommentMapperToDomainPayloadType["elements"][0]): Promise<Comment> {
+  }: CommentMapperToDomainPayloadType['elements'][0]): Promise<Comment> {
     const userTagPromiseList = typeormTags.map((typeormTag) => {
       return CommentUserTag.new({
         userId: typeormTag.userId,
-        at: typeormTag.at.split(",").map((at) => parseInt(at)),
+        at: typeormTag.at.split(',').map((at) => parseInt(at)),
       });
     });
     const userTags = await Promise.all(userTagPromiseList);
@@ -98,7 +98,7 @@ export class CommentMapper {
     if (comment instanceof TypeormUserComment) {
       const ownerId = comment.ownerId;
 
-      const commentPayload: CreateCommentEntityPayload<"user", "existing"> = {
+      const commentPayload: CreateCommentEntityPayload<'user', 'existing'> = {
         text: comment.text,
         contentId: comment.contentId,
 
@@ -113,7 +113,7 @@ export class CommentMapper {
 
       return UserComment.new(commentPayload);
     } else if (comment instanceof TypeormSystemComment) {
-      const commentPayload: CreateCommentEntityPayload<"system", "existing"> = {
+      const commentPayload: CreateCommentEntityPayload<'system', 'existing'> = {
         text: comment.text,
         contentId: comment.contentId,
 
@@ -129,7 +129,7 @@ export class CommentMapper {
     } else {
       throw Exception.new({
         code: Code.UTIL_PROCESS_ERROR,
-        overrideMessage: "Invalid comment type.",
+        overrideMessage: 'Invalid comment type.',
       });
     }
   }
@@ -153,9 +153,9 @@ export class CommentMapper {
           const typeormTag = new TypeormCommentUserTag();
           typeormTag.commentId = comment.id;
           typeormTag.userId = tag.userId;
-          typeormTag.at = tag.at.join(",");
+          typeormTag.at = tag.at.join(',');
           return typeormTag;
-        }),
+        })
       );
 
       return typeormUserComment;
@@ -171,9 +171,9 @@ export class CommentMapper {
           const typeormTag = new TypeormCommentUserTag();
           typeormTag.commentId = comment.id;
           typeormTag.userId = tag.userId;
-          typeormTag.at = tag.at.join(",");
+          typeormTag.at = tag.at.join(',');
           return typeormTag;
-        }),
+        })
       );
 
       typeormSystemComment.createdDateTime = comment.createdDateTime;

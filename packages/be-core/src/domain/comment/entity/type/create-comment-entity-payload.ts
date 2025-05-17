@@ -1,8 +1,8 @@
-import { Nullable } from "../../../../common/type/common-types";
-import { ContentId } from "../../../content/entity/type/content-id";
-import { UserId } from "../../../user/entity/type/user-id";
-import { CommentUserTag } from "../comment-user-tag";
-import { CommentId } from "./comment-id";
+import { Nullable } from '../../../../common/type/common-types';
+import { ContentId } from '../../../content/entity/type/content-id';
+import { UserId } from '../../../user/entity/type/user-id';
+import { CommentUserTag } from '../comment-user-tag';
+import { CommentId } from './comment-id';
 
 type CreateNewBaseCommentEntityPayload = {
   text: string;

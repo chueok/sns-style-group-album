@@ -1,8 +1,8 @@
-import { Code } from "../../../common/exception/code";
-import { Exception } from "../../../common/exception/exception";
-import { IUsecase } from "../../../common/usecase/usecase.interface";
-import { IContentRepository } from "../repository/content-repository.interface";
-import { IDeleteContentPort } from "./port/delete-content-port";
+import { Code } from '../../../common/exception/code';
+import { Exception } from '../../../common/exception/exception';
+import { IUsecase } from '../../../common/usecase/usecase.interface';
+import { IContentRepository } from '../repository/content-repository.interface';
+import { IDeleteContentPort } from './port/delete-content-port';
 
 export class DeleteContentUsecase
   implements IUsecase<IDeleteContentPort, void>
@@ -10,12 +10,12 @@ export class DeleteContentUsecase
   constructor(private readonly contentRepository: IContentRepository) {}
   async execute(port: IDeleteContentPort): Promise<void> {
     const content = await this.contentRepository.findContentById(
-      port.contentId,
+      port.contentId
     );
     if (!content) {
       throw Exception.new({
         code: Code.ENTITY_NOT_FOUND_ERROR,
-        overrideMessage: "content is not exist",
+        overrideMessage: 'content is not exist',
       });
     }
 
@@ -23,7 +23,7 @@ export class DeleteContentUsecase
     if (!domainResult) {
       throw Exception.new({
         code: Code.INTERNAL_ERROR,
-        overrideMessage: "delete content failed",
+        overrideMessage: 'delete content failed',
       });
     }
 
@@ -32,7 +32,7 @@ export class DeleteContentUsecase
     if (!repositoryResult) {
       throw Exception.new({
         code: Code.INTERNAL_ERROR,
-        overrideMessage: "update content failed",
+        overrideMessage: 'update content failed',
       });
     }
 
