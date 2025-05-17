@@ -13,6 +13,6 @@
     "strict": true,
     "removeComments": true,
     "strictNullChecks": true,
-    "allowJs": true,
+    "allowJs": true
   }
 }

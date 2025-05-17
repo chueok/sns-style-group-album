@@ -15,6 +15,7 @@
     "./textarea": "./src/textarea/index.ts",
     "./toast": "./src/toast/index.ts",
     "./tooltip": "./src/tooltip/index.ts",
+    "./card": "./src/card.tsx",
     "./global.css": "./styles/global.css"
   },
   "scripts": {
