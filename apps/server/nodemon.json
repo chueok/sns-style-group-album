@@ -1,5 +1,5 @@
 {
-    "watch": ["src", "../../packages/be-core/dist"],
-    "exec": "npm run start",
-    "ext": "js,ts"
-  }
+  "watch": ["src", "../../packages/be-core/dist"],
+  "exec": "npm run start",
+  "ext": "js,ts"
+}

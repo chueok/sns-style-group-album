@@ -1,10 +1,10 @@
-import config from "@repo/eslint-config/next.js";
+import config from '@repo/eslint-config/next.js';
 
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
   root: true,
   extends: [config],
-  parser: "@typescript-eslint/parser",
+  parser: '@typescript-eslint/parser',
   parserOptions: {
     project: true,
   },

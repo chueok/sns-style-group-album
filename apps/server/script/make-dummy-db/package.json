@@ -1,7 +1,7 @@
 {
-    "name": "make-dummy-db",
-    "private": true,
-    "scripts": {
-        "start": "ts-node --transpile-only src/index.ts"
-    }
+  "name": "make-dummy-db",
+  "private": true,
+  "scripts": {
+    "start": "ts-node --transpile-only src/index.ts"
+  }
 }

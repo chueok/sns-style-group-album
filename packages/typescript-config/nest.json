@@ -16,8 +16,6 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "isolatedModules": false,
-    "lib": [
-      "ES2021"
-    ],
-  },
+    "lib": ["ES2021"]
+  }
 }
