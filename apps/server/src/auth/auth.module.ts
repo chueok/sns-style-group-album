@@ -2,9 +2,9 @@ import { Module, Provider } from '@nestjs/common';
 import { AuthController } from '../http-rest/controller/auth-controller';
 import { JwtModule } from '@nestjs/jwt';
 import { ServerConfig } from '../config/server-config';
-import { AuthService } from '../http-rest/auth/auth-service';
-import { HttpGoogleStrategy } from '../http-rest/auth/passport/http-google-strategy';
-import { DiTokens } from './di-tokens';
+import { AuthService } from './auth-service';
+import { HttpGoogleStrategy } from './passport/http-google-strategy';
+import { DiTokens } from '../di/di-tokens';
 
 const providers: Provider[] = [
   {

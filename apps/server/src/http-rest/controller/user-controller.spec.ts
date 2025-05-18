@@ -8,13 +8,13 @@ import { UserController } from './user-controller';
 import { UserFixture } from '@test-utils/fixture/user-fixture';
 import { DataSource } from 'typeorm';
 import { AuthFixture } from '@test-utils/fixture/auth-fixture';
-import { IAuthService } from '../auth/auth-service.interface';
 import { DiTokens } from '../../di/di-tokens';
 import { UserResponseDTO } from './dto/user/user-response-dto';
 import { GetProfileImageUploadUrlResponseDTO } from './dto/user/get-profile-image-upload-url-response-dto';
 import { GetUserGroupProfileImageUploadUrlResponseDTO } from './dto/user/get-user-group-profile-image-upload-url-response-dto';
 import { TypeormGroup } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
 import { MockObjectStorage } from '@test-utils/mock/object-storage';
+import { AuthService } from '../../auth/auth-service';
 
 const parameters = {
   testDbPath: join('db', `${basename(__filename)}.sqlite`),
@@ -53,7 +53,7 @@ describe(`${UserController.name} e2e`, () => {
     userFixture = new UserFixture(dataSource);
     await userFixture.init(parameters.dummyDbPath);
 
-    const authService = moduleFixture.get<IAuthService>(DiTokens.AuthService);
+    const authService = moduleFixture.get<AuthService>(DiTokens.AuthService);
     authFixtrue = new AuthFixture(dataSource, authService);
     await authFixtrue.init(parameters.dummyDbPath);
   });

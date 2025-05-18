@@ -12,11 +12,11 @@ import {
   InfrastructureModule,
   typeormSqliteOptions,
 } from '../../di/infrastructure.module';
-import { AuthModule } from '../../di/auth.module';
-import { OauthUserPayload } from '../auth/type/oauth-user-payload';
+import { AuthModule } from '../../auth/auth.module';
+import { OauthUserPayload } from '../../auth/type/oauth-user-payload';
 import { DiTokens } from '../../di/di-tokens';
-import { IAuthService } from '../auth/auth-service.interface';
 import { DataSource } from 'typeorm';
+import { AuthService } from '../../auth/auth-service';
 
 const parameters = {
   testDbPath: join('db', `${basename(__filename)}.sqlite`),
@@ -25,7 +25,7 @@ const parameters = {
 describe('AuthController', () => {
   let testingServer: NestExpressApplication;
   let testingModule: TestingModule;
-  let authService: IAuthService;
+  let authService: AuthService;
   let jwtService: JwtService;
 
   beforeAll(async () => {
@@ -45,7 +45,7 @@ describe('AuthController', () => {
       .useValue(testDataSource)
       .compile();
 
-    authService = testingModule.get<IAuthService>(DiTokens.AuthService);
+    authService = testingModule.get<AuthService>(DiTokens.AuthService);
     jwtService = testingModule.get(JwtService);
 
     testingServer = testingModule.createNestApplication();

@@ -6,7 +6,6 @@ import { AppModule } from '../../app.module';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
 import { AuthFixture } from '@test-utils/fixture/auth-fixture';
-import { IAuthService } from '../auth/auth-service.interface';
 import { DiTokens } from '../../di/di-tokens';
 import { ContentController } from './content-controller';
 import { GetContentListQuery } from './dto/content/get-content-list-query';
@@ -15,6 +14,7 @@ import { MockObjectStorage } from '@test-utils/mock/object-storage';
 import { ContentUploadUrlDTO } from './dto/content/content-upload-url-dto';
 import { CreateMediaListContentBody } from './dto/content/create-media-list-content-body';
 import { IContentRepository } from '@repo/be-core';
+import { AuthService } from '../../auth/auth-service';
 
 const parameters = {
   testDbPath: join('db', `${basename(__filename)}.sqlite`),
@@ -53,7 +53,7 @@ describe(`${ContentController.name} e2e`, () => {
     const dataSource = moduleFixture.get(DataSource);
     contentRepository = moduleFixture.get(DiTokens.ContentRepository);
 
-    const authService = moduleFixture.get<IAuthService>(DiTokens.AuthService);
+    const authService = moduleFixture.get<AuthService>(DiTokens.AuthService);
     authFixtrue = new AuthFixture(dataSource, authService);
     await authFixtrue.init(parameters.dummyDbPath);
   });

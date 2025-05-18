@@ -1,6 +1,5 @@
 import { CanActivate, ExecutionContext, Inject } from '@nestjs/common';
-import { DiTokens } from '../../../di/di-tokens';
-import { IAuthService } from '../auth-service.interface';
+import { DiTokens } from '../../di/di-tokens';
 import { ExtractJwt } from 'passport-jwt';
 import { Reflector } from '@nestjs/core';
 import { Permission, PermissionEnum } from '../decorator/permission';
@@ -9,6 +8,7 @@ import {
   VerifiedUserPayload,
 } from '../type/verified-user-payload';
 import { Code, Exception } from '@repo/be-core';
+import { AuthService } from '../auth-service';
 
 /**
  * user 권한 확인.
@@ -18,7 +18,7 @@ import { Code, Exception } from '@repo/be-core';
 // TODO : 다시 각 permission 별로 가드를 만드는게 좋을 것으로 보임
 export class HttpPermissionGuard implements CanActivate {
   constructor(
-    @Inject(DiTokens.AuthService) private readonly authService: IAuthService,
+    @Inject(DiTokens.AuthService) private readonly authService: AuthService,
     private reflector: Reflector
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {

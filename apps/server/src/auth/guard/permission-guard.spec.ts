@@ -3,20 +3,20 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   InfrastructureModule,
   typeormSqliteOptions,
-} from '../../../di/infrastructure.module';
-import { AuthModule } from '../../../di/auth.module';
+} from '../../di/infrastructure.module';
+import { AuthModule } from '../auth.module';
 import { basename, join } from 'path';
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import supertest from 'supertest';
 import { Code } from '@repo/be-core';
-import { IAuthService } from '../auth-service.interface';
-import { DiTokens } from '../../../di/di-tokens';
+import { DiTokens } from '../../di/di-tokens';
 import { AuthFixture } from '@test-utils/fixture/auth-fixture';
 import { JwtService } from '@nestjs/jwt';
 import { HttpPermissionGuard } from './permission-guard';
 import { Permission, PermissionEnum } from '../decorator/permission';
-import { TypeormUser } from '../../../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
+import { TypeormUser } from '../../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
+import { AuthService } from '../auth-service';
 
 const parameters = {
   testDbPath: join('db', `${basename(__filename)}.sqlite`),
@@ -130,7 +130,7 @@ describe(`${HttpPermissionGuard.name}`, () => {
     testingServer = testingModule.createNestApplication();
     await testingServer.init();
 
-    const authService = testingModule.get<IAuthService>(DiTokens.AuthService);
+    const authService = testingModule.get<AuthService>(DiTokens.AuthService);
     dataSource = testingModule.get(DataSource);
     const jwtService = testingModule.get(JwtService);
 

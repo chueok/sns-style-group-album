@@ -25,19 +25,19 @@ import { EditContentBody } from './dto/content/edit-content-body';
 import { CreateContentBody } from './dto/content/create-content-body';
 import { DiTokens } from '../../di/di-tokens';
 import { MediaContentResponseDTO } from './dto/content/media-content-response-dto';
-import { HttpObjectStorageGuard } from '../auth/guard/object-storage-guard';
+import { HttpObjectStorageGuard } from '../../auth/guard/object-storage-guard';
 import { CreateMediaListContentBody } from './dto/content/create-media-list-content-body';
 import { MediaService } from '../media/media-service';
 import { SaveTemporaryMediaAdapter } from '../media/port/save-temporary-media-port';
-import { VerifiedUser } from '../auth/decorator/verified-user';
-import { VerifiedUserPayload } from '../auth/type/verified-user-payload';
+import { VerifiedUser } from '../../auth/decorator/verified-user';
+import { VerifiedUserPayload } from '../../auth/type/verified-user-payload';
 import { ContentUploadUrlDTO } from './dto/content/content-upload-url-dto';
 import { MinioWebhookBody } from './dto/content/minio-webhook-body';
 import mime from 'mime';
 import { ConfirmMediaUploadedAdapter } from '../media/port/confirm-original-media-uploaded-port';
 import { ConfirmResponsiveMediaUploadedAdapter } from '../media/port/confirm-responsive-media-uploaded-port';
-import { Permission, PermissionEnum } from '../auth/decorator/permission';
-import { HttpPermissionGuard } from '../auth/guard/permission-guard';
+import { Permission, PermissionEnum } from '../../auth/decorator/permission';
+import { HttpPermissionGuard } from '../../auth/guard/permission-guard';
 
 @Controller('contents')
 @ApiTags('contents')

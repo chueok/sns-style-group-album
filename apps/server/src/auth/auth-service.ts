@@ -16,24 +16,23 @@ import {
 } from '@repo/be-core';
 import { JwtService } from '@nestjs/jwt';
 import { DataSource, Repository } from 'typeorm';
-import { TypeormOauth } from '../../infrastructure/persistence/typeorm/entity/oauth/typeorm-oauth.entity';
+import { TypeormOauth } from '../infrastructure/persistence/typeorm/entity/oauth/typeorm-oauth.entity';
 import { OauthUserPayload } from './type/oauth-user-payload';
-import { RestResponseJwt } from '../controller/dto/auth/rest-response-jwt';
-import { RestResponseSignupJwt } from '../controller/dto/auth/rest-response-signup-jwt';
-import { DiTokens } from '../../di/di-tokens';
-import { TypeormUser } from '../../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
-import { TypeormGroup } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
+import { RestResponseJwt } from '../http-rest/controller/dto/auth/rest-response-jwt';
+import { RestResponseSignupJwt } from '../http-rest/controller/dto/auth/rest-response-signup-jwt';
+import { DiTokens } from '../di/di-tokens';
+import { TypeormUser } from '../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
+import { TypeormGroup } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
-import { IAuthService } from './auth-service.interface';
 import { JwtSignupModel, JwtSignupPayload } from './type/jwt-signup-payload';
 import { ISignupPort } from './port/signup-port';
-import { TypeormContent } from '../../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
-import { TypeormComment } from '../../infrastructure/persistence/typeorm/entity/comment/typeorm-comment.entity';
+import { TypeormContent } from '../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
+import { TypeormComment } from '../infrastructure/persistence/typeorm/entity/comment/typeorm-comment.entity';
 import { JwtUserModel, JwtUserPayload } from './type/jwt-user-payload';
 
 @Injectable()
-export class AuthService implements IAuthService {
+export class AuthService {
   private readonly typeormUserRepository: Repository<TypeormUser>;
   private readonly typeormOauthRepository: Repository<TypeormOauth>;
   private readonly typeormGroupRepository: Repository<TypeormGroup>;

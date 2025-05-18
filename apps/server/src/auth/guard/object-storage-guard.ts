@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext } from '@nestjs/common';
 import { ExtractJwt } from 'passport-jwt';
-import { ServerConfig } from '../../../config/server-config';
+import { ServerConfig } from '../../config/server-config';
 
 export class HttpObjectStorageGuard implements CanActivate {
   public async canActivate(context: ExecutionContext): Promise<boolean> {

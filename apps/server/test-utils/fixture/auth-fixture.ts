@@ -1,20 +1,20 @@
 import { DummyDatabaseHandler } from '@test-utils/persistence/dummy-database-handler';
 import { DataSource } from 'typeorm';
-import { IAuthService } from '../../src/http-rest/auth/auth-service.interface';
 import { TypeormGroup } from '../../src/infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
 import assert from 'assert';
 import { TypeormUser } from '../../src/infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
 import { JwtService } from '@nestjs/jwt';
-import { JwtUserPayload } from '../../src/http-rest/auth/type/jwt-user-payload';
+import { JwtUserPayload } from '../../src/auth/type/jwt-user-payload';
 import { v4 } from 'uuid';
 import { TypeormContent } from '../../src/infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
+import { AuthService } from '../../src/auth/auth-service';
 
 export class AuthFixture {
   private readonly dbHandler: DummyDatabaseHandler;
 
   constructor(
     private readonly dataSource: DataSource,
-    private readonly authService: IAuthService,
+    private readonly authService: AuthService,
     private readonly jwtService?: JwtService
   ) {
     this.dbHandler = new DummyDatabaseHandler(dataSource);

@@ -10,24 +10,24 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CookieOptions, Request, Response } from 'express';
-import { VerifiedUser } from '../auth/decorator/verified-user';
+import { VerifiedUser } from '../../auth/decorator/verified-user';
 import { ServerConfig } from '../../config/server-config';
 import assert from 'assert';
-import { VerifiedUserPayload } from '../auth/type/verified-user-payload';
+import { VerifiedUserPayload } from '../../auth/type/verified-user-payload';
 import {
   OauthUserPayload,
   isHttpOauthUserPayload,
-} from '../auth/type/oauth-user-payload';
+} from '../../auth/type/oauth-user-payload';
 import { RestAuthSignupBody } from './dto/auth/rest-auth-signup-body';
 import { ApiResponseGeneric } from './dto/decorator/api-response-generic';
 import { RestResponseSignupJwt } from './dto/auth/rest-response-signup-jwt';
 import { RestResponseJwt } from './dto/auth/rest-response-jwt';
 import { Code, Exception } from '@repo/be-core';
 import { RestResponse } from './dto/common/rest-response';
-import { HttpGoogleAuthGuard } from '../auth/guard/google-auth-guard';
+import { HttpGoogleAuthGuard } from '../../auth/guard/google-auth-guard';
 import { DiTokens } from '../../di/di-tokens';
-import { IAuthService } from '../auth/auth-service.interface';
-import { SignupAdaptor } from '../auth/port/signup-port';
+import { SignupAdaptor } from '../../auth/port/signup-port';
+import { AuthService } from '../../auth/auth-service';
 
 const AUTH_PATH_NAME = 'auth';
 const googleCallbackPath = validateCallbackPath(); // TODO: 과한 것 같음. literal로 하자.
@@ -36,7 +36,7 @@ const googleCallbackPath = validateCallbackPath(); // TODO: 과한 것 같음. l
 @ApiTags(AUTH_PATH_NAME)
 export class AuthController {
   constructor(
-    @Inject(DiTokens.AuthService) private readonly authService: IAuthService
+    @Inject(DiTokens.AuthService) private readonly authService: AuthService
   ) {}
 
   @Get('login/google')

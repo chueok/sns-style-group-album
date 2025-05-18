@@ -40,10 +40,10 @@ import { CreateGroupBody } from './dto/group/create-group-body';
 import { EditGroupBody } from './dto/group/edit-group-body';
 import { UserSimpleResponseDTO } from './dto/user/user-simple-response-dto';
 import { DiTokens } from '../../di/di-tokens';
-import { VerifiedUser } from '../auth/decorator/verified-user';
-import { VerifiedUserPayload } from '../auth/type/verified-user-payload';
-import { HttpPermissionGuard } from '../auth/guard/permission-guard';
-import { Permission, PermissionEnum } from '../auth/decorator/permission';
+import { VerifiedUser } from '../../auth/decorator/verified-user';
+import { VerifiedUserPayload } from '../../auth/type/verified-user-payload';
+import { HttpPermissionGuard } from '../../auth/guard/permission-guard';
+import { Permission, PermissionEnum } from '../../auth/decorator/permission';
 
 @Controller('groups')
 @ApiTags('groups')

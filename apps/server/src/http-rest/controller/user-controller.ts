@@ -29,10 +29,10 @@ import { DiTokens } from '../../di/di-tokens';
 import { GetUserGroupProfileImageUploadUrlResponseDTO } from './dto/user/get-user-group-profile-image-upload-url-response-dto';
 import { GetProfileImageUploadUrlResponseDTO } from './dto/user/get-profile-image-upload-url-response-dto';
 import { UserGroupProfileBody } from './dto/user/edit-user-group-profile-body';
-import { VerifiedUser } from '../auth/decorator/verified-user';
-import { VerifiedUserPayload } from '../auth/type/verified-user-payload';
-import { HttpPermissionGuard } from '../auth/guard/permission-guard';
-import { Permission, PermissionEnum } from '../auth/decorator/permission';
+import { VerifiedUser } from '../../auth/decorator/verified-user';
+import { VerifiedUserPayload } from '../../auth/type/verified-user-payload';
+import { HttpPermissionGuard } from '../../auth/guard/permission-guard';
+import { Permission, PermissionEnum } from '../../auth/decorator/permission';
 
 @Controller('users')
 @ApiTags('users')

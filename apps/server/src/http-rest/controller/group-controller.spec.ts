@@ -7,7 +7,6 @@ import request from 'supertest';
 import { UserFixture } from '@test-utils/fixture/user-fixture';
 import { DataSource } from 'typeorm';
 import { AuthFixture } from '@test-utils/fixture/auth-fixture';
-import { IAuthService } from '../auth/auth-service.interface';
 import { DiTokens } from '../../di/di-tokens';
 import { GroupResponseDTO } from './dto/group/group-response';
 import { GroupController } from './group-controller';
@@ -15,6 +14,7 @@ import { GroupSimpleResponseDTO } from './dto/group/group-simple-response';
 import { assert } from 'console';
 import { UserSimpleResponseDTO } from './dto/user/user-simple-response-dto';
 import { TypeormGroup } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
+import { AuthService } from '../../auth/auth-service';
 
 const parameters = {
   testDbPath: join('db', `${basename(__filename)}.sqlite`),
@@ -51,7 +51,7 @@ describe(`${GroupController.name} e2e`, () => {
     userFixture = new UserFixture(dataSource);
     await userFixture.init(parameters.dummyDbPath);
 
-    const authService = moduleFixture.get<IAuthService>(DiTokens.AuthService);
+    const authService = moduleFixture.get<AuthService>(DiTokens.AuthService);
     authFixtrue = new AuthFixture(dataSource, authService);
     await authFixtrue.init(parameters.dummyDbPath);
   });
