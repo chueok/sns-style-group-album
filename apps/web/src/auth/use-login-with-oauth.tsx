@@ -12,14 +12,23 @@ export const useLoginWithOauth = (props: { returnTo: string }) => {
     const onMessage = (e: MessageEvent) => {
       if (e.data.status === 'success') {
         toast.success('Login successful!');
+        setIsPending(false);
         router.replace(redirectUrl);
         router.refresh();
+        popupRef.current = null;
       } else if (e.data.status === 'fail') {
         toast.error('Login failed!');
         setIsPending(false);
+        popupRef.current = null;
       } else if (e.data.status === 'cancel') {
-        setIsPending(false);
-        toast.error('로그인이 취소되었습니다.');
+        // success/fail 과 cancel 메시지가 같이 오기 때문에, cancel 메시지는 1초 뒤에 처리
+        setTimeout(() => {
+          if (popupRef.current) {
+            toast.error('로그인이 취소되었습니다.');
+            setIsPending(false);
+            popupRef.current = null;
+          }
+        }, 1000);
       }
     };
 
@@ -61,7 +70,6 @@ export const useLoginWithOauth = (props: { returnTo: string }) => {
         toast.error('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
         return;
       }
-
       popupRef.current = popup;
       setIsPending(true);
     } catch (error) {
