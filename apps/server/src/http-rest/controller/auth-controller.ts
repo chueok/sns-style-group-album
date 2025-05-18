@@ -5,9 +5,11 @@ import {
   Inject,
   Post,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { CookieOptions, Request, Response } from 'express';
 import { VerifiedUser } from '../auth/decorator/verified-user';
 import { ServerConfig } from '../../config/server-config';
 import assert from 'assert';
@@ -23,7 +25,6 @@ import { RestResponseJwt } from './dto/auth/rest-response-jwt';
 import { Code, Exception } from '@repo/be-core';
 import { RestResponse } from './dto/common/rest-response';
 import { HttpGoogleAuthGuard } from '../auth/guard/google-auth-guard';
-import { ExtractJwt } from 'passport-jwt';
 import { DiTokens } from '../../di/di-tokens';
 import { IAuthService } from '../auth/auth-service.interface';
 import { SignupAdaptor } from '../auth/port/signup-port';
@@ -52,19 +53,44 @@ export class AuthController {
     data: RestResponseSignupJwt,
   })
   async googleAuthCallback(
-    @VerifiedUser() user: VerifiedUserPayload | OauthUserPayload
-  ): Promise<RestResponse<RestResponseSignupJwt | RestResponseJwt | null>> {
-    if (isHttpOauthUserPayload(user)) {
-      const token: RestResponseSignupJwt =
-        await this.authService.getSignupToken(user);
-      return RestResponse.error(
-        Code.WRONG_CREDENTIALS_ERROR.code,
-        Code.WRONG_CREDENTIALS_ERROR.message,
-        token
+    @VerifiedUser() user: VerifiedUserPayload | OauthUserPayload,
+    @Res() res: Response
+  ): Promise<void> {
+    try {
+      if (isHttpOauthUserPayload(user)) {
+        const token: RestResponseSignupJwt =
+          await this.authService.getSignupToken(user);
+
+        setSecureCookie({
+          res,
+          name: 'signupToken',
+          val: token.signupToken,
+          cookieOptions: {
+            maxAge: 1000 * 60 * 5, // 5분
+          },
+        });
+
+        return res.redirect(`${ServerConfig.CLIENT_ENDPOINT}/login/redirect`);
+      } else {
+        const token: RestResponseJwt =
+          await this.authService.getLoginToken(user);
+
+        setSecureCookie({
+          res,
+          name: 'accessToken',
+          val: token.accessToken,
+          cookieOptions: {
+            maxAge: 1000 * 60 * 5, // 5분
+          },
+        });
+
+        return res.redirect(`${ServerConfig.CLIENT_ENDPOINT}/login/redirect`);
+      }
+    } catch (error) {
+      console.error(error);
+      return res.redirect(
+        `${ServerConfig.CLIENT_ENDPOINT}/login/redirect?error=true`
       );
-    } else {
-      const token: RestResponseJwt = await this.authService.getLoginToken(user);
-      return RestResponse.success(token);
     }
   }
 
@@ -72,22 +98,33 @@ export class AuthController {
   @ApiResponseGeneric({ code: Code.CREATED, data: RestResponseJwt })
   async signup(
     @Req() req: Request,
-    @Body() body: RestAuthSignupBody
-  ): Promise<RestResponse<RestResponseJwt>> {
-    const jwt = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
-    if (!jwt) {
+    @Body() body: RestAuthSignupBody,
+    @Res() res: Response
+  ): Promise<void> {
+    const signupToken = req.signedCookies.signupToken;
+    if (!signupToken) {
       throw Exception.new({ code: Code.UNAUTHORIZED_ERROR });
     }
 
     const adapter = await SignupAdaptor.new({
-      signupToken: jwt,
+      signupToken,
       username: body.username,
       email: body.email,
     });
 
     const loginToken = await this.authService.signup(adapter);
 
-    return RestResponse.success(loginToken);
+    setSecureCookie({
+      res,
+      name: 'accessToken',
+      val: loginToken.accessToken,
+      cookieOptions: {
+        path: '/',
+        maxAge: 1000 * 60 * 5, // 5분
+      },
+    });
+
+    res.status(201).json(RestResponse.success(loginToken));
   }
 }
 
@@ -102,3 +139,20 @@ function validateCallbackPath() {
 
   return callbackPath;
 }
+
+const setSecureCookie = (input: {
+  res: Response;
+  name: string;
+  val: string;
+  cookieOptions?: CookieOptions;
+}) => {
+  const { res, name, val, cookieOptions = {} } = input;
+
+  res.cookie(name, val, {
+    ...cookieOptions,
+    httpOnly: true,
+    secure: ServerConfig.isProduction,
+    sameSite: 'strict',
+    domain: ServerConfig.COOKIE_DOMAIN,
+  });
+};

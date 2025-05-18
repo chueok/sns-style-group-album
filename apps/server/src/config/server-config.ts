@@ -13,6 +13,10 @@ export class ServerConfig {
     .required()
     .asBool();
 
+  public static readonly COOKIE_DOMAIN = get('COOKIE_DOMAIN')
+    .default('localhost')
+    .asString();
+
   public static readonly OAUTH_GOOGLE_ID = get('OAUTH_GOOGLE_ID')
     .required()
     .asString();

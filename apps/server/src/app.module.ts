@@ -11,6 +11,7 @@ import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
+    // TODO: 로거 포멧 커스터마이징 필요
     LoggerModule.forRoot({
       pinoHttp: {
         transport: {
