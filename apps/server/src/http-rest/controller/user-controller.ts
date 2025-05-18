@@ -23,7 +23,7 @@ import {
   GetUserUsecase,
   IObjectStoragePort,
 } from '@repo/be-core';
-import { ApiResponseGeneric } from './dto/decorator/api-response-generic';
+import { ApiResponseGeneric } from '../../swagger/decorator/api-response-generic';
 import { EditUserBody } from './dto/user/edit-user-body';
 import { DiTokens } from '../../di/di-tokens';
 import { GetUserGroupProfileImageUploadUrlResponseDTO } from './dto/user/get-user-group-profile-image-upload-url-response-dto';

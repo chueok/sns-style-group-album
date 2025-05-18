@@ -33,7 +33,7 @@ import {
   InviteUserAdapter,
   InviteUserUsecase,
 } from '@repo/be-core';
-import { ApiResponseGeneric } from './dto/decorator/api-response-generic';
+import { ApiResponseGeneric } from '../../swagger/decorator/api-response-generic';
 import { GroupSimpleResponseDTO } from './dto/group/group-simple-response';
 import { GroupResponseDTO } from './dto/group/group-response';
 import { CreateGroupBody } from './dto/group/create-group-body';

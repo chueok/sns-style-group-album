@@ -12,10 +12,10 @@ import {
   InfrastructureModule,
   typeormSqliteOptions,
 } from '../../di/infrastructure.module';
-import { AuthModule } from '../../auth/auth.module';
-import { OauthUserPayload } from '../../auth/type/oauth-user-payload';
+import { AuthModule } from '../auth.module';
+import { OauthUserPayload } from '../type/oauth-user-payload';
 import { DataSource } from 'typeorm';
-import { AuthService } from '../../auth/auth-service';
+import { AuthService } from '../auth-service';
 
 const parameters = {
   testDbPath: join('db', `${basename(__filename)}.sqlite`),

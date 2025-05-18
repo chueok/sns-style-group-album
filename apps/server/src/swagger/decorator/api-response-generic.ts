@@ -1,6 +1,6 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
-import { RestResponse } from '../common/rest-response';
+import { RestResponse } from '../../http-rest/controller/dto/common/rest-response';
 import { CodeDescription, Constructor } from '@repo/be-core';
 
 export const ApiResponseGeneric = <

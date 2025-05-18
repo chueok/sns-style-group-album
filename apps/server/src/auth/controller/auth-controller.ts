@@ -10,23 +10,23 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CookieOptions, Request, Response } from 'express';
-import { VerifiedUser } from '../../auth/decorator/verified-user';
+import { VerifiedUser } from '../decorator/verified-user';
 import { ServerConfig } from '../../config/server-config';
 import assert from 'assert';
-import { VerifiedUserPayload } from '../../auth/type/verified-user-payload';
+import { VerifiedUserPayload } from '../type/verified-user-payload';
 import {
   OauthUserPayload,
   isHttpOauthUserPayload,
-} from '../../auth/type/oauth-user-payload';
-import { RestAuthSignupBody } from './dto/auth/rest-auth-signup-body';
-import { ApiResponseGeneric } from './dto/decorator/api-response-generic';
-import { RestResponseSignupJwt } from './dto/auth/rest-response-signup-jwt';
-import { RestResponseJwt } from './dto/auth/rest-response-jwt';
+} from '../type/oauth-user-payload';
+import { RestAuthSignupBody } from './dto/rest-auth-signup-body';
+import { ApiResponseGeneric } from '../../swagger/decorator/api-response-generic';
+import { RestResponseSignupJwt } from './dto/rest-response-signup-jwt';
+import { RestResponseJwt } from './dto/rest-response-jwt';
 import { Code, Exception } from '@repo/be-core';
-import { RestResponse } from './dto/common/rest-response';
-import { HttpGoogleAuthGuard } from '../../auth/guard/google-auth-guard';
-import { SignupAdaptor } from '../../auth/port/signup-port';
-import { AuthService } from '../../auth/auth-service';
+import { RestResponse } from '../../http-rest/controller/dto/common/rest-response';
+import { HttpGoogleAuthGuard } from '../guard/google-auth-guard';
+import { SignupAdaptor } from '../port/signup-port';
+import { AuthService } from '../auth-service';
 
 const AUTH_PATH_NAME = 'auth';
 const googleCallbackPath = validateCallbackPath(); // TODO: 과한 것 같음. literal로 하자.

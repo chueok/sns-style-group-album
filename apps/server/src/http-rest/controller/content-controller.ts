@@ -19,7 +19,7 @@ import {
   GetMediaContentListUsecase,
   IObjectStoragePort,
 } from '@repo/be-core';
-import { ApiResponseGeneric } from './dto/decorator/api-response-generic';
+import { ApiResponseGeneric } from '../../swagger/decorator/api-response-generic';
 import { GetContentListQuery } from './dto/content/get-content-list-query';
 import { EditContentBody } from './dto/content/edit-content-body';
 import { CreateContentBody } from './dto/content/create-content-body';

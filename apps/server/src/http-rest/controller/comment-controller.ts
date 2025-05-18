@@ -9,7 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { ApiResponseGeneric } from './dto/decorator/api-response-generic';
+import { ApiResponseGeneric } from '../../swagger/decorator/api-response-generic';
 import { CreateUserCommentBody } from './dto/comment/comment-create-body';
 import { CommentResponseDTO } from './dto/comment/comment-response-dto';
 import { CommentEditBody } from './dto/comment/comment-edit-body';
