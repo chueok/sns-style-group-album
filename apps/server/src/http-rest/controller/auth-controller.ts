@@ -29,7 +29,7 @@ import { IAuthService } from '../auth/auth-service.interface';
 import { SignupAdaptor } from '../auth/port/signup-port';
 
 const AUTH_PATH_NAME = 'auth';
-const googleCallbackPath = validateCallbackPath();
+const googleCallbackPath = validateCallbackPath(); // TODO: 과한 것 같음. literal로 하자.
 
 @Controller(AUTH_PATH_NAME)
 @ApiTags(AUTH_PATH_NAME)

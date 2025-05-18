@@ -1,5 +1,4 @@
 import { Nullable } from '../../../common/type/common-types';
-import { SimpleUserDTO } from '../dto/simple-user-dto';
 import { User } from '../entity/user';
 
 /**

@@ -5,13 +5,20 @@ import { FaApple } from 'react-icons/fa';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent } from '@repo/ui/card';
+import { getBackendUrl } from '../utils';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const handleLogin = (provider: 'Google' | 'Apple') => {
+  const handleLogin = (provider: 'google' | 'apple') => {
     setLoading(true);
-    // OAuth 로그인 로직 (예: 리디렉션 처리)
+    if (provider === 'google') {
+      router.replace(`${getBackendUrl()}/auth/login/${provider}`);
+      router.refresh();
+    }
+
     setTimeout(() => {
       setLoading(false);
       alert(`${provider} 로그인 시도`);
@@ -30,7 +37,7 @@ export default function LoginPage() {
           </p>
           <div className="tw-space-y-3">
             <Button
-              onClick={() => handleLogin('Google')}
+              onClick={() => handleLogin('google')}
               className="tw-w-full tw-flex tw-items-center tw-gap-2"
               disabled={loading}
             >
@@ -42,7 +49,7 @@ export default function LoginPage() {
               Google 로그인
             </Button>
             <Button
-              onClick={() => handleLogin('Apple')}
+              onClick={() => handleLogin('apple')}
               className="tw-w-full tw-flex tw-items-center tw-gap-2 tw-bg-black tw-text-white"
               disabled={loading}
             >
