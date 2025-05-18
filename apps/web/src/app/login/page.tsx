@@ -5,7 +5,7 @@ import { FaApple } from 'react-icons/fa';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent } from '@repo/ui/card';
-import { getBackendUrl } from '../utils';
+import { getBackendUrl } from '../../utils';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
