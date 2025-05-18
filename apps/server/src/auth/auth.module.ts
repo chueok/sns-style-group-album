@@ -1,17 +1,9 @@
-import { Module, Provider } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AuthController } from '../http-rest/controller/auth-controller';
 import { JwtModule } from '@nestjs/jwt';
 import { ServerConfig } from '../config/server-config';
 import { AuthService } from './auth-service';
 import { HttpGoogleStrategy } from './passport/http-google-strategy';
-import { DiTokens } from '../di/di-tokens';
-
-const providers: Provider[] = [
-  {
-    provide: DiTokens.AuthService,
-    useClass: AuthService,
-  },
-];
 
 @Module({
   controllers: [AuthController],
@@ -22,7 +14,7 @@ const providers: Provider[] = [
       verifyOptions: { ignoreExpiration: false },
     }),
   ],
-  providers: [...providers, HttpGoogleStrategy],
-  exports: [DiTokens.AuthService],
+  providers: [AuthService, HttpGoogleStrategy],
+  exports: [AuthService],
 })
 export class AuthModule {}

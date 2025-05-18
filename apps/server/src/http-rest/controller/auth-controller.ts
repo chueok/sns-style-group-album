@@ -25,7 +25,6 @@ import { RestResponseJwt } from './dto/auth/rest-response-jwt';
 import { Code, Exception } from '@repo/be-core';
 import { RestResponse } from './dto/common/rest-response';
 import { HttpGoogleAuthGuard } from '../../auth/guard/google-auth-guard';
-import { DiTokens } from '../../di/di-tokens';
 import { SignupAdaptor } from '../../auth/port/signup-port';
 import { AuthService } from '../../auth/auth-service';
 
@@ -35,9 +34,7 @@ const googleCallbackPath = validateCallbackPath(); // TODO: 과한 것 같음. l
 @Controller(AUTH_PATH_NAME)
 @ApiTags(AUTH_PATH_NAME)
 export class AuthController {
-  constructor(
-    @Inject(DiTokens.AuthService) private readonly authService: AuthService
-  ) {}
+  constructor(@Inject() private readonly authService: AuthService) {}
 
   @Get('login/google')
   @UseGuards(HttpGoogleAuthGuard)

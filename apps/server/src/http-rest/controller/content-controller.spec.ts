@@ -53,7 +53,7 @@ describe(`${ContentController.name} e2e`, () => {
     const dataSource = moduleFixture.get(DataSource);
     contentRepository = moduleFixture.get(DiTokens.ContentRepository);
 
-    const authService = moduleFixture.get<AuthService>(DiTokens.AuthService);
+    const authService = moduleFixture.get(AuthService);
     authFixtrue = new AuthFixture(dataSource, authService);
     await authFixtrue.init(parameters.dummyDbPath);
   });

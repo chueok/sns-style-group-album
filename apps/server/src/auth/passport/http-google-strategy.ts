@@ -7,7 +7,6 @@ import { VerifiedUserPayload } from '../type/verified-user-payload';
 import { Code, Exception, Optional } from '@repo/be-core';
 import { OauthUserModel, OauthUserPayload } from '../type/oauth-user-payload';
 import { validateSync } from 'class-validator';
-import { DiTokens } from '../../di/di-tokens';
 import { AuthService } from '../auth-service';
 
 @Injectable()
@@ -15,9 +14,7 @@ export class HttpGoogleStrategy extends PassportStrategy(
   Strategy,
   AuthProviderEnum.GOOGLE
 ) {
-  constructor(
-    @Inject(DiTokens.AuthService) private readonly authService: AuthService
-  ) {
+  constructor(@Inject() private readonly authService: AuthService) {
     super({
       clientID: ServerConfig.OAUTH_GOOGLE_ID,
       clientSecret: ServerConfig.OAUTH_GOOGLE_SECRET,

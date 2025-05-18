@@ -10,7 +10,6 @@ import { Controller, Get, UseGuards } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import supertest from 'supertest';
 import { Code } from '@repo/be-core';
-import { DiTokens } from '../../di/di-tokens';
 import { AuthFixture } from '@test-utils/fixture/auth-fixture';
 import { JwtService } from '@nestjs/jwt';
 import { HttpPermissionGuard } from './permission-guard';
@@ -130,7 +129,7 @@ describe(`${HttpPermissionGuard.name}`, () => {
     testingServer = testingModule.createNestApplication();
     await testingServer.init();
 
-    const authService = testingModule.get<AuthService>(DiTokens.AuthService);
+    const authService = testingModule.get(AuthService);
     dataSource = testingModule.get(DataSource);
     const jwtService = testingModule.get(JwtService);
 

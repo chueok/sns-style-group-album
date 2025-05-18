@@ -7,7 +7,6 @@ import request from 'supertest';
 import { UserFixture } from '@test-utils/fixture/user-fixture';
 import { DataSource } from 'typeorm';
 import { AuthFixture } from '@test-utils/fixture/auth-fixture';
-import { DiTokens } from '../../di/di-tokens';
 import { GroupResponseDTO } from './dto/group/group-response';
 import { GroupController } from './group-controller';
 import { GroupSimpleResponseDTO } from './dto/group/group-simple-response';
@@ -51,7 +50,7 @@ describe(`${GroupController.name} e2e`, () => {
     userFixture = new UserFixture(dataSource);
     await userFixture.init(parameters.dummyDbPath);
 
-    const authService = moduleFixture.get<AuthService>(DiTokens.AuthService);
+    const authService = moduleFixture.get(AuthService);
     authFixtrue = new AuthFixture(dataSource, authService);
     await authFixtrue.init(parameters.dummyDbPath);
   });

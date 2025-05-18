@@ -14,7 +14,6 @@ import {
 } from '../../di/infrastructure.module';
 import { AuthModule } from '../../auth/auth.module';
 import { OauthUserPayload } from '../../auth/type/oauth-user-payload';
-import { DiTokens } from '../../di/di-tokens';
 import { DataSource } from 'typeorm';
 import { AuthService } from '../../auth/auth-service';
 
@@ -45,7 +44,7 @@ describe('AuthController', () => {
       .useValue(testDataSource)
       .compile();
 
-    authService = testingModule.get<AuthService>(DiTokens.AuthService);
+    authService = testingModule.get(AuthService);
     jwtService = testingModule.get(JwtService);
 
     testingServer = testingModule.createNestApplication();

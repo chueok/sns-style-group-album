@@ -5,9 +5,6 @@ export class DiTokens {
   static readonly ContentRepository = Symbol('ContentRepository');
   static readonly CommentRepository = Symbol('CommentRepository');
 
-  // service
-  static readonly AuthService = Symbol('AuthService');
-
   // user usecase
   static readonly GetUserUsecase = Symbol('GetUserUsecase');
   static readonly GetGroupMemberUsecase = Symbol('GetGroupMemberUsecase');
