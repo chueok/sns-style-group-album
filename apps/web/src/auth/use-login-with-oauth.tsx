@@ -6,7 +6,6 @@ export const useLoginWithOauth = (props: { returnTo: string }) => {
   const redirectUrl = props.returnTo;
   const [isPending, setIsPending] = useState(false);
   const router = useRouter();
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const popupRef = useRef<Window | null>(null);
 
   useEffect(() => {
@@ -18,15 +17,15 @@ export const useLoginWithOauth = (props: { returnTo: string }) => {
       } else if (e.data.status === 'fail') {
         toast.error('Login failed!');
         setIsPending(false);
+      } else if (e.data.status === 'cancel') {
+        setIsPending(false);
+        toast.error('로그인이 취소되었습니다.');
       }
     };
 
     window.addEventListener('message', onMessage);
     return () => {
       window.removeEventListener('message', onMessage);
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
     };
   }, [redirectUrl, router]);
 
@@ -65,16 +64,6 @@ export const useLoginWithOauth = (props: { returnTo: string }) => {
 
       popupRef.current = popup;
       setIsPending(true);
-
-      intervalRef.current = setInterval(() => {
-        if (popupRef.current?.closed) {
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-          }
-          setIsPending(false);
-          toast.error('로그인이 취소되었습니다.');
-        }
-      }, 500);
     } catch (error) {
       console.error('Error opening popup:', error);
       toast.error('팝업을 열 수 없습니다.');

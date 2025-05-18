@@ -7,6 +7,12 @@ const OauthRedirectPage = () => {
   const isError = searchParams.get('error');
 
   useEffect(() => {
+    return () => {
+      window.opener.postMessage({ status: 'cancel' }, '*');
+    };
+  }, []);
+
+  useEffect(() => {
     const sendMessageToParent = () => {
       try {
         if (window.opener) {
