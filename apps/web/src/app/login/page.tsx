@@ -6,23 +6,18 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent } from '@repo/ui/card';
 import { getBackendUrl } from '../../utils';
-import { useRouter } from 'next/navigation';
+import { useLoginWithOauth } from '@/auth/use-login-with-oauth';
 
 export default function LoginPage() {
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const { isPending, login } = useLoginWithOauth({
+    returnTo: '#',
+  });
+  const loading = isPending;
 
   const handleLogin = (provider: 'google' | 'apple') => {
-    setLoading(true);
     if (provider === 'google') {
-      router.replace(`${getBackendUrl()}/auth/login/${provider}`);
-      router.refresh();
+      login({ authURL: `${getBackendUrl()}/auth/login/${provider}` });
     }
-
-    setTimeout(() => {
-      setLoading(false);
-      alert(`${provider} 로그인 시도`);
-    }, 1500);
   };
 
   return (
