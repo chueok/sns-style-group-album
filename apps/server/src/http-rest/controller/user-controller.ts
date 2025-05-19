@@ -6,7 +6,6 @@ import {
   Inject,
   Param,
   Patch,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { RestResponse } from './dto/common/rest-response';
@@ -29,10 +28,8 @@ import { DiTokens } from '../../di/di-tokens';
 import { GetUserGroupProfileImageUploadUrlResponseDTO } from './dto/user/get-user-group-profile-image-upload-url-response-dto';
 import { GetProfileImageUploadUrlResponseDTO } from './dto/user/get-profile-image-upload-url-response-dto';
 import { UserGroupProfileBody } from './dto/user/edit-user-group-profile-body';
-import { VerifiedUser } from '../../auth/decorator/verified-user';
-import { VerifiedUserPayload } from '../../auth/type/verified-user-payload';
-import { HttpPermissionGuard } from '../../auth/guard/permission-guard';
-import { Permission, PermissionEnum } from '../../auth/decorator/permission';
+import { TJwtUser } from '../../auth/type/jwt-user';
+import { DJwtUser } from '../../auth/decorator/jwt-user';
 
 @Controller('users')
 @ApiTags('users')
@@ -51,12 +48,11 @@ export class UserController {
   ) {}
 
   @Get()
-  @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDTO })
   async getUser(
-    @VerifiedUser() verifiedUser: VerifiedUserPayload
+    @DJwtUser() jwtUser: TJwtUser
   ): Promise<RestResponse<UserResponseDTO>> {
-    const adapter = await GetUserAdaptor.new({ id: verifiedUser.id });
+    const adapter = await GetUserAdaptor.new({ id: jwtUser.id });
 
     const user = await this.getUserUsecase.execute(adapter);
 
@@ -68,12 +64,9 @@ export class UserController {
   }
 
   @Delete()
-  @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
-  async deleteUser(
-    @VerifiedUser() verifiedUser: VerifiedUserPayload
-  ): Promise<RestResponse<null>> {
-    const adapter = await DeleteUserAdapter.new({ id: verifiedUser.id });
+  async deleteUser(@DJwtUser() jwtUser: TJwtUser): Promise<RestResponse<null>> {
+    const adapter = await DeleteUserAdapter.new({ id: jwtUser.id });
 
     await this.deleteUserUsecase.execute(adapter);
 
@@ -81,14 +74,13 @@ export class UserController {
   }
 
   @Patch()
-  @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDTO })
   async editUser(
-    @VerifiedUser() verifiedUser: VerifiedUserPayload,
+    @DJwtUser() jwtUser: TJwtUser,
     @Body() body: EditUserBody
   ): Promise<RestResponse<UserResponseDTO>> {
     const adapter = await EditUserAdapter.new({
-      userId: verifiedUser.id,
+      userId: jwtUser.id,
       username: body.username,
     });
 
@@ -103,20 +95,18 @@ export class UserController {
 
   // TODO : email 변경 구현 (email 인증 구현 필요)
   @Patch('email')
-  @UseGuards(HttpPermissionGuard)
   async editEmail() {}
 
   @Get('profile-image-upload-url')
-  @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
     data: GetProfileImageUploadUrlResponseDTO,
   })
   async getProfileImageUploadURL(
-    @VerifiedUser() verifiedUser: VerifiedUserPayload
+    @DJwtUser() jwtUser: TJwtUser
   ): Promise<RestResponse<GetProfileImageUploadUrlResponseDTO>> {
     const response = await GetProfileImageUploadUrlResponseDTO.new(
-      verifiedUser.id,
+      jwtUser.id,
       this.mediaObjectStorage
     );
 
@@ -130,16 +120,14 @@ export class UserController {
 
   // user group profile 변경
   @Patch('profile/:groupId')
-  @UseGuards(HttpPermissionGuard)
-  @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: UserResponseDTO })
   async editUserGroupProfile(
-    @VerifiedUser() verifiedUser: VerifiedUserPayload,
+    @DJwtUser() jwtUser: TJwtUser,
     @Param('groupId') groupId: string,
     @Body() body: UserGroupProfileBody
   ): Promise<RestResponse<UserResponseDTO>> {
     const adapter = await EditUserGroupProfileAdapter.new({
-      userId: verifiedUser.id,
+      userId: jwtUser.id,
       groupId: groupId,
       nickname: body.nickname,
     });
@@ -154,18 +142,16 @@ export class UserController {
   }
 
   @Get('profile/:groupId/profile-image-upload-url')
-  @UseGuards(HttpPermissionGuard)
-  @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
     data: GetUserGroupProfileImageUploadUrlResponseDTO,
   })
   async getUserGroupProfileImageUploadURL(
-    @VerifiedUser() verifiedUser: VerifiedUserPayload,
+    @DJwtUser() jwtUser: TJwtUser,
     @Param('groupId') groupId: string
   ): Promise<RestResponse<GetUserGroupProfileImageUploadUrlResponseDTO>> {
     const response = await GetUserGroupProfileImageUploadUrlResponseDTO.new(
-      verifiedUser.id,
+      jwtUser.id,
       groupId,
       this.mediaObjectStorage
     );

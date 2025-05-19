@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthProviderEnum } from '../auth-provider-enum';
+import { EPassportStrategy } from './passport/passport-strategies-enum';
 
 @Injectable()
-export class HttpGoogleAuthGuard extends AuthGuard(AuthProviderEnum.GOOGLE) {}
+export class HttpGoogleAuthGuard extends AuthGuard(EPassportStrategy.GOOGLE) {}

@@ -21,23 +21,19 @@ import {
 } from '@repo/be-core';
 import { ApiResponseGeneric } from '../../swagger/decorator/api-response-generic';
 import { GetContentListQuery } from './dto/content/get-content-list-query';
-import { EditContentBody } from './dto/content/edit-content-body';
-import { CreateContentBody } from './dto/content/create-content-body';
 import { DiTokens } from '../../di/di-tokens';
 import { MediaContentResponseDTO } from './dto/content/media-content-response-dto';
 import { HttpObjectStorageGuard } from '../../auth/guard/object-storage-guard';
 import { CreateMediaListContentBody } from './dto/content/create-media-list-content-body';
 import { MediaService } from '../media/media-service';
 import { SaveTemporaryMediaAdapter } from '../media/port/save-temporary-media-port';
-import { VerifiedUser } from '../../auth/decorator/verified-user';
-import { VerifiedUserPayload } from '../../auth/type/verified-user-payload';
 import { ContentUploadUrlDTO } from './dto/content/content-upload-url-dto';
 import { MinioWebhookBody } from './dto/content/minio-webhook-body';
 import mime from 'mime';
 import { ConfirmMediaUploadedAdapter } from '../media/port/confirm-original-media-uploaded-port';
 import { ConfirmResponsiveMediaUploadedAdapter } from '../media/port/confirm-responsive-media-uploaded-port';
-import { Permission, PermissionEnum } from '../../auth/decorator/permission';
-import { HttpPermissionGuard } from '../../auth/guard/permission-guard';
+import { TJwtUser } from '../../auth/type/jwt-user';
+import { DJwtUser } from '../../auth/decorator/jwt-user';
 
 @Controller('contents')
 @ApiTags('contents')
@@ -56,8 +52,6 @@ export class ContentController {
   ) {}
 
   @Get('group/:groupId/medias')
-  @UseGuards(HttpPermissionGuard)
-  @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
     data: MediaContentResponseDTO,
@@ -142,14 +136,12 @@ export class ContentController {
   }
 
   @Post('group/:groupId/medias')
-  @UseGuards(HttpPermissionGuard)
-  @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({
     code: Code.CREATED,
     data: ContentUploadUrlDTO,
   })
   async createMediaContentList(
-    @VerifiedUser() user: VerifiedUserPayload,
+    @DJwtUser() user: TJwtUser,
     @Param('groupId') groupId: string,
     @Body() body: CreateMediaListContentBody
   ): Promise<RestResponse<ContentUploadUrlDTO>> {
@@ -190,8 +182,6 @@ export class ContentController {
   // }
 
   @Delete('group/:groupId/content/:contentId')
-  @UseGuards(HttpPermissionGuard)
-  @Permission(PermissionEnum.CONTENT_OWNER)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
   async deleteContent(
     @Param('contentId') contentId: string

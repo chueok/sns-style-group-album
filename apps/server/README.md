@@ -9,6 +9,7 @@
 - 기본 유저네임이 없이 본 서비스를 이용 할 수 없다.
 - 그룹에 들어갈 때 프로필과 유저네임을 설정 할 수 있다.
 - 유저는 email 정보를 필수로 입력 할 필요 없다.
+- 유저네임은 최대 `20`자의 텍스트이다.
 
 ### 그룹
 
@@ -115,3 +116,61 @@ sequenceDiagram
   BE ->> BE: !isValid(AccessToken) and !isValid(RefreshToken)
   BE ->> Browser: Unauthorization 에러
 ```
+
+### 회원가입
+
+현재 Browser에서 FE, BE를 번갈아가며 통신하고 있으나, FE 측의 redirect를 이용하려면 FE를 통해 통신하는 것이 좋아보임
+
+```mermaid
+sequenceDiagram
+  participant Browser
+  participant FE
+  participant BE
+
+  Browser ->> BE: oauth 로그인
+  BE ->> BE: if(!user) createUser
+  BE ->> Browser: accessToken
+  Browser ->> FE: 접속
+  FE ->> Browser: username, email 입력 페이지 redirect
+  Browser ->> BE: username, email 입력
+  Browser ->> FE: 접속
+  FE ->> Browser: 정상 페이지
+```
+
+# 에러 처리
+
+### 에러 계층
+
+1. 클라이언트 에러 (400-499)
+   - 사용자 입력 오류 (400)
+   - 인증/인가 오류 (401, 403)
+   - 리소스 없음 (404)
+   - 유효성 검증 오류 (422)
+2. 서버 에러 (500-599)
+   - 내부 서버 오류 (500)
+   - 서비스 일시적 불가 (503)
+   - 게이트웨이 타임아웃 (504)
+3. 비즈니스 로직 에러
+   - 도메인 규칙 위반
+   - 비즈니스 제약 조건 위반
+   - 트랜잭션 실패
+4. 인프라스트럭처 에러
+   - 데이터베이스 연결 오류
+   - 외부 서비스 연동 오류
+   - 캐시 서버 오류
+   - 파일 시스템 오류
+5. 치명적 에러
+   - 메모리 부족
+   - 디스크 공간 부족
+   - 시스템 리소스 고갈
+   - 프로그램 종료 필요
+
+# 코드 약속
+
+### 접두사
+
+- D : decorator
+- T : type
+- I : interface
+- S : zod schema
+- E : enum

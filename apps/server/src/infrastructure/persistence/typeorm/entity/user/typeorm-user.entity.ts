@@ -17,13 +17,16 @@ export class TypeormUser {
   @PrimaryColumn({ type: 'text' })
   id!: UserId;
 
-  @Column({ nullable: false })
-  username!: string;
+  @Column({ type: 'text', nullable: true, length: 20 })
+  username!: Nullable<string>;
 
   @Column({ type: 'text', nullable: true })
   email!: Nullable<string>;
 
-  @Column({ type: 'boolean', nullable: false })
+  @Column({ type: 'text', nullable: true })
+  profileUrl!: Nullable<string>;
+
+  @Column({ type: 'boolean', default: false })
   hasProfileImage!: boolean;
 
   @Column({ type: 'datetime', nullable: false })

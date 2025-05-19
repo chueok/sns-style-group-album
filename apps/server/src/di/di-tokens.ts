@@ -4,7 +4,6 @@ export class DiTokens {
   static readonly GroupRepository = Symbol('GroupRepository');
   static readonly ContentRepository = Symbol('ContentRepository');
   static readonly CommentRepository = Symbol('CommentRepository');
-
   // user usecase
   static readonly GetUserUsecase = Symbol('GetUserUsecase');
   static readonly GetGroupMemberUsecase = Symbol('GetGroupMemberUsecase');

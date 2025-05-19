@@ -14,9 +14,6 @@ export class TypeormOauth {
   @Column({ type: 'text', nullable: true })
   email!: Nullable<string>;
 
-  @Column({ type: 'text', nullable: true })
-  secretToken!: Nullable<string>;
-
   @Column({ type: 'datetime', nullable: false })
   createdDateTime!: Date;
 

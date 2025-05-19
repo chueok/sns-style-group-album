@@ -57,7 +57,9 @@ export class UserMapper {
           const ownerNickname: string =
             memberProfiles.filter(
               (profile) => profile.userId === group.ownerId
-            )[0]?.nickname || owner.username;
+            )[0]?.nickname ||
+            owner.username ||
+            ''; // TODO: username이 nullable로 바뀌면서 수정 필요
 
           return new GroupInfo({
             groupId: group.id,
@@ -69,7 +71,7 @@ export class UserMapper {
       );
 
       const userPayload: CreateUserEntityPayload<'existing'> = {
-        username: user.username,
+        username: user.username || '', // TODO: username이 nullable로 바뀌면서 수정 필요
         email: user.email,
         hasProfileImage: user.hasProfileImage,
 

@@ -7,7 +7,6 @@ import {
   Param,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { RestResponse } from './dto/common/rest-response';
@@ -40,10 +39,8 @@ import { CreateGroupBody } from './dto/group/create-group-body';
 import { EditGroupBody } from './dto/group/edit-group-body';
 import { UserSimpleResponseDTO } from './dto/user/user-simple-response-dto';
 import { DiTokens } from '../../di/di-tokens';
-import { VerifiedUser } from '../../auth/decorator/verified-user';
-import { VerifiedUserPayload } from '../../auth/type/verified-user-payload';
-import { HttpPermissionGuard } from '../../auth/guard/permission-guard';
-import { Permission, PermissionEnum } from '../../auth/decorator/permission';
+import { TJwtUser } from '../../auth/type/jwt-user';
+import { DJwtUser } from '../../auth/decorator/jwt-user';
 
 @Controller('groups')
 @ApiTags('groups')
@@ -78,15 +75,14 @@ export class GroupController {
   ) {}
 
   @Patch(':groupId/accept-invitation')
-  @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
   async acceptInvitation(
-    @VerifiedUser() verifiedUser: VerifiedUserPayload,
+    @DJwtUser() jwtUser: TJwtUser,
     @Param('groupId') groupId: string
   ): Promise<RestResponse<null>> {
     const adapter = await AcceptInvitationAdapter.new({
       groupId,
-      userId: verifiedUser.id,
+      userId: jwtUser.id,
     });
 
     await this.acceptInvitationUsecase.execute(adapter);
@@ -95,17 +91,16 @@ export class GroupController {
   }
 
   @Get('own')
-  @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
     data: GroupSimpleResponseDTO,
     isArray: true,
   })
   async getOwnGroupList(
-    @VerifiedUser() verifiedUser: VerifiedUserPayload
+    @DJwtUser() jwtUser: TJwtUser
   ): Promise<RestResponse<GroupSimpleResponseDTO[]>> {
     const adapter = await GetOwnGroupListAdapter.new({
-      userId: verifiedUser.id,
+      userId: jwtUser.id,
     });
 
     const groupList = await this.getOwnGroupListUsecase.execute(adapter);
@@ -116,8 +111,6 @@ export class GroupController {
   }
 
   @Get(':groupId/members')
-  @UseGuards(HttpPermissionGuard)
-  @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
     data: UserSimpleResponseDTO,
@@ -136,8 +129,6 @@ export class GroupController {
   }
 
   @Get(':groupId')
-  @UseGuards(HttpPermissionGuard)
-  @Permission(PermissionEnum.GROUP_MEMBER)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: GroupResponseDTO })
   async getGroup(
     @Param('groupId') groupId: string
@@ -154,8 +145,6 @@ export class GroupController {
   }
 
   @Patch(':groupId')
-  @UseGuards(HttpPermissionGuard)
-  @Permission(PermissionEnum.GROUP_OWNER)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: GroupResponseDTO })
   async editGroup(
     @Param('groupId') groupId: string,
@@ -199,8 +188,6 @@ export class GroupController {
   }
 
   @Delete(':groupId')
-  @UseGuards(HttpPermissionGuard)
-  @Permission(PermissionEnum.GROUP_OWNER)
   @ApiResponseGeneric({ code: Code.SUCCESS, data: null })
   async deleteGroup(
     @Param('groupId') groupId: string
@@ -213,14 +200,13 @@ export class GroupController {
   }
 
   @Post()
-  @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({ code: Code.CREATED, data: GroupResponseDTO })
   async createGroup(
-    @VerifiedUser() verifiedUser: VerifiedUserPayload,
+    @DJwtUser() jwtUser: TJwtUser,
     @Body() body: CreateGroupBody
   ): Promise<RestResponse<GroupResponseDTO>> {
     const adapter = await CreateGroupAdapter.new({
-      ownerId: verifiedUser.id,
+      ownerId: jwtUser.id,
       name: body.name,
     });
 
@@ -232,16 +218,15 @@ export class GroupController {
   }
 
   @Get()
-  @UseGuards(HttpPermissionGuard)
   @ApiResponseGeneric({
     code: Code.SUCCESS,
     data: GroupSimpleResponseDTO,
     isArray: true,
   })
   async getGroupList(
-    @VerifiedUser() verifiedUser: VerifiedUserPayload
+    @DJwtUser() jwtUser: TJwtUser
   ): Promise<RestResponse<GroupSimpleResponseDTO[]>> {
-    const adapter = await GetGroupListAdapter.new({ userId: verifiedUser.id });
+    const adapter = await GetGroupListAdapter.new({ userId: jwtUser.id });
 
     const groupList = await this.getGroupListUsecase.execute(adapter);
 
