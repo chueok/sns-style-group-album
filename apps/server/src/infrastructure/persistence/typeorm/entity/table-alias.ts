@@ -8,4 +8,5 @@ export enum TableAlias {
   USER_GROUP_PROFILE = 'UserGroupProfile',
   TEMPORARY_CONTENT = 'TemporaryContent',
   COMMENT_USER_TAG = 'CommentUserTag',
+  REFRESH_TOKEN = 'RefreshToken',
 }

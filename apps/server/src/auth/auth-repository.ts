@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Nullable, UserId } from '@repo/be-core';
+import { Code, Exception, Nullable, UserId } from '@repo/be-core';
 import { DataSource, Repository } from 'typeorm';
 import { TypeormOauth } from '../infrastructure/persistence/typeorm/entity/oauth/typeorm-oauth.entity';
 import { TypeormUser } from '../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
@@ -7,15 +7,19 @@ import { IAuthRepository } from './auth-repository.interface';
 import { v4 } from 'uuid';
 import { Transactional } from 'typeorm-transactional';
 import { TJwtUser } from './type/jwt-user';
+import { TypeormRefreshToken } from '../infrastructure/persistence/typeorm/entity/refresh-token/typeorm-refresh-token.entity';
 
 @Injectable()
 export class AuthRepository implements IAuthRepository {
   private readonly typeormUserRepository: Repository<TypeormUser>;
   private readonly typeormOauthRepository: Repository<TypeormOauth>;
+  private readonly typeormRefreshTokenRepository: Repository<TypeormRefreshToken>;
 
   constructor(readonly dataSource: DataSource) {
     this.typeormOauthRepository = dataSource.getRepository(TypeormOauth);
     this.typeormUserRepository = dataSource.getRepository(TypeormUser);
+    this.typeormRefreshTokenRepository =
+      dataSource.getRepository(TypeormRefreshToken);
   }
 
   @Transactional()
@@ -71,21 +75,50 @@ export class AuthRepository implements IAuthRepository {
     return userPayload;
   }
 
-  // async getUser(payload: { id: string }): Promise<TJwtUser> {
-  //   const user = await this.typeormUserRepository
-  //     .createQueryBuilder('user')
-  //     .where('user.id = :id', { id: payload.id })
-  //     .andWhere('user.deletedDateTime is null')
-  //     .getOne();
+  async saveRefreshToken(userId: string, refreshToken: string): Promise<void> {
+    const createdDateTime = new Date();
 
-  //   if (!user) {
-  //     throw Exception.new({ code: Code.UNAUTHORIZED_ERROR });
-  //   }
-  //   const userPayload: TJwtUser = {
-  //     id: user.id,
-  //   };
-  //   return userPayload;
-  // }
+    // 기존 refresh token 삭제
+    await this.typeormRefreshTokenRepository.delete({
+      userId: userId as UserId,
+    });
+
+    // 새로운 refresh token 저장
+    const newRefreshToken = this.typeormRefreshTokenRepository.create({
+      userId,
+      token: refreshToken,
+      createdDateTime,
+    });
+
+    await this.typeormRefreshTokenRepository.save(newRefreshToken);
+  }
+
+  async validateRefreshToken(
+    userId: string,
+    refreshToken: string
+  ): Promise<boolean> {
+    const token = await this.typeormRefreshTokenRepository.findOne({
+      where: { userId: userId as UserId, token: refreshToken },
+    });
+
+    return !!token;
+  }
+
+  async getUser(userId: string): Promise<TJwtUser> {
+    const user = await this.typeormUserRepository
+      .createQueryBuilder('user')
+      .where('user.id = :id', { id: userId })
+      .andWhere('user.deletedDateTime is null')
+      .getOne();
+
+    if (!user) {
+      throw Exception.new({ code: Code.UNAUTHORIZED_ERROR });
+    }
+    const userPayload: TJwtUser = {
+      id: user.id,
+    };
+    return userPayload;
+  }
 
   // async getGroupMember(payload: {
   //   userId: string;

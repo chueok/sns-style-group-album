@@ -9,6 +9,8 @@ export interface IAuthRepository {
     email?: string;
   }): Promise<TJwtUser>;
 
+  getUser(userId: string): Promise<Nullable<TJwtUser>>;
+
   /**
    * provider와 providerId로 회원 정보를 조회
    */
@@ -17,7 +19,16 @@ export interface IAuthRepository {
     providerId: string
   ): Promise<Nullable<TJwtUser>>;
 
-  // getUser(payload: { id: string }): Promise<TJwtUser>;
+  /**
+   * refresh token을 저장
+   */
+  saveRefreshToken(userId: string, refreshToken: string): Promise<void>;
+
+  /**
+   * refresh token 유효성 검증
+   * db 값이랑 비교하기 때문에 repository에서 검증하도록 함.
+   */
+  validateRefreshToken(userId: string, refreshToken: string): Promise<boolean>;
 
   // getGroupMember(payload: {
   //   userId: string;
