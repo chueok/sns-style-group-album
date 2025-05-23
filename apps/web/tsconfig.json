@@ -8,7 +8,8 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@repo/server/app-router-type": ["../server/src/trpc/app-router-type"]
     }
   },
   "include": [

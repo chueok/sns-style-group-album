@@ -8,6 +8,7 @@ import { CommentController } from './http-rest/controller/comment-controller';
 import { GroupController } from './http-rest/controller/group-controller';
 import { ContentController } from './http-rest/controller/content-controller';
 import { LoggerModule } from 'nestjs-pino';
+import { TrpcModule } from './trpc/trpc.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { LoggerModule } from 'nestjs-pino';
     }),
     InfrastructureModule,
     AuthModule,
+    TrpcModule,
   ],
   controllers: [
     AppController,

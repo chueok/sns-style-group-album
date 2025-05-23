@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import '@repo/ui/global.css';
 import { Toaster } from 'sonner';
+import { TRPCProvider } from '@/trpc/provider';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -23,10 +24,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ko">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <Toaster />
-        {children}
+        <TRPCProvider>
+          <Toaster />
+          {children}
+        </TRPCProvider>
       </body>
     </html>
   );

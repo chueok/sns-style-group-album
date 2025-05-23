@@ -17,6 +17,8 @@ import {
   SJwtRefreshPayload,
   TRefreshJwtPayload,
 } from './type/refresh-jwt-payload';
+import { Request, Response } from 'express';
+import { setSecureCookie } from './utils';
 
 @Injectable()
 export class AuthService {
@@ -70,10 +72,18 @@ export class AuthService {
   }
 
   public async getMe(payload: {
-    accessToken?: string;
-    refreshToken: string;
+    req: Request;
+    res: Response;
   }): Promise<{ user: TJwtUser } & TAuthTokens> {
-    const { accessToken, refreshToken } = payload;
+    const { req, res } = payload;
+
+    const accessToken = req.cookies[AuthModuleConfig.AccessTokenCookieName];
+    const refreshToken = req.cookies[AuthModuleConfig.RefreshTokenCookieName];
+    if (!accessToken && !refreshToken) {
+      throw Exception.new({
+        code: Code.UNAUTHORIZED_ERROR,
+      });
+    }
 
     if (accessToken) {
       const jwtUser = this.validateAccessToken(accessToken);
@@ -89,6 +99,23 @@ export class AuthService {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
     } = await this.refreshAccessToken(refreshToken);
+    setSecureCookie({
+      res,
+      name: AuthModuleConfig.AccessTokenCookieName,
+      val: accessToken,
+      cookieOptions: {
+        maxAge: AuthModuleConfig.AccessTokenMaxAgeInCookie,
+      },
+    });
+
+    setSecureCookie({
+      res,
+      name: AuthModuleConfig.RefreshTokenCookieName,
+      val: refreshToken,
+      cookieOptions: {
+        maxAge: AuthModuleConfig.RefreshTokenMaxAgeInCookie,
+      },
+    });
 
     return {
       user,
@@ -126,10 +153,9 @@ export class AuthService {
       const refreshJwtPayload = parseResult.data;
 
       // 저장된 refresh token과 비교
-      const isValid = await this.authRepository.validateRefreshToken(
-        refreshJwtPayload.userId,
-        refreshToken
-      );
+      const isValid = await this.authRepository
+        .validateRefreshToken(refreshJwtPayload.userId, refreshToken)
+        .catch((_e) => false);
       if (!isValid) {
         throw Exception.new({
           code: Code.UNAUTHORIZED_ERROR,
@@ -143,6 +169,7 @@ export class AuthService {
           code: Code.UNAUTHORIZED_ERROR,
         });
       }
+
       const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
         await this.generateTokens(user);
 

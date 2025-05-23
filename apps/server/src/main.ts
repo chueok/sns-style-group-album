@@ -8,6 +8,7 @@ import {
   initializeTransactionalContext,
 } from 'typeorm-transactional';
 import { DataSource } from 'typeorm';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,7 +22,10 @@ async function bootstrap() {
   // TODO : production 에서 정상적으로 cors 작동하는지 확인 필요.
   app.enableCors({
     origin: ServerConfig.isProduction ? ServerConfig.CLIENT_ENDPOINT : true,
+    credentials: true,
   });
+
+  app.use(cookieParser());
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('SNS style group album API')
