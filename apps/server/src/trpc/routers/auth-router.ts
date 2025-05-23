@@ -1,17 +1,8 @@
-import { router, publicProcedure } from '../trpc';
+import { router, authProcedure } from '../trpc';
 
 export const authRouter = router({
-  getMe: publicProcedure.query(async ({ ctx }) => {
-    const {
-      req,
-      res,
-      auth: { authService },
-    } = ctx;
-
-    const { user } = await authService.getMe({
-      req,
-      res,
-    });
+  getMe: authProcedure.query(async ({ ctx }) => {
+    const { user } = ctx;
 
     return { user };
   }),

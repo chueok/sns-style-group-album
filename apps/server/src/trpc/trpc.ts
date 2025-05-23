@@ -24,3 +24,11 @@ const t = initTRPC.context<Context>().create({
 
 export const router = t.router;
 export const publicProcedure = t.procedure;
+export const authProcedure = t.procedure.use(async ({ ctx, next }) => {
+  const { user } = await ctx.auth.authService.getMe({
+    req: ctx.req,
+    res: ctx.res,
+  });
+
+  return next({ ctx: { ...ctx, user } });
+});
