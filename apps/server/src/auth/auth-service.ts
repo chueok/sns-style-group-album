@@ -71,6 +71,16 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
+  public async logout(payload: { req: Request; res: Response }): Promise<void> {
+    const { req, res } = payload;
+    const { user } = await this.getMe({ req, res }); // 인증 안되면 error throw
+
+    res.clearCookie(AuthModuleConfig.AccessTokenCookieName);
+    res.clearCookie(AuthModuleConfig.RefreshTokenCookieName);
+
+    await this.authRepository.clearRefreshToken(user.id);
+  }
+
   public async getMe(payload: {
     req: Request;
     res: Response;

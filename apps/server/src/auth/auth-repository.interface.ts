@@ -24,6 +24,8 @@ export interface IAuthRepository {
    */
   saveRefreshToken(userId: string, refreshToken: string): Promise<void>;
 
+  clearRefreshToken(userId: string): Promise<void>;
+
   /**
    * refresh token 유효성 검증
    * db 값이랑 비교하기 때문에 repository에서 검증하도록 함.

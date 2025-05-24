@@ -24,8 +24,14 @@ export class TrpcController {
   });
 
   @Get('*')
+  async handleGet(@Req() req: Request, @Res() res: Response) {
+    const result = this.trpcMiddleware(req, res, () => {});
+    return result;
+  }
+
   @Post('*')
-  async handle(@Req() req: Request, @Res() res: Response) {
-    return this.trpcMiddleware(req, res, () => {});
+  async handlePost(@Req() req: Request, @Res() res: Response) {
+    const result = this.trpcMiddleware(req, res, () => {});
+    return result;
   }
 }

@@ -9,9 +9,15 @@ export class JwtUserGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromCookie(request);
-    const jwtUser = this.authService.validateAccessToken(token);
-    request[AuthModuleConfig.JwtUserKeyInRequest] = jwtUser;
+    const response = context.switchToHttp().getResponse();
+
+    const { user } = await this.authService.getMe({
+      req: request,
+      res: response,
+    });
+
+    request[AuthModuleConfig.JwtUserKeyInRequest] = user;
+
     return true;
   }
 

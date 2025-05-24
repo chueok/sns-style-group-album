@@ -76,14 +76,14 @@ export class AuthRepository implements IAuthRepository {
   }
 
   async saveRefreshToken(userId: string, refreshToken: string): Promise<void> {
-    const createdDateTime = new Date();
-
     // 기존 refresh token 삭제
     await this.typeormRefreshTokenRepository.delete({
       userId: userId as UserId,
     });
 
     // 새로운 refresh token 저장
+    const createdDateTime = new Date();
+
     const newRefreshToken = this.typeormRefreshTokenRepository.create({
       userId,
       token: refreshToken,
@@ -91,6 +91,12 @@ export class AuthRepository implements IAuthRepository {
     });
 
     await this.typeormRefreshTokenRepository.save(newRefreshToken);
+  }
+
+  async clearRefreshToken(userId: string): Promise<void> {
+    await this.typeormRefreshTokenRepository.delete({
+      userId: userId as UserId,
+    });
   }
 
   async validateRefreshToken(
