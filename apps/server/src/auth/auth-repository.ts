@@ -49,7 +49,7 @@ export class AuthRepository implements IAuthRepository {
     await this.typeormUserRepository.save(newUser);
     await this.typeormOauthRepository.save(oauth);
 
-    return { id: newUser.id };
+    return { id: newUser.id, username: newUser.username ?? undefined };
   }
 
   /**
@@ -71,6 +71,7 @@ export class AuthRepository implements IAuthRepository {
     }
     const userPayload: TJwtUser = {
       id: user.id,
+      username: user.username ?? undefined,
     };
     return userPayload;
   }
@@ -122,6 +123,7 @@ export class AuthRepository implements IAuthRepository {
     }
     const userPayload: TJwtUser = {
       id: user.id,
+      username: user.username ?? undefined,
     };
     return userPayload;
   }

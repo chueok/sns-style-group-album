@@ -200,7 +200,7 @@ export class AuthService {
 
   private async generateTokens(user: TJwtUser): Promise<TAuthTokens> {
     const accessToken = this.jwtService.sign(
-      { id: user.id },
+      { id: user.id, username: user.username } satisfies TJwtUser,
       { expiresIn: AuthModuleConfig.AccessTokenValidTime }
     );
     const refreshToken = this.jwtService.sign(
