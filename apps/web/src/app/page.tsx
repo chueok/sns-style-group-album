@@ -1,3 +1,5 @@
+'use client';
+
 import Image from 'next/image';
 import { Button } from '@repo/ui/button';
 import {
@@ -7,10 +9,19 @@ import {
   AccordionTrigger,
 } from '@repo/ui/accordion';
 import styles from './page.module.css';
+import { useDialog } from '@/providers/dialog-provider';
+import { InitialUsernameDialog } from '@/widgets/username/initial-username-dialog';
 
 export default function Home() {
+  const dialog = useDialog();
+
+  const openDialog = () =>
+    dialog.open(({ isOpen, close }) => <InitialUsernameDialog close={close} />);
+
   return (
     <div className={styles.page}>
+      <Button onClick={openDialog}>Initial Username</Button>
+
       <main className={styles.main}>
         <Image
           alt="Next.js logo"

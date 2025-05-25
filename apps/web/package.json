@@ -9,6 +9,7 @@
     "lint": "next lint --fix"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.0.1",
     "@repo/ui": "*",
     "@trpc/client": "^11.1.2",
     "@trpc/react-query": "^11.1.2",
