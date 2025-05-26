@@ -11,6 +11,7 @@ import {
 import styles from './page.module.css';
 import { useDialog } from '@/providers/dialog-provider';
 import { InitialUsernameDialog } from '@/widgets/username/initial-username-dialog';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@repo/ui/tabs';
 
 export default function Home() {
   const dialog = useDialog();
@@ -21,6 +22,30 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <Button onClick={openDialog}>Initial Username</Button>
+      <Tabs defaultValue="home" className="tw-w-full">
+        <TabsList className="tw-grid tw-w-full tw-grid-cols-5">
+          <TabsTrigger value="home">홈</TabsTrigger>
+          <TabsTrigger value="album">앨범</TabsTrigger>
+          <TabsTrigger value="story">스토리</TabsTrigger>
+          <TabsTrigger value="bucket">버킷</TabsTrigger>
+          <TabsTrigger value="calendar">캘린더</TabsTrigger>
+        </TabsList>
+        <TabsContent value="home">
+          <div>홈</div>
+        </TabsContent>
+        <TabsContent value="album">
+          <div>앨범</div>
+        </TabsContent>
+        <TabsContent value="story">
+          <div>스토리</div>
+        </TabsContent>
+        <TabsContent value="bucket">
+          <div>버킷</div>
+        </TabsContent>
+        <TabsContent value="calendar">
+          <div>캘린더</div>
+        </TabsContent>
+      </Tabs>
 
       <main className={styles.main}>
         <Image
