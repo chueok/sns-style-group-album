@@ -4,6 +4,7 @@ import '@repo/ui/global.css';
 import { Toaster } from 'sonner';
 import { TRPCProvider } from '@/trpc/provider';
 import { DialogProvider } from '@/providers/dialog-provider';
+import { FloatingProvider } from '@/providers/floating-provider/context';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -29,7 +30,9 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <TRPCProvider>
           <Toaster />
-          <DialogProvider>{children}</DialogProvider>
+          <DialogProvider>
+            <FloatingProvider>{children}</FloatingProvider>
+          </DialogProvider>
         </TRPCProvider>
       </body>
     </html>

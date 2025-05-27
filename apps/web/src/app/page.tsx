@@ -12,6 +12,9 @@ import styles from './page.module.css';
 import { useDialog } from '@/providers/dialog-provider';
 import { InitialUsernameDialog } from '@/widgets/username/initial-username-dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@repo/ui/tabs';
+import { ChevronRight } from 'lucide-react';
+import { useEffect } from 'react';
+import { useFloatingFunction } from '@/providers/floating-provider/context';
 
 export default function Home() {
   const dialog = useDialog();
@@ -19,8 +22,26 @@ export default function Home() {
   const openDialog = () =>
     dialog.open(({ isOpen, close }) => <InitialUsernameDialog close={close} />);
 
+  const { setNode, setIsVisible, setPosition } = useFloatingFunction();
+
+  useEffect(() => {
+    setNode(
+      <Button variant="outline" size="icon">
+        <ChevronRight />
+      </Button>
+    );
+    setPosition({ anchorPoint: 'bottom-right', x: 50, y: 50 });
+    setIsVisible(true);
+  }, []);
+
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} tw-relative`}>
+      {/* <div className="tw-absolute tw-bottom-4 tw-left-4 tw-z-50">
+        <Button variant="outline" size="icon">
+          <ChevronRight />
+        </Button>
+      </div> */}
+
       <Button onClick={openDialog}>Initial Username</Button>
       <Tabs defaultValue="home" className="tw-w-full">
         <TabsList className="tw-grid tw-w-full tw-grid-cols-5">
