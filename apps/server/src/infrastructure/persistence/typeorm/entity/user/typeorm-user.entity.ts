@@ -24,10 +24,7 @@ export class TypeormUser {
   email!: Nullable<string>;
 
   @Column({ type: 'text', nullable: true })
-  profileUrl!: Nullable<string>;
-
-  @Column({ type: 'boolean', default: false })
-  hasProfileImage!: boolean;
+  profileImageUrl!: Nullable<string>;
 
   @Column({ type: 'datetime', nullable: false })
   createdDateTime!: Date;

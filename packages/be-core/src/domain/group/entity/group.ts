@@ -3,8 +3,8 @@ import { EntityWithCUDTime } from '../../../common/entity/entity-with-cudtime';
 import { CreateGroupEntityPayload } from './type/create-group-entity-payload';
 import { v4 } from 'uuid';
 import { GroupId } from './type/group-id';
-import { UserId } from '../../user/entity/type/user-id';
 import _ from 'lodash';
+import { UserId } from '../../user/type/user-id';
 
 export class Group extends EntityWithCUDTime<GroupId> {
   @IsUUID()

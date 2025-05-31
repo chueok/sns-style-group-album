@@ -1,4 +1,4 @@
-import { UserId } from '../../user/entity/type/user-id';
+import { UserId } from '../../user/type/user-id';
 import { GroupId } from '../entity/type/group-id';
 
 export class SimpleGroupDTO {

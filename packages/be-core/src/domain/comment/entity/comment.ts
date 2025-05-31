@@ -3,7 +3,7 @@ import { CreateCommentEntityPayload } from './type/create-comment-entity-payload
 import { Comment } from './comment.abstract';
 import { IsOptional, IsString, IsUUID } from 'class-validator';
 import { CommentTypeEnum } from '../enum/comment-type-enum';
-import { UserId } from '../../user/entity/type/user-id';
+import { UserId } from '../../user/type/user-id';
 
 export class UserComment extends Comment {
   @IsUUID('all')

@@ -36,6 +36,8 @@
 # 용어 정의
 
 - user: 일반 사용자
+  - (default) profile : username, profileImageUrl 로 이루어졌으며, 유저의 기본 정보이다.
+  - group profile : default profile과 동일한 데이터 구조이나, 특정 group 내에서 사용 할 profile 이다.
 - group: 그룹 앨범
   - group owner : 그룹 생성한 유저
   - group member : 그룹의 일반 유저
@@ -138,6 +140,54 @@ sequenceDiagram
   Browser ->> FE: 접속
   FE ->> Browser: 정상 페이지
 ```
+
+## 서비스 흐름도
+
+```mermaid
+sequenceDiagram
+  participant Browser
+  participant Auth
+  participant User
+
+
+  opt 1. AuthService
+    Browser ->> Auth: 1.1. 최초 로그인
+    Browser ->> Auth: 1.2. 로그인
+    Browser ->> Auth: 1.3. 쿠키 로그인
+    Browser ->> Auth: 1.99. 유저 삭제
+  end
+
+  opt 2. UserService
+    Browser ->> User: 2.1. 유저네임 변경
+    Browser ->> User: 2.2. 그룹 프로필 수정
+  end
+
+  opt 3. GroupService
+    Browser ->> Group: 3.1. 그룹 생성
+    Browser ->> Group: 3.2. 그룹 초대 링크 생성
+    Browser ->> Group: 3.3. 그룹 초대 링크 접근
+    Browser ->> Group: 3.4. 그룹 정보(이름) 수정
+    Browser ->> Group: 3.5. 멤버 수락
+    Browser ->> Group: 3.6. 멤버 추방
+  end
+
+  opt 4. ContentService
+    Browser ->> Content: 4.1. 사진 업로드
+  end
+
+  opt 5. CommentService
+    Browser ->> Comment: 5.1. 댓글 작성
+    Browser ->> Comment: 5.2. 댓글 수정
+  end
+
+```
+
+### 유저 가입 및 초대 수락
+
+- 1.2. 로그인 > 2.1. 유저 이름 변경 > 3.1 그룹 생성 > 3.2. 그룹 초대 링크 생성 > (유저 알아서) 링크 공유
+- 1.1. 최초 로그인 > 2.1. 유저네임 변경 > 3.3. 그룹 초대 링크 접근 > (3.5. 오너의 멤버 수락) > 5.1. 댓글 작성
+- 1.2. 로그인 > 3.4. 그룹 이름 변경 > 3.5. 멤버 수락 > 4.1. 사진 업로드
+- 1.3. 쿠키 로그인 > 3.4. 그룹 정보 수정 > 5.2. 댓글 수정
 
 # 에러 처리
 

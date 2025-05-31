@@ -1,13 +1,19 @@
 import { initTRPC } from '@trpc/server';
 import { ZodError } from 'zod';
 import { Request, Response } from 'express';
-import { createAuthInnerContext } from './inner-context';
+import {
+  createAuthInnerContext,
+  createUserInnerContext,
+} from './inner-context';
 import { Code, Exception } from '@repo/be-core';
 
 type Context = {
   req: Request;
   res: Response;
   auth: ReturnType<typeof createAuthInnerContext>;
+
+  // user 는 범용적으로 사용되는 단어로, 오해를 막기 위해 userDomain으로 하였음.
+  userDomain: ReturnType<typeof createUserInnerContext>;
 };
 
 const t = initTRPC.context<Context>().create({

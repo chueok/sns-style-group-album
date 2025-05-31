@@ -17,7 +17,7 @@ import { ContentLike } from './content-like';
 import { Comment } from '../../comment/entity/comment.abstract';
 import { ContentId } from './type/content-id';
 import { GroupId } from '../../group/entity/type/group-id';
-import { UserId } from '../../user/entity/type/user-id';
+import { UserId } from '../../user/type/user-id';
 
 export abstract class Content extends EntityWithCUDTime<ContentId> {
   @IsUUID()

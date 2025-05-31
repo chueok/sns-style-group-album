@@ -1,5 +1,5 @@
 import { IsNumber, IsUUID } from 'class-validator';
-import { UserId } from '../../user/entity/type/user-id';
+import { UserId } from '../../user/type/user-id';
 import { ValueObject } from '../../../common/value-object/value-object';
 
 export class CommentUserTag extends ValueObject {

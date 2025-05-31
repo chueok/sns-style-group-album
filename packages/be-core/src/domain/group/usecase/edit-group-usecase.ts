@@ -1,7 +1,7 @@
 import { Code } from '../../../common/exception/code';
 import { Exception } from '../../../common/exception/exception';
 import { IUsecase } from '../../../common/usecase/usecase.interface';
-import { UserId } from '../../user/entity/type/user-id';
+import { UserId } from '../../user/type/user-id';
 import { Group } from '../entity/group';
 import { IGroupRepository } from '../repository/group-repository.interface';
 import { IEditGroupPort } from './port/edit-group-port';

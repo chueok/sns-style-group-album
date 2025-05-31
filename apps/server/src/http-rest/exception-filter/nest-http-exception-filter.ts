@@ -8,7 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { RestResponse } from '../controller/dto/common/rest-response';
+import { RestResponse } from '../../swagger/rest-response';
 import { Code, Exception } from '@repo/be-core';
 import { ServerConfig } from '../../config/server-config';
 

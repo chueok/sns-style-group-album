@@ -1,13 +1,21 @@
-import { IUserRepository, Nullable, User, UserId } from '@repo/be-core';
+import {
+  Code,
+  Exception,
+  IUserRepository,
+  Nullable,
+  TEditableUser,
+  TUser,
+  UserId,
+} from '@repo/be-core';
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import {
   isTypeormUserWith,
   TypeormUser,
-} from '../../entity/user/typeorm-user.entity';
+} from '../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
 import { UserMapper } from './mapper/user-mapper';
 import { Logger, LoggerService, Optional } from '@nestjs/common';
-import { TypeormUserGroupProfile } from '../../entity/user-group-profile/typeorm-user-group-profile.entity';
-import { isTypeormGroupWith } from '../../entity/group/typeorm-group.entity';
+import { TypeormUserGroupProfile } from '../infrastructure/persistence/typeorm/entity/user-group-profile/typeorm-user-group-profile.entity';
+import { isTypeormGroupWith } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
 
 // TODO : 전체 Repository Promise 최적화 필요
 export class TypeormUserRepository implements IUserRepository {
@@ -26,63 +34,32 @@ export class TypeormUserRepository implements IUserRepository {
     this.logger = logger || new Logger(TypeormUserRepository.name);
   }
 
-  async createUser(user: User): Promise<boolean> {
-    const mappedEntity = UserMapper.toOrmEntity([user]).at(0);
-    if (!mappedEntity) return false;
-    const { user: ormUser, userGroupProfile } = mappedEntity;
-
+  async isUserInGroup(userId: string, groupId: string): Promise<boolean> {
     const result = await this.typeormUserRepository
-      .save(ormUser)
-      .then(() => {
-        return true;
-      })
-      .catch(() => {
-        return false;
-      });
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.groups', 'groups')
+      .where('user.id = :id', { id: userId })
+      .andWhere('groups.id = :groupId', { groupId })
+      .andWhere('user.deletedDateTime is null')
+      .getOne();
 
-    if (userGroupProfile.length === 0) {
-      return result;
-    }
-    const groupProfileResult = await this.typeormUserGroupProfileRepository
-      .save(userGroupProfile)
-      .then(() => {
-        return true;
-      })
-      .catch(() => {
-        return false;
-      });
-    return result && groupProfileResult;
+    return result !== null;
   }
 
-  async updateUser(user: User): Promise<boolean> {
-    const mappedEntity = UserMapper.toOrmEntity([user]).at(0);
-    if (!mappedEntity) return false;
-    const { user: ormUser, userGroupProfile } = mappedEntity;
+  async updateUser(userId: string, user: TEditableUser): Promise<boolean> {
+    const result = await this.typeormUserRepository.update(userId, {
+      ...user,
+      updatedDateTime: new Date(),
+    });
 
-    const result = await this.typeormUserRepository
-      .save(ormUser)
-      .then(() => {
-        return true;
-      })
-      .catch(() => {
-        return false;
-      });
-
-    if (userGroupProfile.length === 0) {
-      return result;
+    if (result.affected === 0) {
+      return false;
     }
-    const groupProfileResult = await this.typeormUserGroupProfileRepository
-      .save(userGroupProfile)
-      .then(() => {
-        return true;
-      })
-      .catch(() => {
-        return false;
-      });
-    return result && groupProfileResult;
+
+    return true;
   }
 
-  async findUserById(id: UserId): Promise<Nullable<User>> {
+  async findUserById(id: UserId): Promise<Nullable<TUser>> {
     const ormUser = await this.typeormUserRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.groups', 'groups')
@@ -127,24 +104,12 @@ export class TypeormUserRepository implements IUserRepository {
       })
       .filter((element) => element !== null);
 
-    const { results, errors } = await UserMapper.toDomainEntity({
-      elements: [
-        {
-          user: ormUser,
-          groups,
-          ownGroups,
-          userGroupProfiles: userGroupProfile,
-          invitedGroupsElements,
-        },
-      ],
-    });
-    errors.forEach((error) => {
-      this.logger.error(error);
-    });
-    return results[0] || null;
+    const user = UserMapper.toDomainEntity(ormUser);
+
+    return user;
   }
 
-  async findUserListByGroupId(groupId: string): Promise<User[]> {
+  async findUsersByGroupId(groupId: string): Promise<TUser[]> {
     const ormUsers = await this.typeormUserRepository
       .createQueryBuilder('user')
       .innerJoinAndSelect('user.groups', 'groups')
@@ -177,12 +142,73 @@ export class TypeormUserRepository implements IUserRepository {
       })
     );
 
-    const { results, errors } = await UserMapper.toDomainEntity({ elements });
-    errors.forEach((error) => {
-      this.logger.error(error);
+    const users = UserMapper.toDomainEntityList(ormUsers);
+
+    return users;
+  }
+
+  async updateGroupProfile(payload: {
+    userId: string;
+    groupId: string;
+    username?: string;
+    profileImageUrl?: string;
+  }): Promise<TUser> {
+    const { userId, groupId, username, profileImageUrl } = payload;
+
+    // 없을 경우 생성
+    // 있을 경우 업데이트
+
+    const hasGroupProfile = await this.hasGroupProfile(userId, groupId);
+    if (!hasGroupProfile) {
+      await this.typeormUserGroupProfileRepository.save({
+        userId,
+        groupId,
+        username,
+        profileImageUrl,
+      });
+    } else {
+      await this.typeormUserGroupProfileRepository.update(userId, {
+        username,
+        profileImageUrl,
+      });
+    }
+
+    const user = await this.findUserById(userId as UserId);
+    if (!user) {
+      throw Exception.new({
+        code: Code.ENTITY_NOT_FOUND_ERROR,
+        overrideMessage: 'User not found',
+      });
+    }
+
+    return user;
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    const result = await this.typeormUserRepository.update(userId, {
+      deletedDateTime: new Date(),
     });
 
-    return results;
+    if (result.affected === 0) {
+      throw Exception.new({
+        code: Code.ENTITY_NOT_FOUND_ERROR,
+        overrideMessage: 'User not found',
+      });
+    }
+  }
+
+  private async hasGroupProfile(
+    userId: string,
+    groupId: string
+  ): Promise<boolean> {
+    const result = await this.typeormUserGroupProfileRepository
+      .createQueryBuilder('groupProfile')
+      .where('groupProfile.userId = :userId', { userId })
+      .andWhere('groupProfile.userId = :groupId', { groupId })
+      .andWhere('groupProfile.deletedDateTime is null')
+      .getOne();
+
+    return result !== null;
   }
 
   private extendQueryWithNotDeleted(

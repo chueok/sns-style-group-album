@@ -34,7 +34,7 @@ export class AuthRepository implements IAuthRepository {
     const newUser = this.typeormUserRepository.create({
       username: payload.email,
       email: payload.email,
-      profileUrl: payload.profileUrl,
+      profileImageUrl: payload.profileUrl,
       createdDateTime,
     });
     newUser.id = v4() as UserId; // TODO: userId 생성 함수를 만들 것.

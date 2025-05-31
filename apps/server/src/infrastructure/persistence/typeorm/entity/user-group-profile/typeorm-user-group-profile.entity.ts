@@ -1,16 +1,16 @@
 import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 import { TableAlias } from '../table-alias';
 import { TypeormUser } from '../user/typeorm-user.entity';
-import { Optional } from '@repo/be-core';
+import { Nullable, Optional } from '@repo/be-core';
 import { TypeormGroup } from '../group/typeorm-group.entity';
 
 @Entity(TableAlias.USER_GROUP_PROFILE)
 export class TypeormUserGroupProfile {
-  @Column({ type: 'text', nullable: false })
-  nickname!: string;
+  @Column({ type: 'text', nullable: true })
+  username!: Nullable<string>;
 
-  @Column({ type: 'boolean', nullable: false })
-  hasProfileImage!: boolean;
+  @Column({ type: 'text', nullable: true })
+  profileImageUrl!: Nullable<string>;
 
   /**
    * relations
@@ -20,6 +20,7 @@ export class TypeormUserGroupProfile {
   })
   user!: Promise<TypeormUser>;
   __user__: Optional<TypeormUser>;
+
   @PrimaryColumn({ type: 'text' })
   userId!: TypeormUser['id'];
 

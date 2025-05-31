@@ -3,10 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { InfrastructureModule } from './di/infrastructure.module';
 import { AuthModule } from './auth/auth.module';
-import { UserController } from './http-rest/controller/user-controller';
-import { CommentController } from './http-rest/controller/comment-controller';
-import { GroupController } from './http-rest/controller/group-controller';
-import { ContentController } from './http-rest/controller/content-controller';
 import { LoggerModule } from 'nestjs-pino';
 import { TrpcModule } from './trpc/trpc.module';
 
@@ -47,13 +43,7 @@ import { TrpcModule } from './trpc/trpc.module';
     AuthModule,
     TrpcModule,
   ],
-  controllers: [
-    AppController,
-    UserController,
-    GroupController,
-    CommentController,
-    ContentController,
-  ],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}

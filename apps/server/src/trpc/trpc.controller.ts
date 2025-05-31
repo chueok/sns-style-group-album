@@ -4,17 +4,25 @@ import { Request, Response } from 'express';
 import { appRouter } from './router';
 import { CreateExpressContextOptions } from '@trpc/server/adapters/express';
 import { AuthService } from '../auth/auth-service';
-import { createAuthInnerContext } from './inner-context';
+import {
+  createAuthInnerContext,
+  createUserInnerContext,
+} from './inner-context';
+import { UserService } from '@repo/be-core';
 
 @Controller('trpc')
 export class TrpcController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService
+  ) {}
 
   private createContext = ({ req, res }: CreateExpressContextOptions) => {
     return {
       req,
       res,
       auth: createAuthInnerContext({ authService: this.authService }),
+      userDomain: createUserInnerContext({ userService: this.userService }),
     };
   };
 
