@@ -34,7 +34,7 @@ export interface IGroupRepository {
     pagination?: TPaginationParams
   ): Promise<TPaginatedResult<TGroup>>;
 
-  findGroupsByUserId(
+  findGroupsByMemberId(
     userId: string,
     pagination?: TPaginationParams
   ): Promise<TPaginatedResult<TGroup>>;

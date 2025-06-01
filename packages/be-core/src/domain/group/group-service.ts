@@ -18,8 +18,24 @@ export class GroupService {
     return group;
   }
 
-  async changeGroupOwner(groupId: string, ownerId: string): Promise<TGroup> {
-    const isMember = await this.groupRepository.isMember(groupId, ownerId);
+  async changeGroupOwner(payload: {
+    requesterId: string;
+    groupId: string;
+    toBeOwnerId: string;
+  }): Promise<TGroup> {
+    const { requesterId, groupId, toBeOwnerId } = payload;
+    const [isOwner, isMember] = await Promise.all([
+      this.groupRepository.isOwner(groupId, requesterId),
+      this.groupRepository.isMember(groupId, toBeOwnerId),
+    ]);
+
+    if (!isOwner) {
+      throw Exception.new({
+        code: Code.UNAUTHORIZED_ERROR,
+        overrideMessage: 'requester not owner',
+      });
+    }
+
     if (!isMember) {
       throw Exception.new({
         code: Code.BAD_REQUEST_ERROR,
@@ -27,7 +43,9 @@ export class GroupService {
       });
     }
 
-    const group = await this.groupRepository.updateGroup(groupId, { ownerId });
+    const group = await this.groupRepository.updateGroup(groupId, {
+      ownerId: toBeOwnerId,
+    });
     return group;
   }
 
@@ -47,27 +65,6 @@ export class GroupService {
 
     const group = await this.groupRepository.updateGroup(groupId, { name });
     return group;
-  }
-
-  async getGroupList(userId: string): Promise<TPaginatedResult<TGroup>> {
-    const groupList = await this.groupRepository.findGroupsByUserId(userId);
-    return groupList;
-  }
-
-  async getGroup(groupId: string): Promise<TGroup> {
-    const group = await this.groupRepository.findGroupById(groupId);
-    if (!group) {
-      throw Exception.new({
-        code: Code.ENTITY_NOT_FOUND_ERROR,
-        overrideMessage: 'Group not found',
-      });
-    }
-    return group;
-  }
-
-  async getOwnGroupList(userId: string): Promise<TPaginatedResult<TGroup>> {
-    const ownGroupList = await this.groupRepository.findGroupsByOwnerId(userId);
-    return ownGroupList;
   }
 
   async deleteGroup(payload: {
@@ -92,15 +89,51 @@ export class GroupService {
     }
   }
 
+  async getMyMemberGroups(
+    requesterId: string
+  ): Promise<TPaginatedResult<TGroup>> {
+    const groupList =
+      await this.groupRepository.findGroupsByMemberId(requesterId);
+    return groupList;
+  }
+
+  async getMyOwnGroups(requesterId: string): Promise<TPaginatedResult<TGroup>> {
+    const ownGroupList =
+      await this.groupRepository.findGroupsByOwnerId(requesterId);
+    return ownGroupList;
+  }
+
+  async getGroup(payload: {
+    requesterId: string;
+    groupId: string;
+  }): Promise<TGroup> {
+    const { requesterId, groupId } = payload;
+    const isMember = await this.groupRepository.isMember(groupId, requesterId);
+    if (!isMember) {
+      throw Exception.new({
+        code: Code.UNAUTHORIZED_ERROR,
+        overrideMessage: 'requester not member',
+      });
+    }
+
+    const group = await this.groupRepository.findGroupById(groupId);
+    if (!group) {
+      throw Exception.new({
+        code: Code.ENTITY_NOT_FOUND_ERROR,
+        overrideMessage: 'Group not found',
+      });
+    }
+    return group;
+  }
+
   /****************************************************
    * 멤버 CRUD 및 초대 함수
    ****************************************************/
-  async dropOutMember(payload: {
+  async getInvitationCode(payload: {
     requesterId: string;
     groupId: string;
-    memberId: string;
-  }): Promise<void> {
-    const { requesterId, groupId, memberId } = payload;
+  }): Promise<string> {
+    const { requesterId, groupId } = payload;
     const isOwner = await this.groupRepository.isOwner(groupId, requesterId);
     if (!isOwner) {
       throw Exception.new({
@@ -109,18 +142,28 @@ export class GroupService {
       });
     }
 
-    const result = await this.groupRepository.deleteMembers(groupId, [
-      memberId,
-    ]);
+    const invitationCode =
+      await this.groupRepository.generateInvitationCode(groupId);
+    return invitationCode;
+  }
+
+  async requestJoinGroup(payload: {
+    requesterId: string;
+    invitationCode: string;
+  }): Promise<void> {
+    const { requesterId, invitationCode } = payload;
+    const result = await this.groupRepository.addJoinRequestUsers(
+      invitationCode,
+      [requesterId]
+    );
     if (!result) {
       throw Exception.new({
-        code: Code.BAD_REQUEST_ERROR,
-        overrideMessage: 'Failed to drop out member',
+        code: Code.INTERNAL_ERROR,
       });
     }
   }
 
-  async approveMember(payload: {
+  async approveJoinRequest(payload: {
     requesterId: string;
     groupId: string;
     memberId: string;
@@ -162,11 +205,12 @@ export class GroupService {
     }
   }
 
-  async getInvitationCode(payload: {
+  async dropOutMember(payload: {
     requesterId: string;
     groupId: string;
-  }): Promise<string> {
-    const { requesterId, groupId } = payload;
+    memberId: string;
+  }): Promise<void> {
+    const { requesterId, groupId, memberId } = payload;
     const isOwner = await this.groupRepository.isOwner(groupId, requesterId);
     if (!isOwner) {
       throw Exception.new({
@@ -175,23 +219,13 @@ export class GroupService {
       });
     }
 
-    const invitationCode =
-      await this.groupRepository.generateInvitationCode(groupId);
-    return invitationCode;
-  }
-
-  async requestJoinGroup(payload: {
-    requesterId: string;
-    invitationCode: string;
-  }): Promise<void> {
-    const { requesterId, invitationCode } = payload;
-    const result = await this.groupRepository.addJoinRequestUsers(
-      invitationCode,
-      [requesterId]
-    );
+    const result = await this.groupRepository.deleteMembers(groupId, [
+      memberId,
+    ]);
     if (!result) {
       throw Exception.new({
-        code: Code.INTERNAL_ERROR,
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: 'Failed to drop out member',
       });
     }
   }

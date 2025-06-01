@@ -318,7 +318,7 @@ export class TypeormGroupRepository implements IGroupRepository {
     };
   }
 
-  async findGroupsByUserId(
+  async findGroupsByMemberId(
     userId: UserId,
     pagination?: TPaginationParams
   ): Promise<TPaginatedResult<TGroup>> {

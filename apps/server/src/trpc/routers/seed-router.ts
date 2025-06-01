@@ -6,7 +6,7 @@ import { createSeedInnerContext } from '../inner-context';
 import { TypeormUser } from '../../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
 import { IsNull } from 'typeorm';
 import { TypeormOauth } from '../../infrastructure/persistence/typeorm/entity/oauth/typeorm-oauth.entity';
-import { UserId } from '@repo/be-core';
+import { GroupId, UserId } from '@repo/be-core';
 import { TypeormGroup } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
 
 const getSeedContext = (ctx): ReturnType<typeof createSeedInnerContext> => {
@@ -174,10 +174,20 @@ export const seedRouter = router({
         group: { groupService },
       } = ctx;
 
-      const group = await groupService.getGroup(groupId);
+      const { dataSource } = getSeedContext(ctx);
+      const groupRepository = dataSource.getRepository(TypeormGroup);
+      const rawGroup = await groupRepository.findOne({
+        where: {
+          id: groupId as GroupId,
+        },
+      });
+
+      if (!rawGroup) {
+        throw new Error('Group not found');
+      }
 
       await groupService.changeGroupName({
-        requesterId: group.ownerId,
+        requesterId: rawGroup.ownerId,
         groupId,
         name: name || generateRandomString(),
       });
@@ -190,9 +200,20 @@ export const seedRouter = router({
       const {
         group: { groupService },
       } = ctx;
-      const group = await groupService.getGroup(groupId);
+      const { dataSource } = getSeedContext(ctx);
+      const groupRepository = dataSource.getRepository(TypeormGroup);
+      const rawGroup = await groupRepository.findOne({
+        where: {
+          id: groupId as GroupId,
+        },
+      });
+
+      if (!rawGroup) {
+        throw new Error('Group not found');
+      }
+
       await groupService.deleteGroup({
-        requesterId: group.ownerId,
+        requesterId: rawGroup.ownerId,
         groupId,
       });
     }),
@@ -243,14 +264,12 @@ export const seedRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const {
-        group: { groupService },
-      } = ctx;
-
       const { dataSource } = getSeedContext(ctx);
-
       const { groupId, memberIdList } = input;
 
+      // domain 로직에서는 직접적으로 멤버를 추가하지 않고,
+      // 조인 요청을 보낸 멤버에 대해 승인하는 방식으로 되어있음.
+      // 따라서 seed 에서는 직접 db에 접근하여 추가하도록 구현하였음.
       const groupRepository = dataSource.getRepository(TypeormGroup);
       await groupRepository
         .createQueryBuilder('group')

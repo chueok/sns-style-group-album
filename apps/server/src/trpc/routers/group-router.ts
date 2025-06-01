@@ -1,3 +1,154 @@
-import { router } from '../trpc';
+import z from 'zod';
+import { authProcedure, router } from '../trpc';
 
-export const groupRouter = router({});
+export const groupRouter = router({
+  createGroup: authProcedure
+    .input(z.object({ name: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { name } = input;
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      const group = await groupService.createGroup(user.id, name);
+      return group;
+    }),
+
+  changeGroupOwner: authProcedure
+    .input(z.object({ groupId: z.string(), toBeOwnerId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { groupId, toBeOwnerId } = input;
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      const group = await groupService.changeGroupOwner({
+        requesterId: user.id,
+        groupId,
+        toBeOwnerId,
+      });
+      return group;
+    }),
+
+  changeGroupName: authProcedure
+    .input(z.object({ groupId: z.string(), name: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { groupId, name } = input;
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      const group = await groupService.changeGroupName({
+        requesterId: user.id,
+        groupId,
+        name,
+      });
+      return group;
+    }),
+
+  deleteGroup: authProcedure
+    .input(z.object({ groupId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { groupId } = input;
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      await groupService.deleteGroup({
+        requesterId: user.id,
+        groupId,
+      });
+    }),
+
+  getMyMemberGroups: authProcedure.query(async ({ ctx }) => {
+    const {
+      user,
+      group: { groupService },
+    } = ctx;
+    const groupList = await groupService.getMyMemberGroups(user.id);
+    return groupList;
+  }),
+
+  getMyOwnGroups: authProcedure.query(async ({ ctx }) => {
+    const {
+      user,
+      group: { groupService },
+    } = ctx;
+    const groupList = await groupService.getMyOwnGroups(user.id);
+    return groupList;
+  }),
+
+  getGroup: authProcedure
+    .input(z.object({ groupId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const { groupId } = input;
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      const group = await groupService.getGroup({
+        requesterId: user.id,
+        groupId,
+      });
+      return group;
+    }),
+
+  getInvitationCode: authProcedure
+    .input(z.object({ groupId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const { groupId } = input;
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      const invitationCode = await groupService.getInvitationCode({
+        requesterId: user.id,
+        groupId,
+      });
+      return invitationCode;
+    }),
+
+  requestJoinGroup: authProcedure
+    .input(z.object({ invitationCode: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { invitationCode } = input;
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      await groupService.requestJoinGroup({
+        requesterId: user.id,
+        invitationCode,
+      });
+    }),
+
+  approveJoinRequest: authProcedure
+    .input(z.object({ groupId: z.string(), memberId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { groupId, memberId } = input;
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      await groupService.approveJoinRequest({
+        requesterId: user.id,
+        groupId,
+        memberId,
+      });
+    }),
+
+  dropOutMember: authProcedure
+    .input(z.object({ groupId: z.string(), memberId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { groupId, memberId } = input;
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      await groupService.dropOutMember({
+        requesterId: user.id,
+        groupId,
+        memberId,
+      });
+    }),
+});
