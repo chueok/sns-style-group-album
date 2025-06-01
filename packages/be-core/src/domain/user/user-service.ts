@@ -73,15 +73,29 @@ export class UserService {
 
   async editDefaultProfile(payload: {
     userId: string;
-    username: string;
-    profileImageUrl: string;
+    username?: string;
+    profileImageUrl?: string;
   }): Promise<TUser> {
     const { userId, username, profileImageUrl } = payload;
 
-    const result = await this.userRepository.updateUser(userId, {
-      username,
-      profileImageUrl,
-    });
+    const changes: Partial<{
+      username: string;
+      profileImageUrl: string | null;
+    }> = {};
+    if (username) {
+      changes.username = username;
+    }
+    if (profileImageUrl) {
+      changes.profileImageUrl = profileImageUrl;
+    }
+    if (Object.keys(changes).length === 0) {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: 'No changes to update',
+      });
+    }
+
+    const result = await this.userRepository.updateUser(userId, changes);
     if (!result) {
       throw Exception.new({
         code: Code.INTERNAL_ERROR,

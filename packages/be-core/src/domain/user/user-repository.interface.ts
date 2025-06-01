@@ -8,7 +8,7 @@ export type TEditableUser = Pick<TUser, 'username' | 'profileImageUrl'>;
  * 단순히 데이터를 보여주기 위한 entity를 분리해야 할까?
  */
 export interface IUserRepository {
-  updateUser(userId: string, user: TEditableUser): Promise<boolean>;
+  updateUser(userId: string, user: Partial<TEditableUser>): Promise<boolean>;
 
   findUserById(id: string): Promise<Nullable<TUser>>;
 

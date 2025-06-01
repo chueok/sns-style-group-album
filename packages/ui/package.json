@@ -19,6 +19,7 @@
     "./label": "./src/label/index.ts",
     "./form": "./src/form/index.ts",
     "./tabs": "./src/tabs/index.ts",
+    "./badge": "./src/badge/index.ts",
     "./global.css": "./styles/global.css"
   },
   "scripts": {
