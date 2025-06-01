@@ -8,15 +8,15 @@ import {
   IsUUID,
 } from 'class-validator';
 import { EntityWithCUDTime } from '../../../common/entity/entity-with-cudtime';
-import { ContentTypeEnum } from '../enum/content-type-enum';
-import { CreateContentEntityPayload } from './type/create-content-entity-payload';
+import { EContentCategory } from '../type/content-category';
+import { CreateContentEntityPayload } from '../type/create-content-entity-payload';
 import { v4 } from 'uuid';
 import { Nullable } from '../../../common/type/common-types';
 import { ReferredContent } from './referred-content';
 import { ContentLike } from './content-like';
 import { Comment } from '../../comment/entity/comment.abstract';
-import { ContentId } from './type/content-id';
-import { GroupId } from '../../group/entity/type/group-id';
+import { ContentId } from '../type/content-id';
+import { GroupId } from '../../group/type/group-id';
 import { UserId } from '../../user/type/user-id';
 
 export abstract class Content extends EntityWithCUDTime<ContentId> {
@@ -26,9 +26,9 @@ export abstract class Content extends EntityWithCUDTime<ContentId> {
   @IsUUID()
   readonly groupId: GroupId;
 
-  @IsEnum(ContentTypeEnum)
-  protected _type!: ContentTypeEnum;
-  get type(): ContentTypeEnum {
+  @IsEnum(EContentCategory)
+  protected _type!: EContentCategory;
+  get type(): EContentCategory {
     return this._type;
   }
 

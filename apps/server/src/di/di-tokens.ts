@@ -19,7 +19,6 @@ export class DiTokens {
   static readonly GetOwnGroupListUsecase = Symbol('GetOwnGroupListUsecase');
   static readonly EditGroupUsecase = Symbol('EditGroupUsecase');
   static readonly InviteUserUsecase = Symbol('InviteUserUsecase');
-  static readonly CreateGroupUsecase = Symbol('CreateGroupUsecase');
   static readonly DeleteGroupUsecase = Symbol('DeleteGroupUsecase');
   static readonly AcceptInvitationUsecase = Symbol('AcceptInvitationUsecase');
 

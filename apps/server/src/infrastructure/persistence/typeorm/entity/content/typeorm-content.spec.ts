@@ -9,7 +9,7 @@ import {
   TypeormSchedule,
   TypeormSystemContent,
 } from './typeorm-content.entity';
-import { ContentTypeEnum } from '@repo/be-core';
+import { EContentCategory } from '@repo/be-core';
 import { TypeormComment } from '../comment/typeorm-comment.entity';
 import { DummyDatabaseHandler } from '@test-utils/persistence/dummy-database-handler';
 import { TypeormLike } from '../like/typeorm-like.entity';
@@ -61,7 +61,7 @@ describe('TypeormContent', () => {
   describe('save', () => {
     it('bucket', async () => {
       const content = await testDatabaseHandler.makeDummyContent({
-        type: ContentTypeEnum.BUCKET,
+        type: EContentCategory.BUCKET,
       });
       const savedContent = await repository.save(content);
       await expectEqualContent(content, savedContent);
@@ -69,7 +69,7 @@ describe('TypeormContent', () => {
 
     it('image', async () => {
       const content = await testDatabaseHandler.makeDummyContent({
-        type: ContentTypeEnum.IMAGE,
+        type: EContentCategory.IMAGE,
       });
       const savedContent = await repository.save(content);
       await expectEqualContent(content, savedContent);
@@ -77,7 +77,7 @@ describe('TypeormContent', () => {
 
     it('post', async () => {
       const content = await testDatabaseHandler.makeDummyContent({
-        type: ContentTypeEnum.POST,
+        type: EContentCategory.POST,
       });
       const savedContent = await repository.save(content);
       await expectEqualContent(content, savedContent);
@@ -85,7 +85,7 @@ describe('TypeormContent', () => {
 
     it('schedule', async () => {
       const content = await testDatabaseHandler.makeDummyContent({
-        type: ContentTypeEnum.SCHEDULE,
+        type: EContentCategory.SCHEDULE,
       });
       const savedContent = await repository.save(content);
       await expectEqualContent(content, savedContent);
@@ -93,7 +93,7 @@ describe('TypeormContent', () => {
 
     it('system', async () => {
       const content = await testDatabaseHandler.makeDummyContent({
-        type: ContentTypeEnum.SYSTEM,
+        type: EContentCategory.SYSTEM,
       });
       const savedContent = await repository.save(content);
       await expectEqualContent(content, savedContent);
@@ -101,7 +101,7 @@ describe('TypeormContent', () => {
 
     it('video', async () => {
       const content = await testDatabaseHandler.makeDummyContent({
-        type: ContentTypeEnum.VIDEO,
+        type: EContentCategory.VIDEO,
       });
       const savedContent = await repository.save(content);
       await expectEqualContent(content, savedContent);
@@ -188,8 +188,8 @@ async function expectEqualContent(lhs: TypeormContent, rhs: TypeormContent) {
   expect(lhs.deletedDateTime).toEqual(rhs.deletedDateTime);
 
   switch (lhs.contentType) {
-    case ContentTypeEnum.IMAGE:
-    case ContentTypeEnum.VIDEO:
+    case EContentCategory.IMAGE:
+    case EContentCategory.VIDEO:
       expect((lhs as TypeormMedia).largeRelativePath).toBe(
         (rhs as TypeormMedia).largeRelativePath
       );
@@ -203,11 +203,11 @@ async function expectEqualContent(lhs: TypeormContent, rhs: TypeormContent) {
       );
       expect((await (lhs as TypeormMedia).referred).length).toBe(0);
       break;
-    case ContentTypeEnum.POST:
+    case EContentCategory.POST:
       expect((lhs as TypeormPost).title).toBe((rhs as TypeormPost).title);
       expect((lhs as TypeormPost).text).toBe((rhs as TypeormPost).text);
       break;
-    case ContentTypeEnum.SCHEDULE:
+    case EContentCategory.SCHEDULE:
       expect((lhs as TypeormSchedule).title).toBe(
         (rhs as TypeormSchedule).title
       );
@@ -221,11 +221,11 @@ async function expectEqualContent(lhs: TypeormContent, rhs: TypeormContent) {
         (rhs as TypeormSchedule).isAllDay
       );
       break;
-    case ContentTypeEnum.BUCKET:
+    case EContentCategory.BUCKET:
       expect((lhs as TypeormBucket).title).toBe((rhs as TypeormBucket).title);
       expect((lhs as TypeormBucket).status).toBe((rhs as TypeormBucket).status);
       break;
-    case ContentTypeEnum.SYSTEM:
+    case EContentCategory.SYSTEM:
       expect((lhs as TypeormSystemContent).text).toBe(
         (rhs as TypeormSystemContent).text
       );

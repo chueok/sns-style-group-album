@@ -1,16 +1,16 @@
 import { Nullable } from '../../../common/type/common-types';
-import { ContentTypeEnum } from '../enum/content-type-enum';
+import { EContentCategory } from '../type/content-category';
 
 export class ReferredContent {
   readonly id: string;
 
-  readonly type: ContentTypeEnum;
+  readonly type: EContentCategory;
 
   readonly thumbnailRelativePath: Nullable<string>;
 
   constructor(payload: {
     id: string;
-    type: ContentTypeEnum;
+    type: EContentCategory;
     thumbnailRelativePath: Nullable<string>;
   }) {
     this.id = payload.id;

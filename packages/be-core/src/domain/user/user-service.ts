@@ -2,9 +2,7 @@ import { Code } from '../../common/exception/code';
 import { Exception } from '../../common/exception/exception';
 import { TUser } from './entity/user';
 import { IUserRepository } from './user-repository.interface';
-import { Injectable } from '@nestjs/common';
 
-@Injectable()
 export class UserService {
   constructor(private readonly userRepository: IUserRepository) {}
 

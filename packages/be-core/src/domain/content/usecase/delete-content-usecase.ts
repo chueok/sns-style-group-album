@@ -1,7 +1,7 @@
 import { Code } from '../../../common/exception/code';
 import { Exception } from '../../../common/exception/exception';
 import { IUsecase } from '../../../common/usecase/usecase.interface';
-import { IContentRepository } from '../repository/content-repository.interface';
+import { IContentRepository } from '../content-repository.interface';
 import { IDeleteContentPort } from './port/delete-content-port';
 
 export class DeleteContentUsecase

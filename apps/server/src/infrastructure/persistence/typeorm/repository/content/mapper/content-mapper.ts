@@ -4,7 +4,7 @@ import {
   Comment,
   Content,
   ContentLike,
-  ContentTypeEnum,
+  EContentCategory,
   CreateContentEntityPayload,
   Exception,
   ImageContent,
@@ -199,7 +199,7 @@ export class ContentMapper {
         ext: content.ext,
         mimeType: content.mimetype,
       };
-      if (content.contentType === ContentTypeEnum.IMAGE) {
+      if (content.contentType === EContentCategory.IMAGE) {
         return ImageContent.new(contentPayload);
       } else {
         return VideoContent.new(contentPayload);

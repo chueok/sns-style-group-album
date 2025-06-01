@@ -1,12 +1,12 @@
-import { BucketStatusEnum } from '../../enum/bucket-status';
-import { ReferredContent } from '../referred-content';
-import { ContentLike } from '../content-like';
-import { Nullable } from '../../../../common/type/common-types';
-import { Comment } from '../../../comment/entity/comment.abstract';
-import { GroupId } from '../../../group/entity/type/group-id';
-import { UserId } from '../../../user/type/user-id';
+import { Nullable } from '../../../common/type/common-types';
+import { Comment } from '../../comment/entity/comment.abstract';
+import { GroupId } from '../../group/type/group-id';
+import { UserId } from '../../user/type/user-id';
+import { ContentLike } from '../entity/content-like';
+import { ReferredContent } from '../entity/referred-content';
 import { ContentId } from './content-id';
-import { ContentTypeEnum } from '../../enum/content-type-enum';
+import { EContentCategory } from './content-category';
+import { EBucketStatus } from './bucket-status';
 
 type CreateNewBaseContentEntityPayload = {
   groupId: GroupId;
@@ -42,7 +42,7 @@ type SystemContentAdditionalPayload = {
 };
 
 type MediaContentAdditionalPayload = {
-  type: ContentTypeEnum.VIDEO | ContentTypeEnum.IMAGE;
+  type: EContentCategory.VIDEO | EContentCategory.IMAGE;
   largeRelativePath: Nullable<string>;
   originalRelativePath: string;
   size: number;
@@ -67,7 +67,7 @@ type PostContentAdditionalPayload = {
 
 type BucketContentAdditionalPayload = {
   title: string;
-  status: BucketStatusEnum;
+  status: EBucketStatus;
 };
 
 type ScheduleContentAdditionalPayload = {

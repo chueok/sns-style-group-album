@@ -10,9 +10,9 @@ import {
   TableInheritance,
 } from 'typeorm';
 import {
-  BucketStatusEnum,
+  EBucketStatus,
   ContentId,
-  ContentTypeEnum,
+  EContentCategory,
   Nullable,
   Optional,
 } from '@repo/be-core';
@@ -29,7 +29,7 @@ export class TypeormContent {
   id!: ContentId;
 
   @Column({ type: 'varchar', nullable: false })
-  contentType!: ContentTypeEnum;
+  contentType!: EContentCategory;
 
   @Column({ type: 'text', nullable: true })
   thumbnailRelativePath!: Nullable<string>;
@@ -81,7 +81,7 @@ export class TypeormContent {
 
 @ChildEntity()
 export class TypeormSystemContent extends TypeormContent {
-  override contentType: ContentTypeEnum.SYSTEM = ContentTypeEnum.SYSTEM;
+  override contentType: EContentCategory.SYSTEM = EContentCategory.SYSTEM;
 
   @Column()
   text!: string;
@@ -92,7 +92,7 @@ export class TypeormSystemContent extends TypeormContent {
 
 @ChildEntity()
 export class TypeormMedia extends TypeormContent {
-  override contentType!: ContentTypeEnum.IMAGE | ContentTypeEnum.VIDEO;
+  override contentType!: EContentCategory.IMAGE | EContentCategory.VIDEO;
   override referred!: Promise<never[]>; // empty array
 
   @Column({ type: 'text' })
@@ -111,7 +111,7 @@ export class TypeormMedia extends TypeormContent {
 
 @ChildEntity()
 export class TypeormPost extends TypeormContent {
-  override contentType = ContentTypeEnum.POST;
+  override contentType = EContentCategory.POST;
   @Column()
   title!: string;
   @Column()
@@ -120,16 +120,16 @@ export class TypeormPost extends TypeormContent {
 
 @ChildEntity()
 export class TypeormBucket extends TypeormContent {
-  override contentType = ContentTypeEnum.BUCKET;
+  override contentType = EContentCategory.BUCKET;
   @Column()
   title!: string;
   @Column({ type: 'varchar' })
-  status!: BucketStatusEnum;
+  status!: EBucketStatus;
 }
 
 @ChildEntity()
 export class TypeormSchedule extends TypeormContent {
-  override contentType = ContentTypeEnum.SCHEDULE;
+  override contentType = EContentCategory.SCHEDULE;
   @Column()
   title!: string;
 
@@ -148,32 +148,32 @@ export class TypeormSchedule extends TypeormContent {
 export function isTypeormSystemContent(
   content: TypeormContent
 ): content is TypeormSystemContent {
-  return content.contentType === ContentTypeEnum.SYSTEM;
+  return content.contentType === EContentCategory.SYSTEM;
 }
 
 export function isTypeormMediaContent(
   content: TypeormContent
 ): content is TypeormMedia {
   return (
-    content.contentType === ContentTypeEnum.IMAGE ||
-    content.contentType === ContentTypeEnum.VIDEO
+    content.contentType === EContentCategory.IMAGE ||
+    content.contentType === EContentCategory.VIDEO
   );
 }
 
 export function isTypeormPostContent(
   content: TypeormContent
 ): content is TypeormPost {
-  return content.contentType === ContentTypeEnum.POST;
+  return content.contentType === EContentCategory.POST;
 }
 
 export function isTypeormBucketContent(
   content: TypeormContent
 ): content is TypeormBucket {
-  return content.contentType === ContentTypeEnum.BUCKET;
+  return content.contentType === EContentCategory.BUCKET;
 }
 
 export function isTypeormScheduleContent(
   content: TypeormContent
 ): content is TypeormSchedule {
-  return content.contentType === ContentTypeEnum.SCHEDULE;
+  return content.contentType === EContentCategory.SCHEDULE;
 }

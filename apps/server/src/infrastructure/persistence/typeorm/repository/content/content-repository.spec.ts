@@ -5,7 +5,7 @@ import { TypeormContentRepository } from './content-repository';
 import { TypeormContent } from '../../entity/content/typeorm-content.entity';
 import { TypeormUser } from '../../entity/user/typeorm-user.entity';
 import { TypeormGroup } from '../../entity/group/typeorm-group.entity';
-import { ContentTypeEnum } from '@repo/be-core';
+import { EContentCategory } from '@repo/be-core';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   InfrastructureModule,
@@ -126,7 +126,7 @@ describe('ContentRepository', () => {
 
       const contentList = await contentRepository.findContentsByGroupIdAndType({
         groupId: targetOrmGroup.id,
-        contentTypeList: [ContentTypeEnum.POST],
+        contentTypeList: [EContentCategory.POST],
         pagination: {
           cursor,
           sortBy: 'createdDateTime',
@@ -140,7 +140,7 @@ describe('ContentRepository', () => {
         .filter(
           (content) =>
             content.groupId === targetOrmGroup.id &&
-            content.contentType === ContentTypeEnum.POST &&
+            content.contentType === EContentCategory.POST &&
             content.createdDateTime.getTime() > cursor.getTime() &&
             !content.deletedDateTime
         ).length;
@@ -165,7 +165,7 @@ describe('ContentRepository', () => {
 
       const contentList = await contentRepository.findContentsByGroupIdAndType({
         groupId: targetOrmGroup.id,
-        contentTypeList: [ContentTypeEnum.POST],
+        contentTypeList: [EContentCategory.POST],
         pagination: {
           cursor,
           sortBy: 'createdDateTime',
@@ -179,7 +179,7 @@ describe('ContentRepository', () => {
         .filter(
           (content) =>
             content.groupId === targetOrmGroup.id &&
-            content.contentType === ContentTypeEnum.POST &&
+            content.contentType === EContentCategory.POST &&
             content.createdDateTime.getTime() < cursor.getTime() &&
             !content.deletedDateTime
         );

@@ -7,15 +7,15 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { ContentTypeEnum } from '../enum/content-type-enum';
-import { BucketStatusEnum } from '../enum/bucket-status';
+import { EContentCategory } from '../type/content-category';
+import { EBucketStatus } from '../type/bucket-status';
 import { Content } from './content.abstract';
 
 import { Nullable } from '../../../common/type/common-types';
-import { CreateContentEntityPayload } from './type/create-content-entity-payload';
+import { CreateContentEntityPayload } from '../type/create-content-entity-payload';
 
 export class SystemContent extends Content {
-  override readonly _type: ContentTypeEnum.SYSTEM = ContentTypeEnum.SYSTEM;
+  override readonly _type: EContentCategory.SYSTEM = EContentCategory.SYSTEM;
 
   @IsString()
   protected _text: string;
@@ -44,8 +44,8 @@ export class SystemContent extends Content {
 }
 
 export class MediaContent extends Content {
-  protected override _type: ContentTypeEnum.VIDEO | ContentTypeEnum.IMAGE;
-  get type(): ContentTypeEnum.VIDEO | ContentTypeEnum.IMAGE {
+  protected override _type: EContentCategory.VIDEO | EContentCategory.IMAGE;
+  get type(): EContentCategory.VIDEO | EContentCategory.IMAGE {
     return this._type;
   }
 
@@ -98,10 +98,10 @@ export class MediaContent extends Content {
 }
 
 export class ImageContent extends MediaContent {
-  override _type: ContentTypeEnum.IMAGE = ContentTypeEnum.IMAGE;
+  override _type: EContentCategory.IMAGE = EContentCategory.IMAGE;
 
   constructor(payload: CreateContentEntityPayload<'image', 'all'>) {
-    super({ ...payload, type: ContentTypeEnum.IMAGE });
+    super({ ...payload, type: EContentCategory.IMAGE });
   }
 
   static async new(payload: CreateContentEntityPayload<'image', 'all'>) {
@@ -112,10 +112,14 @@ export class ImageContent extends MediaContent {
 }
 
 export class VideoContent extends MediaContent {
-  override _type: ContentTypeEnum.VIDEO = ContentTypeEnum.VIDEO;
+  override _type: EContentCategory.VIDEO = EContentCategory.VIDEO;
 
   constructor(payload: CreateContentEntityPayload<'video', 'all'>) {
-    super({ ...payload, type: ContentTypeEnum.VIDEO, largeRelativePath: null });
+    super({
+      ...payload,
+      type: EContentCategory.VIDEO,
+      largeRelativePath: null,
+    });
   }
 
   static async new(payload: CreateContentEntityPayload<'video', 'all'>) {
@@ -126,7 +130,7 @@ export class VideoContent extends MediaContent {
 }
 
 export class PostContent extends Content {
-  override _type: ContentTypeEnum.POST = ContentTypeEnum.POST;
+  override _type: EContentCategory.POST = EContentCategory.POST;
 
   @IsString()
   protected _title: string;
@@ -154,7 +158,7 @@ export class PostContent extends Content {
 }
 
 export class BucketContent extends Content {
-  override _type: ContentTypeEnum.BUCKET = ContentTypeEnum.BUCKET;
+  override _type: EContentCategory.BUCKET = EContentCategory.BUCKET;
 
   @IsString()
   protected _title: string;
@@ -162,9 +166,9 @@ export class BucketContent extends Content {
     return this._title;
   }
 
-  @IsEnum(BucketStatusEnum)
-  protected _status: BucketStatusEnum;
-  get status(): BucketStatusEnum {
+  @IsEnum(EBucketStatus)
+  protected _status: EBucketStatus;
+  get status(): EBucketStatus {
     return this._status;
   }
 
@@ -182,7 +186,7 @@ export class BucketContent extends Content {
 }
 
 export class ScheduleContent extends Content {
-  override _type: ContentTypeEnum.SCHEDULE = ContentTypeEnum.SCHEDULE;
+  override _type: EContentCategory.SCHEDULE = EContentCategory.SCHEDULE;
 
   @IsString()
   protected _title: string;

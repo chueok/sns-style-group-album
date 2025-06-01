@@ -1,9 +1,9 @@
 import {
   Content,
-  ContentByContentType,
+  ContentByContentCategory,
   ContentId,
   ContentPaginationOptions,
-  ContentTypeEnum,
+  EContentCategory,
   IContentRepository,
   Nullable,
 } from '@repo/be-core';
@@ -129,11 +129,11 @@ export class TypeormContentRepository implements IContentRepository {
     return results[0] || null;
   }
 
-  async findContentsByGroupIdAndType<T extends ContentTypeEnum>(payload: {
+  async findContentsByGroupIdAndType<T extends EContentCategory>(payload: {
     groupId: string;
     contentTypeList: T[];
     pagination: ContentPaginationOptions;
-  }): Promise<ContentByContentType<T>[]> {
+  }): Promise<ContentByContentCategory<T>[]> {
     const contentTypeSet = new Set(payload.contentTypeList);
     const contentTypeList = Array.from(contentTypeSet); // 중복 제거
 
@@ -195,7 +195,7 @@ export class TypeormContentRepository implements IContentRepository {
 
     return this.ormEntityList2DomainEntityList({
       elements: mapperPayload,
-    }) as unknown as ContentByContentType<T>[];
+    }) as unknown as ContentByContentCategory<T>[];
   }
 
   async findContentsByGroupMember(payload: {

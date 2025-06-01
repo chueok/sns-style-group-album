@@ -4,7 +4,7 @@ import { CommentTypeEnum } from '../enum/comment-type-enum';
 import { CreateCommentEntityPayload } from './type/create-comment-entity-payload';
 import { v4 } from 'uuid';
 import { CommentId } from './type/comment-id';
-import { ContentId } from '../../content/entity/type/content-id';
+import { ContentId } from '../../content/type/content-id';
 import { CommentUserTag } from './comment-user-tag';
 
 export abstract class Comment extends EntityWithCUDTime<CommentId> {

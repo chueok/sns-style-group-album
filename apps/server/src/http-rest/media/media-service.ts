@@ -9,7 +9,7 @@ import { DataSource, Repository } from 'typeorm';
 import { TypeormTemporaryContent } from '../../infrastructure/persistence/typeorm/entity/content/typeorm-temporary-content.entity';
 import {
   ContentId,
-  ContentTypeEnum,
+  EContentCategory,
   GroupId,
   IObjectStoragePort,
   UserId,
@@ -80,9 +80,9 @@ export class MediaService {
     content.ext = payload.ext;
     content.mimetype = payload.mimetype;
     if (content.mimetype.startsWith('image/')) {
-      content.contentType = ContentTypeEnum.IMAGE;
+      content.contentType = EContentCategory.IMAGE;
     } else if (content.mimetype.startsWith('video/')) {
-      content.contentType = ContentTypeEnum.VIDEO;
+      content.contentType = EContentCategory.VIDEO;
     } else {
       this.logger.error(`unsupported mimetype: ${content.mimetype}`);
       return;
