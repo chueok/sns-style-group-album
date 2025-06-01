@@ -29,6 +29,9 @@ export class TypeormGroup {
   @Column({ type: 'datetime', nullable: true })
   deletedDateTime!: Nullable<Date>;
 
+  @Column({ type: 'text', nullable: true })
+  invitationCode!: Nullable<string>;
+
   /**
    * relations
    */
@@ -52,6 +55,11 @@ export class TypeormGroup {
   @ManyToMany(() => TypeormUser, (user) => user.invitedGroups)
   invitedUsers!: Promise<TypeormUser[]>;
   __invitedUsers__: Optional<TypeormUser[]>;
+
+  @ManyToMany(() => TypeormUser, (user) => user.joinRequestGroups)
+  @JoinTable({ name: 'JoinRequestUsersRelation' })
+  joinRequestUsers!: Promise<TypeormUser[]>;
+  __joinRequestUsers__: Optional<TypeormUser[]>;
 }
 
 type TypeormGroupWithMembers = TypeormGroup & {

@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Req, Res } from '@nestjs/common';
+import { Controller, Get, UseGuards, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { ServerConfig } from '../config/server-config';
@@ -8,9 +8,6 @@ import { AuthModuleConfig } from './config';
 import { DOauthUserProfile } from './decorator/oauth-user-profile';
 import { TOauthUserProfile } from './type/oauth-user-profile';
 import { setSecureCookie } from './utils';
-import { JwtUserGuard } from './guard/jwt-user-guard';
-import { TJwtUser } from './type/jwt-user';
-import { DJwtUser } from './decorator/jwt-user';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -54,13 +51,5 @@ export class AuthController {
     });
 
     return res.redirect(`${ServerConfig.CLIENT_ENDPOINT}/login/redirect`);
-  }
-
-  @Get('me')
-  @UseGuards(JwtUserGuard)
-  async getMe(@Res() res: Response, @DJwtUser() user: TJwtUser): Promise<void> {
-    res.json({ user });
-    // 클라이언트에서 'credentials include' 옵션으로 요청하면 NesgJS의 자동응답을 사용하면 안됨
-    // 특정 헤더를 만족해야 하기 때문.
   }
 }

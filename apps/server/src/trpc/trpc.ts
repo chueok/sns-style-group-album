@@ -3,6 +3,8 @@ import { ZodError } from 'zod';
 import { Request, Response } from 'express';
 import {
   createAuthInnerContext,
+  createGroupInnerContext,
+  createSeedInnerContext,
   createUserInnerContext,
 } from './inner-context';
 import { Code, Exception } from '@repo/be-core';
@@ -14,6 +16,8 @@ type Context = {
 
   // user 는 범용적으로 사용되는 단어로, 오해를 막기 위해 userDomain으로 하였음.
   userDomain: ReturnType<typeof createUserInnerContext>;
+  group: ReturnType<typeof createGroupInnerContext>;
+  seed?: ReturnType<typeof createSeedInnerContext>;
 };
 
 const t = initTRPC.context<Context>().create({

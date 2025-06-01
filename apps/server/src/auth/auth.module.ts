@@ -27,6 +27,6 @@ const providers: Provider[] = [
     }),
   ],
   providers: [AuthService, HttpGoogleStrategy, ...providers],
-  exports: [AuthService],
+  exports: [AuthService, DiTokens.AuthRepository],
 })
 export class AuthModule {}

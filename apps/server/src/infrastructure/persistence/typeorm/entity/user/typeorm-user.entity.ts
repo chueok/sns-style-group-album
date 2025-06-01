@@ -61,6 +61,10 @@ export class TypeormUser {
   @JoinTable({ name: 'GroupInvitedUsersRelation' })
   invitedGroups!: Promise<TypeormGroup[]>;
   __invitedGroups__: Optional<TypeormGroup[]>;
+
+  @ManyToMany(() => TypeormGroup, (group) => group.joinRequestUsers)
+  joinRequestGroups!: Promise<TypeormGroup[]>;
+  __joinRequestGroups__: Optional<TypeormGroup[]>;
 }
 
 type TypeormUserWithOauths = TypeormUser & {
