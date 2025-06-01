@@ -24,12 +24,6 @@ export class UserService {
     }
   }
 
-  // TODO: group-service로 이전
-  // async getGroupMembers(groupId: string): Promise<TUser[]> {
-  //   const userList = await this.userRepository.findUsersByGroupId(groupId);
-  //   return userList;
-  // }
-
   async deleteUser(id: string): Promise<void> {
     const user = await this.userRepository.findUserById(id);
     if (!user) {
@@ -113,31 +107,4 @@ export class UserService {
 
     return user;
   }
-
-  // TODO: group service로 이전
-  // async acceptInvitation(userId: string, groupId: string): Promise<void> {
-  //   const group = await this.groupRepository.findGroupById(groupId);
-  //   if (!group) {
-  //     throw Exception.new({
-  //       code: Code.ENTITY_NOT_FOUND_ERROR,
-  //       overrideMessage: 'Group not found',
-  //     });
-  //   }
-
-  //   const domainResult = await group.acceptInvitation(userId as UserId);
-  //   if (!domainResult) {
-  //     throw Exception.new({
-  //       code: Code.BAD_REQUEST_ERROR,
-  //       overrideMessage: 'User is not invited',
-  //     });
-  //   }
-
-  //   const repositoryResult = await this.groupRepository.updateGroup(group);
-  //   if (!repositoryResult) {
-  //     throw Exception.new({
-  //       code: Code.INTERNAL_ERROR,
-  //       overrideMessage: 'Failed to update group',
-  //     });
-  //   }
-  // }
 }
