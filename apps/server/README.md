@@ -141,6 +141,25 @@ sequenceDiagram
   FE ->> Browser: 정상 페이지
 ```
 
+## 이미지 업로드
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+    participant AWS S3
+
+    Client->>Server: 1. 이미지 업로드 요청
+    Server->>Server: 2. Presigned URL 생성
+    Server->>Client: 3. Presigned URL 반환
+    Client->>AWS S3: 4. Presigned URL로 직접 업로드
+    AWS S3->>Client: 5. 업로드 완료 응답
+    Client->>Server: 6. 업로드 완료 알림
+    AWS S3-->>Server: 6.1 or 업로드 완료
+    Server->>Server: 7. DB에 이미지 정보 저장
+    Server->>Client: 8. 이미지 정보 반환
+```
+
 ## 서비스 흐름도
 
 ```mermaid

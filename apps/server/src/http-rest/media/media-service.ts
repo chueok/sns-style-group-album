@@ -21,11 +21,14 @@ import { IConfirmOriginalMediaUploadedPort } from './port/confirm-original-media
 import { IConfirmResponsiveMediaUploadedPort } from './port/confirm-responsive-media-uploaded-port';
 import { ObjectStorageKeyFactory } from '../../infrastructure/persistence/object-storage/key-factory/object-storage-key-factory';
 import { DiTokens } from '../../di/di-tokens';
+import { ServerConfig } from '../../config/server-config';
 
 @Injectable()
 export class MediaService {
   private readonly temporaryContentRepository: Repository<TypeormTemporaryContent>;
   private readonly contentRepository: Repository<TypeormMedia>;
+
+  private readonly bucketName: string;
   private readonly logger: LoggerService;
   constructor(
     readonly dataSource: DataSource,
@@ -37,6 +40,8 @@ export class MediaService {
       TypeormTemporaryContent
     );
     this.contentRepository = dataSource.getRepository(TypeormMedia);
+
+    this.bucketName = ServerConfig.OBJECT_STORAGE_MEDIA_BUCKET;
 
     this.logger = logger || new Logger(MediaService.name);
   }
@@ -55,7 +60,10 @@ export class MediaService {
       temporaryContent.id
     );
 
-    return this.mediaObjectStorage.getPresignedUrlForUpload(mediaUploadUrl);
+    return this.mediaObjectStorage.getPresignedUrlForUpload(
+      this.bucketName,
+      mediaUploadUrl
+    );
   }
 
   public async confirmOriginalMediaUploaded(

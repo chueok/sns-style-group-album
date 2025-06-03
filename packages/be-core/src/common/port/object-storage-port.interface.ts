@@ -1,6 +1,14 @@
 export interface IObjectStoragePort {
-  uploadFile(key: string, filePath: string): Promise<void>;
-  getPresignedUrlForUpload(key: string, expires?: number): Promise<string>;
-  getPresignedUrlForDownload(key: string, expires?: number): Promise<string>;
-  getPublicUrlForDownload(key: string): Promise<string>;
+  uploadFile(bucketName: string, key: string, filePath: string): Promise<void>;
+  getPresignedUrlForUpload(
+    bucketName: string,
+    key: string,
+    expiresInSeconds?: number
+  ): Promise<string>;
+  getPresignedUrlForDownload(
+    bucketName: string,
+    key: string,
+    expiresInSeconds?: number
+  ): Promise<string>;
+  getPublicUrlForDownload(bucketName: string, key: string): Promise<string>;
 }

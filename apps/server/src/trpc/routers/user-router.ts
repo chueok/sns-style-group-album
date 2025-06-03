@@ -2,13 +2,13 @@ import { z } from 'zod';
 import { authProcedure, router } from '../trpc';
 
 export const userRouter = router({
-  getUser: authProcedure.query(async ({ ctx }) => {
+  getMe: authProcedure.query(async ({ ctx }) => {
     const { user: jwtUser } = ctx;
     const { userService } = ctx.userDomain;
 
     const user = await userService.getUser(jwtUser.id);
 
-    return { user };
+    return user;
   }),
 
   deleteUser: authProcedure.mutation(async ({ ctx }) => {
@@ -40,8 +40,8 @@ export const userRouter = router({
   editDefaultProfile: authProcedure
     .input(
       z.object({
-        username: z.string(),
-        profileImageUrl: z.string(),
+        username: z.string().optional(),
+        profileImageUrl: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {

@@ -13,6 +13,7 @@ import { TypeormComment } from '../../entity/comment/typeorm-comment.entity';
 import { TypeormLike } from '../../entity/like/typeorm-like.entity';
 import { ContentMapper } from './mapper/content-mapper';
 import { Logger, LoggerService, Optional } from '@nestjs/common';
+import { TypeormGroup } from '../../entity/group/typeorm-group.entity';
 
 export class TypeormContentRepository implements IContentRepository {
   public static commentLimit = 5;
@@ -21,6 +22,7 @@ export class TypeormContentRepository implements IContentRepository {
   private readonly typeormContentRepository: Repository<TypeormContent>;
   private readonly typeormCommentRepository: Repository<TypeormComment>;
   private readonly typeormLikeRepository: Repository<TypeormLike>;
+  private readonly typeormGroupRepository: Repository<TypeormGroup>;
 
   private readonly logger: LoggerService;
 
@@ -28,8 +30,24 @@ export class TypeormContentRepository implements IContentRepository {
     this.typeormContentRepository = dataSource.getRepository(TypeormContent);
     this.typeormCommentRepository = dataSource.getRepository(TypeormComment);
     this.typeormLikeRepository = dataSource.getRepository(TypeormLike);
-
+    this.typeormGroupRepository = dataSource.getRepository(TypeormGroup);
     this.logger = logger || new Logger(TypeormContentRepository.name);
+  }
+
+  async isGroupMember(payload: {
+    userId: string;
+    groupId: string;
+  }): Promise<boolean> {
+    const { groupId, userId } = payload;
+    const queryBuilder = this.typeormGroupRepository
+      .createQueryBuilder('group')
+      .leftJoin('group.members', 'members')
+      .where('group.id = :groupId', { groupId })
+      .andWhere('members.id = :userId', { userId });
+
+    const result = await queryBuilder.getCount();
+
+    return result > 0;
   }
 
   // TODO 트랜잭션 처리 필요

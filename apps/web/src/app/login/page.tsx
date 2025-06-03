@@ -6,7 +6,6 @@ import { Button } from '@repo/ui/button';
 import { Card, CardContent } from '@repo/ui/card';
 import { getBackendUrl } from '../../utils';
 import { useLoginWithOauth } from '@/auth/use-login-with-oauth';
-import { trpc } from '@/trpc/trpc';
 
 export default function LoginPage() {
   const { isPending, login } = useLoginWithOauth({
@@ -20,38 +19,8 @@ export default function LoginPage() {
     }
   };
 
-  const { data: user } = trpc.user.getUser.useQuery();
-
-  const { mutate: deleteUser } = trpc.user.deleteUser.useMutation();
-  const { mutate: editDefaultProfile } =
-    trpc.user.editDefaultProfile.useMutation();
-  const { mutate: editGroupProfile } = trpc.user.editGroupProfile.useMutation();
-
-  const handleDeleteUser = () => {
-    deleteUser();
-  };
-
   return (
     <div className="tw-flex tw-justify-center tw-items-center tw-min-h-screen tw-bg-gray-100 dark:tw-bg-gray-900">
-      <button onClick={handleDeleteUser}>delete user</button>
-      <button
-        onClick={() =>
-          editDefaultProfile({ username: 'test', profileImageUrl: 'test' })
-        }
-      >
-        edit default profile
-      </button>
-      <button
-        onClick={() =>
-          editGroupProfile({
-            groupId: 'test',
-            username: 'test',
-            profileImageUrl: 'test',
-          })
-        }
-      >
-        edit group profile
-      </button>
       <Card className="tw-w-full tw-max-w-sm tw-p-6 tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-shadow-lg">
         <CardContent className="tw-text-center">
           <h2 className="tw-text-xl tw-font-semibold tw-text-gray-900 dark:tw-text-white tw-mb-4">

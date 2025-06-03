@@ -19,6 +19,8 @@
     "docker:local": "docker-compose --env-file docker/local.minio.env -f docker/docker-compose.local.yaml up -d"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.821.0",
+    "@aws-sdk/s3-request-presigner": "^3.821.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/jwt": "^10.2.0",

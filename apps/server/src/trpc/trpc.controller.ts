@@ -6,12 +6,15 @@ import { CreateExpressContextOptions } from '@trpc/server/adapters/express';
 import { AuthService } from '../auth/auth-service';
 import {
   createAuthInnerContext,
+  createContentInnerContext,
   createGroupInnerContext,
   createSeedInnerContext,
   createUserInnerContext,
 } from './inner-context';
 import {
+  ContentService,
   GroupService,
+  IContentRepository,
   IGroupRepository,
   IUserRepository,
   UserService,
@@ -22,6 +25,7 @@ import { IAuthRepository } from '../auth/auth-repository.interface';
 import { DiTokens as AuthDiTokens } from '../auth/di-tokens';
 import { DiTokens as UserDiTokens } from '../user/di-tokens';
 import { DiTokens as GroupDiTokens } from '../group/di-tokens';
+import { DiTokens as ContentDiTokens } from '../content/di-tokens';
 
 @Controller('trpc')
 export class TrpcController {
@@ -37,6 +41,10 @@ export class TrpcController {
     @Inject(GroupDiTokens.GroupRepository)
     private readonly groupRepository: IGroupRepository,
     private readonly groupService: GroupService,
+
+    @Inject(ContentDiTokens.ContentRepository)
+    private readonly contentRepository: IContentRepository,
+    private readonly contentService: ContentService,
 
     private readonly dataSource: DataSource
   ) {}
@@ -56,6 +64,10 @@ export class TrpcController {
       group: createGroupInnerContext({
         groupService: this.groupService,
         groupRepository: this.groupRepository,
+      }),
+      content: createContentInnerContext({
+        contentService: this.contentService,
+        contentRepository: this.contentRepository,
       }),
       ...(ServerConfig.NODE_ENV !== 'production'
         ? { seed: createSeedInnerContext({ dataSource: this.dataSource }) }

@@ -324,6 +324,7 @@ export class TypeormGroupRepository implements IGroupRepository {
   ): Promise<TPaginatedResult<TGroup>> {
     const queryBuilder = this.typeormGroupRepository
       .createQueryBuilder('group')
+      .leftJoin('group.members', 'members')
       .where('members.id = :userId', { userId })
       .andWhere('group.deletedDateTime is null');
 

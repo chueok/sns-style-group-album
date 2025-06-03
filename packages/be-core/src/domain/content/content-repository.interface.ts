@@ -22,5 +22,7 @@ export interface IContentRepository {
     groupId: string;
   }): Promise<Content[]>;
 
+  isGroupMember(payload: { userId: string; groupId: string }): Promise<boolean>;
+
   // delete is not supported
 }

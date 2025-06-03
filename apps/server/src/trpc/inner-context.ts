@@ -1,5 +1,7 @@
 import {
+  ContentService,
   GroupService,
+  IContentRepository,
   IGroupRepository,
   IUserRepository,
   UserService,
@@ -44,6 +46,19 @@ export const createGroupInnerContext = ({
   return {
     groupService,
     groupRepository,
+  };
+};
+
+export const createContentInnerContext = ({
+  contentService,
+  contentRepository,
+}: {
+  contentService: ContentService;
+  contentRepository: IContentRepository;
+}) => {
+  return {
+    contentService,
+    contentRepository,
   };
 };
 

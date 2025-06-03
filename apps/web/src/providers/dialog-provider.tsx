@@ -18,7 +18,8 @@ interface DialogContextType {
     }: {
       isOpen: boolean;
       close: () => void;
-    }) => ReactNode
+    }) => ReactNode,
+    pinned?: boolean
   ) => void;
 }
 
@@ -36,6 +37,7 @@ export const useDialog = () => {
 
 export const DialogProvider = ({ children }: { children: ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [pinned, setPinned] = useState(false);
   const [dialogContent, setDialogContent] = useState<ReactNode>(null);
 
   const value = {
@@ -47,20 +49,24 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
       }: {
         isOpen: boolean;
         close: () => void;
-      }) => ReactNode
+      }) => ReactNode,
+
+      pinned?: boolean
     ) => {
       const close = () => {
         setIsOpen(false);
       };
+      setIsOpen(true);
+      setPinned(pinned || false);
       const content = dialogGenerator({ isOpen, close });
       setDialogContent(content);
-      setIsOpen(true);
     },
   };
 
+  // pinned 인 경우 default close 기능을 사용하지 않음
   return (
     <DialogContext.Provider value={value}>
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog open={isOpen} onOpenChange={pinned ? undefined : setIsOpen}>
         {dialogContent}
       </Dialog>
       {children}

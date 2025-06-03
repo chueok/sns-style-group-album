@@ -3,6 +3,8 @@ import { Button } from '@repo/ui/button';
 import { useRef, useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import useWidth from './use-width';
+import { trpc } from '@/trpc/trpc';
+import { useGroupStore } from '@/store/group-store';
 
 // TODO: 실제 이미지로 변경 필요
 const dummyImages = Array.from({ length: 30 }, (_, i) => ({
@@ -22,17 +24,34 @@ const calcGapPx = (width: number) => {
 };
 
 const AddButton = () => {
+  const selectedGroupId = useGroupStore((state) => state.selectedGroupId);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleClick = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const { mutateAsync: generateMediaUploadUrls } =
+    trpc.content.generateMediaUploadUrls.useMutation();
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (!selectedGroupId) {
+      console.error('selectedGroupId is not set');
+      return;
+    }
+
     const files = event.target.files;
     if (files && files.length > 0) {
       // TODO: 파일 업로드 처리 로직 추가
       console.log('Selected files:', files);
+      const urlList = await generateMediaUploadUrls({
+        groupId: selectedGroupId,
+        mimeTypeList: Array.from(files).map((file) => file.type),
+      });
+      console.log('Generated URLs:', urlList);
     }
   };
 
@@ -71,7 +90,6 @@ const AlbumPage = () => {
 
   // 이미지 크기와 간격 계산
   const gap = calcGapPx(width);
-  const imageSize = Math.floor((width - gap * 2) / 3); // 3열 배치를 위한 이미지 크기 계산
 
   return (
     <div ref={containerRef} className="tw-w-full">

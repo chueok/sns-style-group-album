@@ -5,6 +5,7 @@ import { Toaster } from 'sonner';
 import { TRPCProvider } from '@/trpc/provider';
 import { DialogProvider } from '@/providers/dialog-provider';
 import { FloatingProvider } from '@/providers/floating-provider/context';
+import { ProfileDrawerProvider } from '@/providers/profile-drawer/provider';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -31,7 +32,9 @@ export default function RootLayout({
         <TRPCProvider>
           <Toaster />
           <DialogProvider>
-            <FloatingProvider>{children}</FloatingProvider>
+            <FloatingProvider>
+              <ProfileDrawerProvider>{children}</ProfileDrawerProvider>
+            </FloatingProvider>
           </DialogProvider>
         </TRPCProvider>
       </body>

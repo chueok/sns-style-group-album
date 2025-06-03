@@ -6,8 +6,7 @@ import { DiTokens } from './di-tokens';
 import { TYPEORM_DIRECTORY } from '../infrastructure/persistence/typeorm/typeorm-directory';
 import { APP_FILTER } from '@nestjs/core';
 import { NestHttpExceptionFilter } from '../http-rest/exception-filter/nest-http-exception-filter';
-import { MinioObjectStorageFactory } from '../infrastructure/persistence/object-storage/minio/minio-adapter';
-import assert from 'assert';
+import { MinioObjectStorage } from '../infrastructure/persistence/object-storage/minio/minio-adapter';
 
 export const typeormSqliteOptions = {
   type: 'sqlite',
@@ -29,28 +28,11 @@ const globalProviders: Provider[] = [
 
 const objectStorageProviders: Provider[] = [
   {
-    provide: DiTokens.ObjectStorageFactory,
+    provide: DiTokens.MediaObjectStorage,
     useFactory: async () => {
-      const objectStorage = new MinioObjectStorageFactory();
-      try {
-        await objectStorage.init();
-      } catch (error) {
-        if (ServerConfig.isProduction) {
-          console.error(error);
-          assert(false, 'Object storage initialization failed');
-        }
-      }
+      const objectStorage = new MinioObjectStorage();
       return objectStorage;
     },
-  },
-  {
-    provide: DiTokens.MediaObjectStorage,
-    useFactory: async (factory: MinioObjectStorageFactory) => {
-      return factory.getObjectStorageAdapter(
-        ServerConfig.OBJECT_STORAGE_MEDIA_BUCKET
-      );
-    },
-    inject: [DiTokens.ObjectStorageFactory],
   },
 ];
 

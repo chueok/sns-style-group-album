@@ -5,15 +5,15 @@ export const useAuth = () => {
 
   // cookie 보안 정책으로 인해, cookie를 통해 로그인 여부 확인하기가 어려움
   // 따라서 getMe를 통해 로그인 여부를 확인하고, 로그아웃 시 로그인 여부를 초기화함
-  // TODO: 이후 store를 통해 username, isLogin 등을 관리하면 변경 필요.
-  const { data: user } = trpc.auth.getMe.useQuery(undefined, {
-    gcTime: Infinity,
+  const { data: user } = trpc.user.getMe.useQuery(undefined, {
+    // gcTime: Infinity, // component unmount 이후 데이터를 유지하는 시간
     staleTime: Infinity,
   });
 
   const { mutateAsync: logoutMutation } = trpc.auth.logout.useMutation({
     onSuccess: () => {
-      utils.auth.getMe.invalidate();
+      utils.user.getMe.reset();
+      utils.group.getMyMemberGroups.reset();
     },
     onError: (error) => {
       console.error('Logout failed:', error);
@@ -27,5 +27,22 @@ export const useAuth = () => {
     return logoutMutation();
   };
 
-  return { user, logout };
+  const { mutateAsync: editProfileMutation } =
+    trpc.user.editDefaultProfile.useMutation({
+      onSuccess: () => {
+        utils.user.getMe.invalidate();
+      },
+      onError: (error) => {
+        console.error('Edit profile failed:', error);
+      },
+    });
+
+  const editUsername = async (username: string) => {
+    if (!user) {
+      return;
+    }
+    return editProfileMutation({ username });
+  };
+
+  return { user, logout, editUsername };
 };

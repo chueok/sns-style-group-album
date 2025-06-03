@@ -11,12 +11,19 @@ import { DialogContent } from '@repo/ui/dialog';
 import { Form } from '@repo/ui/form';
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
+import { useAuth } from '@/trpc/hooks/auth/use-auth';
 
 const usernameFormSchema = z.object({
   username: z.string().min(1, '최소 1자 이상 입력해주세요.'),
 });
 
-export const InitialUsernameDialog = ({ close }: { close: () => void }) => {
+export const UsernameEditDialog = ({
+  isInitial,
+  close,
+}: {
+  isInitial: boolean;
+  close: () => void;
+}) => {
   const form = useForm<z.infer<typeof usernameFormSchema>>({
     resolver: zodResolver(usernameFormSchema),
     defaultValues: {
@@ -24,15 +31,20 @@ export const InitialUsernameDialog = ({ close }: { close: () => void }) => {
     },
   });
 
+  const { editUsername } = useAuth();
+
   const onSubmit = (values: z.infer<typeof usernameFormSchema>) => {
     console.log(values);
+    editUsername(values.username);
     close();
   };
 
+  const title = isInitial ? '이름을 정해주세요.' : '이름을 수정해주세요.';
+
   return (
-    <DialogContent className="sm:tw-max-w-md">
+    <DialogContent pinned={isInitial} className="sm:tw-max-w-md">
       <DialogHeader>
-        <DialogTitle>이름을 정해주세요.</DialogTitle>
+        <DialogTitle>{title}</DialogTitle>
       </DialogHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="tw-space-y-4">

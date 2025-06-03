@@ -49,7 +49,7 @@ export class AuthRepository implements IAuthRepository {
     await this.typeormUserRepository.save(newUser);
     await this.typeormOauthRepository.save(oauth);
 
-    return { id: newUser.id, username: newUser.username ?? undefined };
+    return { id: newUser.id };
   }
 
   /**
@@ -71,7 +71,6 @@ export class AuthRepository implements IAuthRepository {
     }
     const userPayload: TJwtUser = {
       id: user.id,
-      username: user.username ?? undefined,
     };
     return userPayload;
   }
@@ -123,114 +122,7 @@ export class AuthRepository implements IAuthRepository {
     }
     const userPayload: TJwtUser = {
       id: user.id,
-      username: user.username ?? undefined,
     };
     return userPayload;
   }
-
-  // async getGroupMember(payload: {
-  //   userId: string;
-  //   groupId: string;
-  // }): Promise<TJwtUser> {
-  //   const { userId, groupId } = payload;
-
-  //   const [user, isGroupMember] = await Promise.all([
-  //     this.getUser({ id: userId }),
-
-  //     this.typeormUserRepository
-  //       .createQueryBuilder('user')
-  //       .leftJoinAndSelect('user.groups', 'group')
-  //       .where('user.id = :userId', { userId })
-  //       .andWhere('group.id = :groupId', { groupId })
-  //       .getCount()
-  //       .then((count) => count > 0),
-  //   ]);
-
-  //   if (!isGroupMember) {
-  //     throw Exception.new({
-  //       code: Code.ACCESS_DENIED_ERROR,
-  //     });
-  //   }
-
-  //   return user;
-  // }
-
-  // async getGroupOwner(payload: {
-  //   userId: string;
-  //   groupId: string;
-  // }): Promise<TJwtUser> {
-  //   const { userId, groupId } = payload;
-
-  //   const [user, isGroupOwner] = await Promise.all([
-  //     this.getUser({ id: userId }),
-
-  //     this.typeormGroupRepository
-  //       .createQueryBuilder('group')
-  //       .where('group.id = :groupId', { groupId })
-  //       .andWhere('group.ownerId = :userId', { userId })
-  //       .getCount()
-  //       .then((count) => count > 0),
-  //   ]);
-
-  //   if (!isGroupOwner) {
-  //     throw Exception.new({
-  //       code: Code.ACCESS_DENIED_ERROR,
-  //     });
-  //   }
-
-  //   return user;
-  // }
-
-  // async getContentOwner(payload: {
-  //   userId: string;
-  //   groupId: string;
-  //   contentId: string;
-  // }): Promise<TJwtUser> {
-  //   const { userId, groupId, contentId } = payload;
-
-  //   const [groupMember, isContentOwner] = await Promise.all([
-  //     this.getGroupMember({ userId, groupId }),
-  //     this.typeormContentRepository
-  //       .createQueryBuilder('content')
-  //       .where('content.id = :contentId', { contentId })
-  //       .andWhere('content.ownerId = :userId', { userId })
-  //       .getCount()
-  //       .then((count) => count > 0),
-  //   ]);
-
-  //   if (!isContentOwner) {
-  //     throw Exception.new({
-  //       code: Code.ACCESS_DENIED_ERROR,
-  //     });
-  //   }
-
-  //   return groupMember;
-  // }
-
-  // async getCommentOwner(payload: {
-  //   userId: string;
-  //   groupId: string;
-  //   commentId: string;
-  // }): Promise<TJwtUser> {
-  //   const { userId, groupId, commentId } = payload;
-
-  //   const [groupMember, isCommentOwner] = await Promise.all([
-  //     this.getGroupMember({ userId, groupId }),
-
-  //     await this.typeormCommentRepository
-  //       .createQueryBuilder('comment')
-  //       .where('comment.id = :commentId', { commentId })
-  //       .andWhere('comment.ownerId = :userId', { userId })
-  //       .getCount()
-  //       .then((count) => count > 0),
-  //   ]);
-
-  //   if (!isCommentOwner) {
-  //     throw Exception.new({
-  //       code: Code.ACCESS_DENIED_ERROR,
-  //     });
-  //   }
-
-  //   return groupMember;
-  // }
 }

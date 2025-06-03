@@ -4,7 +4,7 @@ import { Client } from 'minio';
 import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
-export class MinioObjectStorageFactory {
+export class MinioObjectStorage implements IObjectStoragePort {
   private readonly basePath = ServerConfig.OBJECT_STORAGE_BASE_PATH;
   private readonly client = new Client({
     accessKey: ServerConfig.OBJECT_STORAGE_ACCESS_KEY,
@@ -15,30 +15,9 @@ export class MinioObjectStorageFactory {
     pathStyle: true,
   });
 
-  private readonly logger = new Logger(MinioObjectStorageFactory.name);
+  private readonly logger = new Logger(MinioObjectStorage.name);
 
-  private readonly defaultExpires = 60 * 5;
-
-  async init() {}
-
-  async getObjectStorageAdapter(
-    bucketName: string
-  ): Promise<IObjectStoragePort> {
-    return {
-      uploadFile: async (key: string, filePath: string) => {
-        await this.uploadFile(bucketName, key, filePath);
-      },
-      getPresignedUrlForUpload: async (key: string, expires?: number) => {
-        return this.getPresignedUrlForUpload(bucketName, key, expires);
-      },
-      getPresignedUrlForDownload: async (key: string, expires?: number) => {
-        return this.getPresignedUrlForDownload(bucketName, key, expires);
-      },
-      getPublicUrlForDownload: async (key: string) => {
-        return this.getPublicUrlForDownload(bucketName, key);
-      },
-    };
-  }
+  private readonly defaultExpires = 60 * 5; // 5 minutes
 
   async uploadFile(
     bucketName: string,
@@ -51,24 +30,24 @@ export class MinioObjectStorageFactory {
   async getPresignedUrlForUpload(
     bucketName: string,
     key: string,
-    expires?: number
+    expiresInSeconds?: number
   ): Promise<string> {
     return this.client.presignedPutObject(
       bucketName,
       key,
-      expires || this.defaultExpires
+      expiresInSeconds || this.defaultExpires
     );
   }
 
   async getPresignedUrlForDownload(
     bucketName: string,
     key: string,
-    expires?: number
+    expiresInSeconds?: number
   ): Promise<string> {
     return this.client.presignedGetObject(
       bucketName,
       key,
-      expires || this.defaultExpires
+      expiresInSeconds || this.defaultExpires
     );
   }
 
