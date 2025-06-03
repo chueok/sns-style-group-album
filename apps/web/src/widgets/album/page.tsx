@@ -1,3 +1,5 @@
+'use client';
+
 import { useFloatingFunction } from '@/providers/floating-provider/context';
 import { Button } from '@repo/ui/button';
 import { useRef, useEffect, useState } from 'react';
@@ -45,13 +47,39 @@ const AddButton = () => {
 
     const files = event.target.files;
     if (files && files.length > 0) {
-      // TODO: 파일 업로드 처리 로직 추가
-      console.log('Selected files:', files);
-      const urlList = await generateMediaUploadUrls({
-        groupId: selectedGroupId,
-        mimeTypeList: Array.from(files).map((file) => file.type),
-      });
-      console.log('Generated URLs:', urlList);
+      try {
+        const urlList = await generateMediaUploadUrls({
+          groupId: selectedGroupId,
+          mimeTypeList: Array.from(files).map((file) => file.type),
+        });
+
+        // 각 파일에 대해 업로드 실행
+        const uploadPromises = urlList.map(async (uploadUrl, index) => {
+          const file = files.item(index);
+          if (!file) {
+            throw new Error('File not found');
+          }
+
+          const response = await fetch(uploadUrl, {
+            method: 'PUT',
+            body: file,
+            headers: {
+              'Content-Type': file.type,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to upload file ${file.name}`);
+          }
+        });
+
+        await Promise.all(uploadPromises);
+
+        // TODO: 업로드 완료 후 이미지 목록 새로고침 로직 추가
+      } catch (error) {
+        console.error('Error uploading files:', error);
+        // TODO: 에러 처리 UI 추가
+      }
     }
   };
 
