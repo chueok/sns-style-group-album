@@ -29,7 +29,7 @@ export class TypeormContent {
   id!: ContentId;
 
   @Column({ type: 'varchar', nullable: false })
-  contentType!: EContentCategory;
+  contentCategory!: EContentCategory;
 
   @Column({ type: 'text', nullable: true })
   thumbnailRelativePath!: Nullable<string>;
@@ -81,7 +81,7 @@ export class TypeormContent {
 
 @ChildEntity()
 export class TypeormSystemContent extends TypeormContent {
-  override contentType: EContentCategory.SYSTEM = EContentCategory.SYSTEM;
+  override contentCategory: EContentCategory.SYSTEM = EContentCategory.SYSTEM;
 
   @Column()
   text!: string;
@@ -92,7 +92,7 @@ export class TypeormSystemContent extends TypeormContent {
 
 @ChildEntity()
 export class TypeormMedia extends TypeormContent {
-  override contentType!: EContentCategory.IMAGE | EContentCategory.VIDEO;
+  override contentCategory!: EContentCategory.IMAGE | EContentCategory.VIDEO;
   override referred!: Promise<never[]>; // empty array
 
   @Column({ type: 'text' })
@@ -106,12 +106,12 @@ export class TypeormMedia extends TypeormContent {
   @Column()
   ext!: string;
   @Column()
-  mimetype!: string;
+  mimeType!: string;
 }
 
 @ChildEntity()
 export class TypeormPost extends TypeormContent {
-  override contentType = EContentCategory.POST;
+  override contentCategory = EContentCategory.POST;
   @Column()
   title!: string;
   @Column()
@@ -120,7 +120,7 @@ export class TypeormPost extends TypeormContent {
 
 @ChildEntity()
 export class TypeormBucket extends TypeormContent {
-  override contentType = EContentCategory.BUCKET;
+  override contentCategory = EContentCategory.BUCKET;
   @Column()
   title!: string;
   @Column({ type: 'varchar' })
@@ -129,7 +129,7 @@ export class TypeormBucket extends TypeormContent {
 
 @ChildEntity()
 export class TypeormSchedule extends TypeormContent {
-  override contentType = EContentCategory.SCHEDULE;
+  override contentCategory = EContentCategory.SCHEDULE;
   @Column()
   title!: string;
 
@@ -148,32 +148,32 @@ export class TypeormSchedule extends TypeormContent {
 export function isTypeormSystemContent(
   content: TypeormContent
 ): content is TypeormSystemContent {
-  return content.contentType === EContentCategory.SYSTEM;
+  return content.contentCategory === EContentCategory.SYSTEM;
 }
 
 export function isTypeormMediaContent(
   content: TypeormContent
 ): content is TypeormMedia {
   return (
-    content.contentType === EContentCategory.IMAGE ||
-    content.contentType === EContentCategory.VIDEO
+    content.contentCategory === EContentCategory.IMAGE ||
+    content.contentCategory === EContentCategory.VIDEO
   );
 }
 
 export function isTypeormPostContent(
   content: TypeormContent
 ): content is TypeormPost {
-  return content.contentType === EContentCategory.POST;
+  return content.contentCategory === EContentCategory.POST;
 }
 
 export function isTypeormBucketContent(
   content: TypeormContent
 ): content is TypeormBucket {
-  return content.contentType === EContentCategory.BUCKET;
+  return content.contentCategory === EContentCategory.BUCKET;
 }
 
 export function isTypeormScheduleContent(
   content: TypeormContent
 ): content is TypeormSchedule {
-  return content.contentType === EContentCategory.SCHEDULE;
+  return content.contentCategory === EContentCategory.SCHEDULE;
 }

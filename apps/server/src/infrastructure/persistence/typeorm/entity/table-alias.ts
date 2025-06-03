@@ -2,6 +2,7 @@ export enum TableAlias {
   USER = 'User',
   GROUP = 'Group',
   CONTENT = 'Content',
+  MEDIA = 'Media',
   COMMENT = 'Comment',
   LIKE = 'Like',
   OAUTH = 'Oauth',

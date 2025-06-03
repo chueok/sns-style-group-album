@@ -1,46 +1,28 @@
-import { v4 } from 'uuid';
-import { Code, Exception, IObjectStoragePort } from '../..';
-import { IContentRepository } from './content-repository.interface';
-import { EContentCategory } from './type/content-category';
-
-const isImageMimeType = (mimeType: string): boolean => {
-  return mimeType.startsWith('image/');
-};
-
-const isVideoMimeType = (mimeType: string): boolean => {
-  return mimeType.startsWith('video/');
-};
-
-const getContentCategory = (
-  mimeType: string
-): EContentCategory.IMAGE | EContentCategory.VIDEO => {
-  if (isImageMimeType(mimeType)) {
-    return EContentCategory.IMAGE;
-  }
-  if (isVideoMimeType(mimeType)) {
-    return EContentCategory.VIDEO;
-  }
-  throw Exception.new({
-    code: Code.INTERNAL_ERROR,
-    overrideMessage:
-      'Unsupported media type. Only image and video are allowed.',
-  });
-};
+import { Code, Exception, TMedia } from '../..';
+import {
+  IContentRepository,
+  TMediaPaginationParams,
+  TMediaPaginationResult,
+} from './content-repository.interface';
 
 export class ContentService {
-  constructor(
-    private readonly contentRepository: IContentRepository,
-    private readonly objectStorage: IObjectStoragePort,
-    private readonly bucketName: string
-  ) {}
+  constructor(private readonly contentRepository: IContentRepository) {}
 
   // TODO: 최대 업로드 개수 제한 필요.
+  /**
+   * 한개의 url 이라도 생성 실패하면 에러 발생.
+   * 추후 index 별 에러 처리 필요.
+   */
   async generateMediaUploadUrls(payload: {
     requesterId: string;
     groupId: string;
-    mimeTypeList: string[];
+    media: {
+      size: number;
+      ext: string;
+      mimeType: string;
+    }[];
   }): Promise<string[]> {
-    const { requesterId, groupId, mimeTypeList } = payload;
+    const { requesterId, groupId, media } = payload;
 
     const isMember = await this.contentRepository.isGroupMember({
       userId: requesterId,
@@ -53,35 +35,37 @@ export class ContentService {
       });
     }
 
-    const promises = await Promise.all(
-      mimeTypeList.map(async (mimeType) => {
-        const contentCategory = getContentCategory(mimeType);
-        const fileName = v4();
-        const key = generateKey({
-          groupId,
-          userId: requesterId,
-          contentCategory,
-          fileName,
-        });
+    const urls = await this.contentRepository.createMediaUploadUrls({
+      groupId,
+      ownerId: requesterId,
+      media: media,
+    });
+    return urls;
+  }
 
-        const url = await this.objectStorage.getPresignedUrlForUpload(
-          this.bucketName,
-          key
-        );
+  async getGroupMedia(payload: {
+    requesterId: string;
+    groupId: string;
+    pagination: TMediaPaginationParams;
+  }): Promise<TMediaPaginationResult<TMedia>> {
+    const { groupId, requesterId, pagination } = payload;
 
-        return url;
-      })
-    );
+    const isMember = await this.contentRepository.isGroupMember({
+      userId: requesterId,
+      groupId,
+    });
+    if (!isMember) {
+      throw Exception.new({
+        code: Code.UNAUTHORIZED_ERROR,
+        overrideMessage: 'User is not a member of the group',
+      });
+    }
 
-    return promises;
+    const media = await this.contentRepository.findMediaByGroupId({
+      groupId,
+      pagination,
+    });
+
+    return media;
   }
 }
-
-const generateKey = (payload: {
-  groupId: string;
-  userId: string;
-  contentCategory: EContentCategory.IMAGE | EContentCategory.VIDEO;
-  fileName: string;
-}): string => {
-  return `${payload.groupId}/${payload.userId}/${payload.contentCategory}/${payload.fileName}`;
-};

@@ -86,13 +86,13 @@ export class MediaService {
     content.originalRelativePath = payload.originalRelativePath;
     content.size = payload.size;
     content.ext = payload.ext;
-    content.mimetype = payload.mimetype;
-    if (content.mimetype.startsWith('image/')) {
-      content.contentType = EContentCategory.IMAGE;
-    } else if (content.mimetype.startsWith('video/')) {
-      content.contentType = EContentCategory.VIDEO;
+    content.mimeType = payload.mimetype;
+    if (content.mimeType.startsWith('image/')) {
+      content.contentCategory = EContentCategory.IMAGE;
+    } else if (content.mimeType.startsWith('video/')) {
+      content.contentCategory = EContentCategory.VIDEO;
     } else {
-      this.logger.error(`unsupported mimetype: ${content.mimetype}`);
+      this.logger.error(`unsupported mimetype: ${content.mimeType}`);
       return;
     }
 

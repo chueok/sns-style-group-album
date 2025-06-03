@@ -5,8 +5,8 @@ import { Button } from '@repo/ui/button';
 import { useRef, useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import useWidth from './use-width';
-import { trpc } from '@/trpc/trpc';
-import { useGroupStore } from '@/store/group-store';
+import { useUploadMedia } from '@/trpc/hooks/media/use-upload-media';
+import { useMedia } from '@/trpc/hooks/media/use-media';
 
 // TODO: 실제 이미지로 변경 필요
 const dummyImages = Array.from({ length: 30 }, (_, i) => ({
@@ -26,61 +26,23 @@ const calcGapPx = (width: number) => {
 };
 
 const AddButton = () => {
-  const selectedGroupId = useGroupStore((state) => state.selectedGroupId);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleClick = () => {
     fileInputRef.current?.click();
   };
 
-  const { mutateAsync: generateMediaUploadUrls } =
-    trpc.content.generateMediaUploadUrls.useMutation();
+  const { uploadMedia } = useUploadMedia();
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    if (!selectedGroupId) {
-      console.error('selectedGroupId is not set');
+    const files = event.target.files;
+    if (!files) {
+      console.error('files is not set');
       return;
     }
-
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      try {
-        const urlList = await generateMediaUploadUrls({
-          groupId: selectedGroupId,
-          mimeTypeList: Array.from(files).map((file) => file.type),
-        });
-
-        // 각 파일에 대해 업로드 실행
-        const uploadPromises = urlList.map(async (uploadUrl, index) => {
-          const file = files.item(index);
-          if (!file) {
-            throw new Error('File not found');
-          }
-
-          const response = await fetch(uploadUrl, {
-            method: 'PUT',
-            body: file,
-            headers: {
-              'Content-Type': file.type,
-            },
-          });
-
-          if (!response.ok) {
-            throw new Error(`Failed to upload file ${file.name}`);
-          }
-        });
-
-        await Promise.all(uploadPromises);
-
-        // TODO: 업로드 완료 후 이미지 목록 새로고침 로직 추가
-      } catch (error) {
-        console.error('Error uploading files:', error);
-        // TODO: 에러 처리 UI 추가
-      }
-    }
+    await uploadMedia(files);
   };
 
   return (
@@ -119,6 +81,8 @@ const AlbumPage = () => {
   // 이미지 크기와 간격 계산
   const gap = calcGapPx(width);
 
+  const { media } = useMedia();
+
   return (
     <div ref={containerRef} className="tw-w-full">
       <div
@@ -129,6 +93,18 @@ const AlbumPage = () => {
           width: '100%',
         }}
       >
+        {media?.items.map((item) => (
+          <div
+            key={item.id}
+            className="tw-aspect-square tw-overflow-hidden tw-rounded-none"
+          >
+            <img
+              src={item.originalUrl}
+              alt={`이미지 ${item.id}`}
+              className="tw-w-full tw-h-full tw-object-cover"
+            />
+          </div>
+        ))}
         {dummyImages.map((image) => (
           <div
             key={image.id}
