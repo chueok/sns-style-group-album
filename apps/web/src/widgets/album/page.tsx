@@ -8,6 +8,7 @@ import useWidth from './use-width';
 import { useUploadMedia } from '@/trpc/hooks/media/use-upload-media';
 import { useMedia } from '@/trpc/hooks/media/use-media';
 import { SearchBar } from './search-bar';
+import { ScrollArea } from '@repo/ui/scroll-area';
 
 const calcGapPx = (width: number) => {
   const remainder = width % 3;
@@ -92,6 +93,7 @@ const useInfiniteScroll = (onIntersect: () => void) => {
 };
 
 const useStickyHeader = () => {
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const headerContainerRef = useRef<HTMLDivElement>(null);
   const lastScrollY = useRef(0);
   const headerTransformY = useRef(0);
@@ -99,6 +101,9 @@ const useStickyHeader = () => {
   useEffect(() => {
     if (!headerContainerRef.current) {
       throw new Error('headerContainerRef is not set');
+    }
+    if (!scrollAreaRef.current) {
+      throw new Error('scrollAreaRef is not set');
     }
 
     // 스타일 직접 설정
@@ -113,7 +118,9 @@ const useStickyHeader = () => {
 
     const handleScroll = () => {
       if (!headerContainerRef.current) return;
-      const currentScrollY = window.scrollY;
+      if (!scrollAreaRef.current) return;
+
+      const currentScrollY = scrollAreaRef.current.scrollTop;
       const scrollDeltaY = currentScrollY - lastScrollY.current;
       const isScrollingDown = scrollDeltaY > 0;
 
@@ -155,17 +162,21 @@ const useStickyHeader = () => {
       lastScrollY.current = currentScrollY;
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    scrollAreaRef.current.addEventListener('scroll', handleScroll);
+    return () => {
+      if (scrollAreaRef.current) {
+        scrollAreaRef.current.removeEventListener('scroll', handleScroll);
+      }
+    };
   }, []);
 
-  return { headerContainerRef };
+  return { headerContainerRef, scrollAreaRef };
 };
 
 const AlbumPage = () => {
   const { containerRef, width } = useWidth();
   const { setNode, setIsVisible, setPosition } = useFloatingFunction();
-  const { headerContainerRef } = useStickyHeader();
+  const { headerContainerRef, scrollAreaRef } = useStickyHeader();
 
   useEffect(() => {
     setNode(<AddButton />);
@@ -182,38 +193,42 @@ const AlbumPage = () => {
     }
   });
 
+  // ScrollArea 적용해야 dropdown-menu 오픈 시 스크롤바 영역이 자연스럽게 사라짐
   return (
-    <div ref={containerRef} className="tw-w-full">
-      <div className="tw-w-full">
-        <div
-          ref={headerContainerRef}
-          className="tw-z-10 tw-bg-background tw-border-border tw-transition-opacity tw-duration-200 tw-ease-out"
-        >
-          <SearchBar />
+    <div ref={containerRef} className="tw-w-full tw-h-full">
+      <ScrollArea className="tw-w-full tw-h-full" viewportRef={scrollAreaRef}>
+        <div className="tw-w-full">
+          <div
+            ref={headerContainerRef}
+            className="tw-z-10 tw-bg-background tw-border-border tw-transition-opacity tw-duration-200 tw-ease-out"
+          >
+            <SearchBar />
+          </div>
+          <div
+            ref={scrollAreaRef}
+            className="tw-grid"
+            style={{
+              gridTemplateColumns: `repeat(3, 1fr)`,
+              gap: `${gap}px`,
+              width: '100%',
+            }}
+          >
+            {media.map((item) => (
+              <div
+                key={item.id}
+                className="tw-aspect-square tw-overflow-hidden tw-rounded-none"
+              >
+                <img
+                  src={item.originalUrl}
+                  alt={`이미지 ${item.id}`}
+                  className="tw-w-full tw-h-full tw-object-cover"
+                />
+              </div>
+            ))}
+            <div ref={loadMoreRef} className="tw-h-4 tw-w-full" />
+          </div>
         </div>
-        <div
-          className="tw-grid"
-          style={{
-            gridTemplateColumns: `repeat(3, 1fr)`,
-            gap: `${gap}px`,
-            width: '100%',
-          }}
-        >
-          {media.map((item) => (
-            <div
-              key={item.id}
-              className="tw-aspect-square tw-overflow-hidden tw-rounded-none"
-            >
-              <img
-                src={item.originalUrl}
-                alt={`이미지 ${item.id}`}
-                className="tw-w-full tw-h-full tw-object-cover"
-              />
-            </div>
-          ))}
-          <div ref={loadMoreRef} className="tw-h-4 tw-w-full" />
-        </div>
-      </div>
+      </ScrollArea>
     </div>
   );
 };

@@ -78,7 +78,7 @@ export const FloatingProvider = ({
         value={{ setIsVisible, setPosition, setNode }}
       >
         <div
-          className={`tw-fixed ${isVisible ? '' : 'tw-hidden'}`}
+          className={`tw-fixed ${isVisible ? '' : 'tw-hidden'} tw-z-50`}
           style={positionStyle}
         >
           {node}

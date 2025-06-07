@@ -38,30 +38,31 @@ export default function GroupPage() {
       onTouchStart={touchHandlers.onTouchStart}
       onTouchMove={touchHandlers.onTouchMove}
       onTouchEnd={touchHandlers.onTouchEnd}
+      className="tw-h-screen"
     >
-      <Tabs defaultValue="home" className="tw-w-full">
-        <TabsList className="tw-grid tw-w-full tw-grid-cols-5 tw-rounded-none">
+      <Tabs defaultValue="home" className="tw-w-full tw-h-full">
+        <TabsContent value="home" className="tw-h-[calc(100%-36px)]">
+          <div>홈</div>
+        </TabsContent>
+        <TabsContent value="album" className="tw-h-[calc(100%-36px)]">
+          <AlbumPage></AlbumPage>
+        </TabsContent>
+        <TabsContent value="story" className="tw-h-[calc(100%-36px)]">
+          <div>스토리</div>
+        </TabsContent>
+        <TabsContent value="bucket" className="tw-h-[calc(100%-36px)]">
+          <div>버킷</div>
+        </TabsContent>
+        <TabsContent value="calendar" className="tw-h-[calc(100%-36px)]">
+          <div>캘린더</div>
+        </TabsContent>
+        <TabsList className="tw-h-9 tw-grid tw-w-full tw-grid-cols-5 tw-rounded-none">
           <TabsTrigger value="home">홈</TabsTrigger>
           <TabsTrigger value="album">앨범</TabsTrigger>
           <TabsTrigger value="story">스토리</TabsTrigger>
           <TabsTrigger value="bucket">버킷</TabsTrigger>
           <TabsTrigger value="calendar">캘린더</TabsTrigger>
         </TabsList>
-        <TabsContent value="home">
-          <div>홈</div>
-        </TabsContent>
-        <TabsContent value="album">
-          <AlbumPage></AlbumPage>
-        </TabsContent>
-        <TabsContent value="story">
-          <div>스토리</div>
-        </TabsContent>
-        <TabsContent value="bucket">
-          <div>버킷</div>
-        </TabsContent>
-        <TabsContent value="calendar">
-          <div>캘린더</div>
-        </TabsContent>
       </Tabs>
     </main>
   );
