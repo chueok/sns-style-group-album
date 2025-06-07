@@ -13,7 +13,7 @@ import {
   useChangeUsername,
   useCreateSeedUser,
   useDeleteSeedUser,
-} from './actions';
+} from '@/trpc/hooks/seed/user';
 import { trpc } from '@/trpc/trpc';
 
 export const UserSection = () => {

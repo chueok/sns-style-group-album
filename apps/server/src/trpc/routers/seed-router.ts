@@ -6,8 +6,13 @@ import { createSeedInnerContext } from '../inner-context';
 import { TypeormUser } from '../../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
 import { IsNull } from 'typeorm';
 import { TypeormOauth } from '../../infrastructure/persistence/typeorm/entity/oauth/typeorm-oauth.entity';
-import { GroupId, UserId } from '@repo/be-core';
+import { EContentCategory, GroupId, UserId } from '@repo/be-core';
 import { TypeormGroup } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
+import { v4 } from 'uuid';
+import * as fs from 'fs';
+import * as path from 'path';
+import { TypeormMedia } from '../../infrastructure/persistence/typeorm/entity/media/typeorm-media.entity';
+import { ServerConfig } from '../../config/server-config';
 
 const getSeedContext = (ctx): ReturnType<typeof createSeedInnerContext> => {
   return ctx.seed;
@@ -75,14 +80,57 @@ export const seedRouter = router({
     .mutation(async ({ input, ctx }) => {
       const {
         auth: { authService },
+        res,
       } = ctx;
 
-      const { provider, providerId } = input;
+      const { dataSource } = getSeedContext(ctx);
 
-      await authService.loginOrSignup({
+      const { provider, providerId: providerIdInput } = input;
+
+      const providerId = providerIdInput || generateRandomNumber();
+      const { accessToken, refreshToken } = await authService.loginOrSignup({
         provider: provider || 'google',
-        providerId: providerId || generateRandomNumber(),
+        providerId,
       });
+
+      setSecureCookie({
+        res,
+        name: AuthModuleConfig.AccessTokenCookieName,
+        val: accessToken,
+        cookieOptions: {
+          maxAge: AuthModuleConfig.AccessTokenMaxAgeInCookie,
+        },
+      });
+
+      setSecureCookie({
+        res,
+        name: AuthModuleConfig.RefreshTokenCookieName,
+        val: refreshToken,
+        cookieOptions: {
+          maxAge: AuthModuleConfig.RefreshTokenMaxAgeInCookie,
+        },
+      });
+
+      const userRepository = dataSource.getRepository(TypeormUser);
+      const user = await userRepository.findOne({
+        relations: {
+          oauths: true,
+        },
+        where: {
+          oauths: {
+            provider: 'google',
+            providerId,
+          },
+        },
+      });
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      return {
+        id: user.id,
+      };
     }),
 
   changeUsername: publicProcedure
@@ -163,7 +211,11 @@ export const seedRouter = router({
       } = ctx;
       const { name } = input;
 
-      await groupService.createGroup(user.id, name || generateRandomString());
+      const newGroup = await groupService.createGroup(
+        user.id,
+        name || generateRandomString()
+      );
+      return { id: newGroup.id };
     }),
 
   changeGroupName: publicProcedure
@@ -301,6 +353,65 @@ export const seedRouter = router({
         profileImageUrl: member.profileImageUrl,
       }));
     }),
+
+  // Next.js 에서 사용하기 위함 (web 에서는 사용하지 않음)
+  generateSeedMedia: publicProcedure
+    .input(
+      z.object({
+        groupId: z.string(),
+        ownerId: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { groupId, ownerId } = input;
+      const { dataSource, objectStorage } = getSeedContext(ctx);
+      const mediaRepository = dataSource.getRepository(TypeormMedia);
+
+      const filePaths = fs
+        .readdirSync(path.join(process.cwd(), 'seed-data/random-img-1000'))
+        .map((file) =>
+          path.join(process.cwd(), 'seed-data/random-img-1000', file)
+        );
+
+      console.log(filePaths);
+
+      // 현재 시간으로부터 30일 전까지의 랜덤한 날짜 생성
+      const endDate = new Date();
+      const startDate = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000); // 30일 전
+
+      for (const filePath of filePaths) {
+        // 파일 정보 가져오기
+        const stats = fs.statSync(filePath);
+        const ext = path.extname(filePath).slice(1);
+        const mimeType = getMimeType(ext);
+        const category = mimeType.startsWith('image/')
+          ? EContentCategory.IMAGE
+          : EContentCategory.VIDEO;
+
+        const fileName = v4();
+        const originalRelativePath = `seed/${fileName}`;
+
+        const newMedia = mediaRepository.create({
+          id: v4(),
+          category,
+          originalRelativePath,
+          size: stats.size,
+          ext,
+          mimeType,
+          ownerId,
+          groupId,
+          createdDateTime: generateRandomDate(startDate, endDate),
+        });
+
+        await mediaRepository.save(newMedia);
+
+        await objectStorage.uploadFile(
+          ServerConfig.OBJECT_STORAGE_MEDIA_BUCKET,
+          originalRelativePath,
+          filePath
+        );
+      }
+    }),
 });
 
 const generateRandomNumber = () => {
@@ -315,4 +426,27 @@ const generateRandomString = (length: number = 8) => {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
   return result;
+};
+
+// 특정 기간 내의 랜덤한 날짜를 생성하는 함수
+const generateRandomDate = (startDate: Date, endDate: Date): Date => {
+  const start = startDate.getTime();
+  const end = endDate.getTime();
+  const randomTime = start + Math.random() * (end - start);
+  return new Date(randomTime);
+};
+
+// MIME 타입을 가져오는 헬퍼 함수
+const getMimeType = (ext: string): string => {
+  const mimeTypes: Record<string, string> = {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    gif: 'image/gif',
+    webp: 'image/webp',
+    mp4: 'video/mp4',
+    webm: 'video/webm',
+    mov: 'video/quicktime',
+  };
+  return mimeTypes[ext.toLowerCase()] || 'application/octet-stream';
 };

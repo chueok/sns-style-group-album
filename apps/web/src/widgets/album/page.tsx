@@ -8,12 +8,6 @@ import useWidth from './use-width';
 import { useUploadMedia } from '@/trpc/hooks/media/use-upload-media';
 import { useMedia } from '@/trpc/hooks/media/use-media';
 
-// TODO: 실제 이미지로 변경 필요
-const dummyImages = Array.from({ length: 30 }, (_, i) => ({
-  id: i + 1,
-  url: `https://picsum.photos/${512}/${512}?random=${i}`,
-}));
-
 const calcGapPx = (width: number) => {
   const remainder = width % 3;
   if (remainder === 0) {
@@ -67,9 +61,37 @@ const AddButton = () => {
   );
 };
 
+const useInfiniteScroll = (onIntersect: () => void) => {
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const targetRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        const entry = entries.at(0);
+        if (entry?.isIntersecting) {
+          onIntersect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (targetRef.current) {
+      observerRef.current.observe(targetRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [onIntersect]);
+
+  return targetRef;
+};
+
 const AlbumPage = () => {
   const { containerRef, width } = useWidth();
-
   const { setNode, setIsVisible, setPosition } = useFloatingFunction();
 
   useEffect(() => {
@@ -78,10 +100,14 @@ const AlbumPage = () => {
     setIsVisible(true);
   }, []);
 
-  // 이미지 크기와 간격 계산
   const gap = calcGapPx(width);
+  const { media, hasNextPage, fetchNextPage } = useMedia();
 
-  const { media } = useMedia();
+  const loadMoreRef = useInfiniteScroll(() => {
+    if (hasNextPage) {
+      fetchNextPage();
+    }
+  });
 
   return (
     <div ref={containerRef} className="tw-w-full">
@@ -93,7 +119,7 @@ const AlbumPage = () => {
           width: '100%',
         }}
       >
-        {media?.items.map((item) => (
+        {media.map((item) => (
           <div
             key={item.id}
             className="tw-aspect-square tw-overflow-hidden tw-rounded-none"
@@ -105,18 +131,7 @@ const AlbumPage = () => {
             />
           </div>
         ))}
-        {dummyImages.map((image) => (
-          <div
-            key={image.id}
-            className="tw-aspect-square tw-overflow-hidden tw-rounded-none"
-          >
-            <img
-              src={image.url}
-              alt={`더미 이미지 ${image.id}`}
-              className="tw-w-full tw-h-full tw-object-cover"
-            />
-          </div>
-        ))}
+        <div ref={loadMoreRef} className="tw-h-4 tw-w-full" />
       </div>
     </div>
   );

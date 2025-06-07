@@ -12,7 +12,7 @@ import {
   useChangeGroupName,
   useCreateSeedGroup,
   useDeleteGroup,
-} from './actions';
+} from '@/trpc/hooks/seed/group';
 import { trpc } from '@/trpc/trpc';
 import { AddMemberDialog } from './add-member-dialog';
 

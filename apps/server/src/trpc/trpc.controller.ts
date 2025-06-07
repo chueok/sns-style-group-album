@@ -16,6 +16,7 @@ import {
   GroupService,
   IContentRepository,
   IGroupRepository,
+  IObjectStoragePort,
   IUserRepository,
   UserService,
 } from '@repo/be-core';
@@ -26,6 +27,7 @@ import { DiTokens as AuthDiTokens } from '../auth/di-tokens';
 import { DiTokens as UserDiTokens } from '../user/di-tokens';
 import { DiTokens as GroupDiTokens } from '../group/di-tokens';
 import { DiTokens as ContentDiTokens } from '../content/di-tokens';
+import { DiTokens } from '../di/di-tokens';
 
 @Controller('trpc')
 export class TrpcController {
@@ -46,7 +48,10 @@ export class TrpcController {
     private readonly contentRepository: IContentRepository,
     private readonly contentService: ContentService,
 
-    private readonly dataSource: DataSource
+    private readonly dataSource: DataSource,
+
+    @Inject(DiTokens.MediaObjectStorage)
+    private readonly objectStorage: IObjectStoragePort
   ) {}
 
   private createContext = ({ req, res }: CreateExpressContextOptions) => {
@@ -70,7 +75,12 @@ export class TrpcController {
         contentRepository: this.contentRepository,
       }),
       ...(ServerConfig.NODE_ENV !== 'production'
-        ? { seed: createSeedInnerContext({ dataSource: this.dataSource }) }
+        ? {
+            seed: createSeedInnerContext({
+              dataSource: this.dataSource,
+              objectStorage: this.objectStorage,
+            }),
+          }
         : {}),
     };
   };

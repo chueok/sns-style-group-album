@@ -4,14 +4,25 @@ import { trpc } from '@/trpc/trpc';
 export const useMedia = () => {
   const selectedGroupId = useGroupStore((state) => state.selectedGroupId);
 
-  const { data: media } = trpc.content.getGroupMedia.useQuery({
-    groupId: selectedGroupId || '',
-    pagination: {
-      limit: 100,
-      sortField: 'createdDateTime',
-      sortOrder: 'desc',
-    },
-  });
+  const { data, hasNextPage, fetchNextPage } =
+    trpc.content.getGroupMedia.useInfiniteQuery(
+      {
+        groupId: selectedGroupId || '',
+        limit: 20,
+        sortOrder: 'desc',
+      },
+      {
+        getNextPageParam: (lastPage) => {
+          return lastPage.nextCursor;
+        },
+      }
+    );
 
-  return { media };
+  const media = data?.pages.flatMap((page) => page.items) ?? [];
+
+  return {
+    media,
+    hasNextPage,
+    fetchNextPage: () => fetchNextPage(),
+  };
 };

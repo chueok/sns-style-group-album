@@ -19,6 +19,43 @@ export class MinioObjectStorage implements IObjectStoragePort {
 
   private readonly defaultExpires = 60 * 5; // 5 minutes
 
+  constructor() {
+    // NOTE: 개발 환경에서는 모든 버킷을 삭제하고 시작하도록 함
+    if (ServerConfig.NODE_ENV === 'development') {
+      this.clearAllBuckets().catch((error) => {
+        this.logger.error('Failed to clear buckets:', error);
+      });
+    }
+  }
+
+  private async clearAllBuckets(): Promise<void> {
+    if (ServerConfig.NODE_ENV !== 'development') {
+      process.exit(1);
+    }
+    try {
+      const buckets = await this.client.listBuckets();
+
+      for (const bucket of buckets) {
+        const objectsStream = this.client.listObjects(bucket.name, '', true);
+        const objectsToDelete: string[] = [];
+
+        for await (const obj of objectsStream) {
+          objectsToDelete.push(obj.name);
+        }
+
+        if (objectsToDelete.length > 0) {
+          await this.client.removeObjects(bucket.name, objectsToDelete);
+          this.logger.log(
+            `Cleared ${objectsToDelete.length} objects from bucket ${bucket.name}`
+          );
+        }
+      }
+    } catch (error) {
+      this.logger.error('Error clearing buckets:', error);
+      throw error;
+    }
+  }
+
   async uploadFile(
     bucketName: string,
     key: string,

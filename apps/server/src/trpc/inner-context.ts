@@ -3,6 +3,7 @@ import {
   GroupService,
   IContentRepository,
   IGroupRepository,
+  IObjectStoragePort,
   IUserRepository,
   UserService,
 } from '@repo/be-core';
@@ -64,10 +65,13 @@ export const createContentInnerContext = ({
 
 export const createSeedInnerContext = ({
   dataSource,
+  objectStorage,
 }: {
   dataSource: DataSource;
+  objectStorage: IObjectStoragePort;
 }) => {
   return {
     dataSource,
+    objectStorage,
   };
 };

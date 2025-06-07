@@ -1,6 +1,6 @@
 import z from 'zod';
 import { authProcedure, router } from '../trpc';
-import { SMediaPaginationParams } from '@repo/be-core';
+import { SMedia, SMediaPaginationParams } from '@repo/be-core';
 
 export const contentRouter = router({
   generateMediaUploadUrls: authProcedure
@@ -34,13 +34,18 @@ export const contentRouter = router({
 
   getGroupMedia: authProcedure
     .input(
-      z.object({
+      SMediaPaginationParams.extend({
         groupId: z.string(),
-        pagination: SMediaPaginationParams,
+      })
+    )
+    .output(
+      z.object({
+        items: z.array(SMedia),
+        nextCursor: z.string().nullish(),
       })
     )
     .query(async ({ input, ctx }) => {
-      const { groupId, pagination } = input;
+      const { groupId, ...pagination } = input;
       const {
         user,
         content: { contentService },
@@ -51,7 +56,6 @@ export const contentRouter = router({
         requesterId: user.id,
         pagination,
       });
-
       return media;
     }),
 });

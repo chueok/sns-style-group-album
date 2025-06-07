@@ -9,6 +9,7 @@ export class ContentService {
   constructor(private readonly contentRepository: IContentRepository) {}
 
   // TODO: 최대 업로드 개수 제한 필요.
+  // 파일 최대 크기 제한? 필요할까?
   /**
    * 한개의 url 이라도 생성 실패하면 에러 발생.
    * 추후 index 별 에러 처리 필요.
@@ -61,7 +62,7 @@ export class ContentService {
       });
     }
 
-    const media = await this.contentRepository.findMediaByGroupId({
+    const media = await this.contentRepository.findMediaInGroupOrderByCreated({
       groupId,
       pagination,
     });

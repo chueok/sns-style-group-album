@@ -13,7 +13,7 @@ import {
 } from '@repo/ui/dialog';
 import { UserPlus2, Search, Loader2 } from 'lucide-react';
 import { trpc } from '@/trpc/trpc';
-import { useAddGroupMember } from './actions';
+import { useAddGroupMember } from '@/trpc/hooks/seed/group';
 
 type User = {
   id: string;

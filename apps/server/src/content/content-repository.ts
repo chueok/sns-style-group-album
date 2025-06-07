@@ -15,7 +15,7 @@ import { TypeormLike } from '../infrastructure/persistence/typeorm/entity/like/t
 import { MediaMapper } from './mapper/content-mapper';
 import { Inject, Logger, LoggerService, Optional } from '@nestjs/common';
 import { TypeormGroup } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
-import { v4 } from 'uuid';
+import { v1, v4 } from 'uuid';
 import { DiTokens } from '../di/di-tokens';
 import { ServerConfig } from '../config/server-config';
 import { TypeormMedia } from '../infrastructure/persistence/typeorm/entity/media/typeorm-media.entity';
@@ -135,7 +135,7 @@ export class TypeormContentRepository implements IContentRepository {
         }
 
         const newMedia = this.typeormMediaRepository.create({
-          id: v4(),
+          id: v1(),
           category,
           originalRelativePath: key,
           size,
@@ -160,7 +160,7 @@ export class TypeormContentRepository implements IContentRepository {
     return result;
   }
 
-  async findMediaByGroupId(payload: {
+  async findMediaInGroupOrderByCreated(payload: {
     groupId: string;
     pagination: TMediaPaginationParams;
   }): Promise<TMediaPaginationResult<TMedia>> {
@@ -171,19 +171,16 @@ export class TypeormContentRepository implements IContentRepository {
       .leftJoin('content.group', 'group')
       .where('group.id = :groupId', { groupId })
       .andWhere('content.deletedDateTime is null')
-      .orderBy(
-        `content.${pagination.sortField}`,
-        pagination.sortOrder === 'asc' ? 'ASC' : 'DESC'
-      )
+      .orderBy(`content.id`, pagination.sortOrder === 'asc' ? 'ASC' : 'DESC') // id를 uuidv1을 사용하여 시간순 정렬이 가능하도록 함
       .take(pagination.limit);
 
     if (pagination.cursor) {
       if (pagination.sortOrder === 'desc') {
-        queryBuilder.andWhere('content.createdDateTime < :cursor', {
+        queryBuilder.andWhere(`content.id < :cursor`, {
           cursor: pagination.cursor,
         });
       } else {
-        queryBuilder.andWhere('content.createdDateTime > :cursor', {
+        queryBuilder.andWhere(`content.id > :cursor`, {
           cursor: pagination.cursor,
         });
       }
@@ -191,13 +188,11 @@ export class TypeormContentRepository implements IContentRepository {
 
     const ormContentList = await queryBuilder.getMany();
     const resolvedList = await this.resolveSignedUrlList(ormContentList);
-    const nextCursor = resolvedList.at(-1)?.[pagination.sortField] || undefined;
+    const nextCursor = resolvedList.at(-1)?.id || undefined;
     const items = MediaMapper.toDomainEntityList(resolvedList);
     return {
       items,
-      sortField: pagination.sortField,
       sortOrder: pagination.sortOrder,
-      hasMore: resolvedList.length === pagination.limit,
       nextCursor,
     };
   }

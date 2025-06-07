@@ -1,54 +1,20 @@
 import { TMedia } from '../..';
 import { z } from 'zod';
 
-const SMediaSortField = z.enum(['createdDateTime', 'numLikes', 'numComments']);
-type TSortField = z.infer<typeof SMediaSortField>;
+export const SMediaSortOrder = z.enum(['asc', 'desc']);
+export type TSortOrder = z.infer<typeof SMediaSortOrder>;
 
-const SMediaSortOrder = z.enum(['asc', 'desc']);
-type TSortOrder = z.infer<typeof SMediaSortOrder>;
-
-type TCursorValue<T extends TSortField> = T extends 'createdDateTime'
-  ? Date
-  : T extends 'numLikes'
-    ? number
-    : T extends 'numComments'
-      ? number
-      : never;
-
-export const SMediaPaginationParams = z.discriminatedUnion('sortField', [
-  z.object({
-    limit: z.number(),
-    sortField: z.literal('createdDateTime'),
-    sortOrder: SMediaSortOrder,
-    cursor: z.string().datetime().optional(),
-  }),
-  z.object({
-    limit: z.number(),
-    sortField: z.literal('numLikes'),
-    sortOrder: SMediaSortOrder,
-    cursor: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
-  }),
-  z.object({
-    limit: z.number(),
-    sortField: z.literal('numComments'),
-    sortOrder: SMediaSortOrder,
-    cursor: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
-  }),
-]);
+export const SMediaPaginationParams = z.object({
+  limit: z.number(),
+  sortOrder: SMediaSortOrder,
+  cursor: z.string().nullish(),
+});
 export type TMediaPaginationParams = z.infer<typeof SMediaPaginationParams>;
 
-export type TMediaPaginationResult<T, V extends TSortField = TSortField> = {
+export type TMediaPaginationResult<T> = {
   items: T[];
-  sortField: V;
   sortOrder: TSortOrder;
-  nextCursor?: TCursorValue<V>;
-  hasMore: boolean;
+  nextCursor?: string;
 };
 
 export interface IContentRepository {
@@ -57,7 +23,7 @@ export interface IContentRepository {
 
   // findContentById(contentId: string): Promise<Nullable<Content>>;
 
-  findMediaByGroupId(payload: {
+  findMediaInGroupOrderByCreated(payload: {
     groupId: string;
     pagination: TMediaPaginationParams;
   }): Promise<TMediaPaginationResult<TMedia>>;

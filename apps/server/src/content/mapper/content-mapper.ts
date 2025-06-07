@@ -5,6 +5,7 @@ import {
   TMedia,
   TVideo,
   TImage,
+  SMedia,
 } from '@repo/be-core';
 import { TypeormMedia } from '../../infrastructure/persistence/typeorm/entity/media/typeorm-media.entity';
 
@@ -26,8 +27,9 @@ export class MediaMapper {
       mimeType,
     } = payload;
 
+    let media: TImage | TVideo;
     if (category === EContentCategory.IMAGE) {
-      const media: TImage = {
+      media = {
         id,
         groupId,
         category: EContentCategory.IMAGE,
@@ -40,15 +42,15 @@ export class MediaMapper {
         ext,
         mimeType,
 
+        // TODO: 좋아요, 댓글 수 추가 필요
         numLikes: 0,
         numComments: 0,
 
         createdDateTime,
         updatedDateTime,
-      };
-      return media;
+      } satisfies TImage;
     } else if (category === EContentCategory.VIDEO) {
-      const media: TVideo = {
+      media = {
         id,
         groupId,
         category: EContentCategory.VIDEO,
@@ -60,19 +62,22 @@ export class MediaMapper {
         ext,
         mimeType,
 
+        // TODO: 좋아요, 댓글 수 추가 필요
         numLikes: 0,
         numComments: 0,
 
         createdDateTime,
         updatedDateTime,
-      };
-      return media;
+      } satisfies TVideo;
+    } else {
+      console.error('invalid media content category');
+      throw Exception.new({
+        code: Code.INTERNAL_ERROR,
+        overrideMessage: 'Invalid media content category.',
+      });
     }
-    console.error('invalid media content category');
-    throw Exception.new({
-      code: Code.INTERNAL_ERROR,
-      overrideMessage: 'Invalid media content category.',
-    });
+
+    return SMedia.parse(media);
   }
 
   public static toDomainEntityList(payload: TypeormMedia[]): TMedia[] {
