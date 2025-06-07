@@ -2,11 +2,12 @@
 
 import { useFloatingFunction } from '@/providers/floating-provider/context';
 import { Button } from '@repo/ui/button';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import useWidth from './use-width';
 import { useUploadMedia } from '@/trpc/hooks/media/use-upload-media';
 import { useMedia } from '@/trpc/hooks/media/use-media';
+import { SearchBar } from './search-bar';
 
 const calcGapPx = (width: number) => {
   const remainder = width % 3;
@@ -90,9 +91,81 @@ const useInfiniteScroll = (onIntersect: () => void) => {
   return targetRef;
 };
 
+const useStickyHeader = () => {
+  const headerContainerRef = useRef<HTMLDivElement>(null);
+  const lastScrollY = useRef(0);
+  const headerTransformY = useRef(0);
+
+  useEffect(() => {
+    if (!headerContainerRef.current) {
+      throw new Error('headerContainerRef is not set');
+    }
+
+    // 스타일 직접 설정
+    headerContainerRef.current.style.position = 'sticky';
+    headerContainerRef.current.style.top = '0';
+
+    const headerTopY = headerContainerRef.current.getBoundingClientRect().top;
+    const headerBottomY =
+      headerContainerRef.current.getBoundingClientRect().bottom;
+
+    const headerHeight = headerBottomY - headerTopY;
+
+    const handleScroll = () => {
+      if (!headerContainerRef.current) return;
+      const currentScrollY = window.scrollY;
+      const scrollDeltaY = currentScrollY - lastScrollY.current;
+      const isScrollingDown = scrollDeltaY > 0;
+
+      // 스크롤이 아래로 내려갈 때 opacity를 점점 줄임
+      if (isScrollingDown && currentScrollY > headerTopY) {
+        // 헤더의 위치 설정
+        headerTransformY.current -= scrollDeltaY;
+        headerTransformY.current = Math.max(
+          -headerHeight,
+          Math.min(headerTransformY.current, 0)
+        );
+        headerContainerRef.current.style.transform = `translateY(${headerTransformY.current}px)`;
+
+        // 투명도 설정
+        const opacity = Math.min(
+          1,
+          Math.max(0, 1 - Math.abs(headerTransformY.current) / headerHeight)
+        );
+        headerContainerRef.current.style.opacity = opacity.toString();
+      }
+      // 스크롤이 위로 올라갈 때 opacity를 점점 늘림
+      else if (!isScrollingDown) {
+        // 헤더의 위치 설정
+        headerTransformY.current -= scrollDeltaY;
+        headerTransformY.current = Math.max(
+          -headerHeight,
+          Math.min(headerTransformY.current, 0)
+        );
+        headerContainerRef.current.style.transform = `translateY(${headerTransformY.current}px)`;
+
+        // 투명도 설정
+        const opacity = Math.min(
+          1,
+          Math.max(0, 1 - Math.abs(headerTransformY.current) / headerHeight)
+        );
+        headerContainerRef.current.style.opacity = opacity.toString();
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return { headerContainerRef };
+};
+
 const AlbumPage = () => {
   const { containerRef, width } = useWidth();
   const { setNode, setIsVisible, setPosition } = useFloatingFunction();
+  const { headerContainerRef } = useStickyHeader();
 
   useEffect(() => {
     setNode(<AddButton />);
@@ -111,27 +184,35 @@ const AlbumPage = () => {
 
   return (
     <div ref={containerRef} className="tw-w-full">
-      <div
-        className="tw-grid"
-        style={{
-          gridTemplateColumns: `repeat(3, 1fr)`,
-          gap: `${gap}px`,
-          width: '100%',
-        }}
-      >
-        {media.map((item) => (
-          <div
-            key={item.id}
-            className="tw-aspect-square tw-overflow-hidden tw-rounded-none"
-          >
-            <img
-              src={item.originalUrl}
-              alt={`이미지 ${item.id}`}
-              className="tw-w-full tw-h-full tw-object-cover"
-            />
-          </div>
-        ))}
-        <div ref={loadMoreRef} className="tw-h-4 tw-w-full" />
+      <div className="tw-w-full">
+        <div
+          ref={headerContainerRef}
+          className="tw-z-10 tw-bg-background tw-border-border tw-transition-opacity tw-duration-200 tw-ease-out"
+        >
+          <SearchBar />
+        </div>
+        <div
+          className="tw-grid"
+          style={{
+            gridTemplateColumns: `repeat(3, 1fr)`,
+            gap: `${gap}px`,
+            width: '100%',
+          }}
+        >
+          {media.map((item) => (
+            <div
+              key={item.id}
+              className="tw-aspect-square tw-overflow-hidden tw-rounded-none"
+            >
+              <img
+                src={item.originalUrl}
+                alt={`이미지 ${item.id}`}
+                className="tw-w-full tw-h-full tw-object-cover"
+              />
+            </div>
+          ))}
+          <div ref={loadMoreRef} className="tw-h-4 tw-w-full" />
+        </div>
       </div>
     </div>
   );
