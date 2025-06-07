@@ -5,6 +5,7 @@ import { GroupSection } from './group-section';
 import { Tabs } from '@repo/ui/tabs';
 import { TabsContent, TabsTrigger } from '@repo/ui/tabs';
 import { TabsList } from '@repo/ui/tabs';
+import { AllSection } from './all-section';
 
 // 개발 환경에서만 접근 가능하도록 체크
 if (process.env.NODE_ENV === 'production') {
@@ -29,12 +30,16 @@ export default function SeedDataPage() {
         </Badge>
       </div>
 
-      <Tabs defaultValue="users" className="w-full">
+      <Tabs defaultValue="all" className="w-full">
         <TabsList className="grid w-full md:w-[400px] grid-cols-2">
+          <TabsTrigger value="all">통합 관리</TabsTrigger>
           <TabsTrigger value="users">사용자 관리</TabsTrigger>
           <TabsTrigger value="groups">그룹 관리</TabsTrigger>
         </TabsList>
 
+        <TabsContent value="all" className="space-y-6">
+          <AllSection />
+        </TabsContent>
         <TabsContent value="users" className="space-y-6">
           <UserSection />
         </TabsContent>

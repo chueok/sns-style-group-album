@@ -6,7 +6,6 @@ import { TRPCProvider } from '@/trpc/provider';
 import { DialogProvider } from '@/providers/dialog-provider';
 import { FloatingProvider } from '@/providers/floating-provider/context';
 import { ProfileDrawerProvider } from '@/providers/profile-drawer/provider';
-import { SeedComponent } from '@/providers/seed/provider';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -31,7 +30,6 @@ export default function RootLayout({
     <html lang="ko">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <TRPCProvider>
-          <SeedComponent />
           <Toaster />
           <DialogProvider>
             <FloatingProvider>

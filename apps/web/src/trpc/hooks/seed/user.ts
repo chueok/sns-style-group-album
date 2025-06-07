@@ -1,27 +1,24 @@
 import { trpc } from '@/trpc/trpc';
 
 export const useCreateSeedUser = () => {
-  const {
-    getUsers: { invalidate: invalidateGetUsers },
-  } = trpc.useUtils().seed!;
+  const trpcUtils = trpc.useUtils();
 
   const { mutateAsync: createUser, isPending } =
     trpc.seed!.createUser.useMutation({
       onSuccess: () => {
-        invalidateGetUsers();
+        trpcUtils.seed!.getUsers.invalidate();
+        trpcUtils.user.getMe.invalidate();
       },
     });
   return { createUser, isPending };
 };
 
 export const useDeleteSeedUser = () => {
-  const {
-    getUsers: { invalidate: invalidateGetUsers },
-  } = trpc.useUtils().seed!;
+  const trpcUtils = trpc.useUtils();
   const { mutateAsync: deleteUser, isPending } =
     trpc.seed!.deleteUser.useMutation({
       onSuccess: () => {
-        invalidateGetUsers();
+        trpcUtils.seed!.getUsers.invalidate();
       },
     });
   return { deleteUser, isPending };
