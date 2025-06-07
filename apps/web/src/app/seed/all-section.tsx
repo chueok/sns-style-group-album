@@ -45,20 +45,11 @@ export const AllSection = () => {
         await editUsername('test user');
         setStep(3);
         return;
-      } else if (step === 3) {
-        if (!user) {
-          throw new Error('Something went wrong : user is not found');
-        }
-
+      } else if (step === 3 && user) {
         const { id: groupId } = await createGroup('test group');
         setGroup(groupId);
         setStep(4);
-      } else if (step === 4) {
-        if (!user || !groupId) {
-          throw new Error(
-            'Something went wrong : user or groupId is not found'
-          );
-        }
+      } else if (step === 4 && user && groupId) {
         await generateSeedMedia({
           groupId,
           ownerId: user.id,

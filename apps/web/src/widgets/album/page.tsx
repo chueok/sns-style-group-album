@@ -9,6 +9,8 @@ import { useUploadMedia } from '@/trpc/hooks/media/use-upload-media';
 import { useMedia } from '@/trpc/hooks/media/use-media';
 import { SearchBar } from './search-bar';
 import { ScrollArea } from '@repo/ui/scroll-area';
+import { useContentStore } from '@/store/content-store';
+import { useRouter } from 'next/navigation';
 
 const calcGapPx = (width: number) => {
   const remainder = width % 3;
@@ -177,6 +179,8 @@ const AlbumPage = () => {
   const { containerRef, width } = useWidth();
   const { setNode, setIsVisible, setPosition } = useFloatingFunction();
   const { headerContainerRef, scrollAreaRef } = useStickyHeader();
+  const { setSelectedContentId } = useContentStore();
+  const router = useRouter();
 
   useEffect(() => {
     setNode(<AddButton />);
@@ -216,7 +220,11 @@ const AlbumPage = () => {
             {media.map((item) => (
               <div
                 key={item.id}
-                className="tw-aspect-square tw-overflow-hidden tw-rounded-none"
+                className="tw-aspect-square tw-overflow-hidden tw-rounded-none tw-cursor-pointer"
+                onClick={() => {
+                  setSelectedContentId(item.id);
+                  router.push(`/content?id=${item.id}`);
+                }}
               >
                 <img
                   src={item.originalUrl}

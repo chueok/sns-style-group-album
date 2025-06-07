@@ -23,6 +23,8 @@ export interface IContentRepository {
 
   // findContentById(contentId: string): Promise<Nullable<Content>>;
 
+  findMediaById(id: string): Promise<TMedia>;
+
   findMediaInGroupOrderByCreated(payload: {
     groupId: string;
     pagination: TMediaPaginationParams;
@@ -40,6 +42,13 @@ export interface IContentRepository {
   // }): Promise<Content[]>;
 
   isGroupMember(payload: { userId: string; groupId: string }): Promise<boolean>;
+
+  isMediaOwner(payload: { userId: string; mediaId: string }): Promise<boolean>;
+
+  hasAccessToMedia(payload: {
+    userId: string;
+    mediaId: string;
+  }): Promise<boolean>;
 
   createMediaUploadUrls(payload: {
     groupId: string;

@@ -58,4 +58,19 @@ export const contentRouter = router({
       });
       return media;
     }),
+
+  getMedia: authProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const { id } = input;
+      const {
+        user,
+        content: { contentService },
+      } = ctx;
+      const media = await contentService.getMedia({
+        requesterId: user.id,
+        contentId: id,
+      });
+      return media;
+    }),
 });

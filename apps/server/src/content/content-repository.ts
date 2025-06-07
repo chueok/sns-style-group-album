@@ -7,6 +7,7 @@ import {
   TMedia,
   TMediaPaginationParams,
   TMediaPaginationResult,
+  UserId,
 } from '@repo/be-core';
 import { DataSource, Repository } from 'typeorm';
 import { TypeormContent } from '../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
@@ -57,6 +58,50 @@ export class TypeormContentRepository implements IContentRepository {
     this.bucketName = ServerConfig.OBJECT_STORAGE_MEDIA_BUCKET;
 
     this.logger = logger || new Logger(TypeormContentRepository.name);
+  }
+
+  async findMediaById(id: string): Promise<TMedia> {
+    const result = await this.typeormMediaRepository.findOne({
+      where: {
+        id,
+      },
+    });
+    if (!result) {
+      throw Exception.new({
+        code: Code.UTIL_NOT_FOUND_ERROR,
+        overrideMessage: 'Media not found',
+      });
+    }
+
+    const resolved = await this.resolveSignedUrl(result);
+
+    return MediaMapper.toDomainEntity(resolved);
+  }
+  async isMediaOwner(payload: {
+    userId: string;
+    mediaId: string;
+  }): Promise<boolean> {
+    const result = await this.typeormMediaRepository.count({
+      where: {
+        ownerId: payload.userId as UserId,
+        id: payload.mediaId,
+      },
+    });
+    return result > 0;
+  }
+  async hasAccessToMedia(payload: {
+    userId: string;
+    mediaId: string;
+  }): Promise<boolean> {
+    const result = await this.typeormMediaRepository.count({
+      where: {
+        id: payload.mediaId,
+        group: {
+          members: { id: payload.userId as UserId },
+        },
+      },
+    });
+    return result > 0;
   }
 
   private async resolveSignedUrl(entity: TypeormMedia): Promise<TypeormMedia> {

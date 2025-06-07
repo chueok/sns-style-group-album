@@ -69,4 +69,25 @@ export class ContentService {
 
     return media;
   }
+
+  async getMedia(payload: {
+    requesterId: string;
+    contentId: string;
+  }): Promise<TMedia> {
+    const { requesterId, contentId } = payload;
+
+    const hasAccess = await this.contentRepository.hasAccessToMedia({
+      userId: requesterId,
+      mediaId: contentId,
+    });
+    if (!hasAccess) {
+      throw Exception.new({
+        code: Code.UNAUTHORIZED_ERROR,
+        overrideMessage: 'User does not have access to the media',
+      });
+    }
+
+    const media = await this.contentRepository.findMediaById(contentId);
+    return media;
+  }
 }
