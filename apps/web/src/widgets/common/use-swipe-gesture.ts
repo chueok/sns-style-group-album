@@ -55,7 +55,6 @@ export const useSwipeGesture = (props: {
 
     const deltaX = touch.clientX - touchStartRef.current.x;
     const deltaY = touch.clientY - touchStartRef.current.y;
-    console.log({ direction: swipeDirectionRef.current, deltaX, deltaY });
 
     // 수평 스와이프 중일 때 수직 움직임이 임계값을 넘으면 초기화
     if (
