@@ -2,7 +2,7 @@ import { TMedia } from '../..';
 import { z } from 'zod';
 
 export const SMediaSortOrder = z.enum(['asc', 'desc']);
-export type TSortOrder = z.infer<typeof SMediaSortOrder>;
+export type TMediaSortOrder = z.infer<typeof SMediaSortOrder>;
 
 export const SMediaPaginationParams = z.object({
   limit: z.number(),
@@ -13,7 +13,7 @@ export type TMediaPaginationParams = z.infer<typeof SMediaPaginationParams>;
 
 export type TMediaPaginationResult<T> = {
   items: T[];
-  sortOrder: TSortOrder;
+  sortOrder: TMediaSortOrder;
   nextCursor?: string;
 };
 

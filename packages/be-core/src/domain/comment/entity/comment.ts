@@ -1,9 +1,25 @@
 import { Nullable } from '../../../common/type/common-types';
-import { CreateCommentEntityPayload } from './type/create-comment-entity-payload';
+import { CreateCommentEntityPayload } from '../type/create-comment-entity-payload';
 import { Comment } from './comment.abstract';
 import { IsOptional, IsString, IsUUID } from 'class-validator';
-import { CommentTypeEnum } from '../enum/comment-type-enum';
+import { ECommentCategory } from '../enum/comment-category';
 import { UserId } from '../../user/type/user-id';
+import { z } from 'zod';
+
+export const SComment = z.object({
+  id: z.string(),
+  category: z.nativeEnum(ECommentCategory),
+  text: z.string(),
+  userTags: z.array(z.string()),
+  contentId: z.string(),
+  ownerId: z.string().nullable(),
+  subText: z.string().nullable(),
+  createdDateTime: z.date(),
+  updatedDateTime: z.date().nullable(),
+  deletedDateTime: z.date().nullable(),
+});
+
+export type TComment = z.infer<typeof SComment>;
 
 export class UserComment extends Comment {
   @IsUUID('all')
@@ -14,7 +30,7 @@ export class UserComment extends Comment {
 
   constructor(payload: CreateCommentEntityPayload<'user', 'all'>) {
     super(payload);
-    this._type = CommentTypeEnum.USER_COMMENT;
+    this._type = ECommentCategory.USER_COMMENT;
     this._ownerId = payload.ownerId;
   }
 
@@ -37,7 +53,7 @@ export class SystemComment extends Comment {
 
   constructor(payload: CreateCommentEntityPayload<'system', 'all'>) {
     super(payload);
-    this._type = CommentTypeEnum.SYSTEM_COMMENT;
+    this._type = ECommentCategory.SYSTEM_COMMENT;
     this._subText = payload.subText;
   }
 

@@ -4,14 +4,13 @@ import {
   ManyToOne,
   PrimaryColumn,
   TableInheritance,
-  ChildEntity,
   OneToMany,
 } from 'typeorm';
-import { CommentId, CommentTypeEnum, Nullable, Optional } from '@repo/be-core';
-import { TypeormContent } from '../content/typeorm-content.entity';
+import { CommentId, ECommentCategory, Nullable, Optional } from '@repo/be-core';
 import { TypeormUser } from '../user/typeorm-user.entity';
 import { TableAlias } from '../table-alias';
 import { TypeormCommentUserTag } from '../commet-user-tag/typeorm-comment-user-tag.entity';
+import { TypeormMedia } from '../media/typeorm-media.entity';
 
 @Entity(TableAlias.COMMENT)
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
@@ -19,8 +18,8 @@ export class TypeormComment {
   @PrimaryColumn({ type: 'text' })
   id!: CommentId;
 
-  @Column({ type: 'text', enum: CommentTypeEnum, nullable: false })
-  commentType!: CommentTypeEnum;
+  @Column({ type: 'text', enum: ECommentCategory, nullable: false })
+  commentCategory!: ECommentCategory;
 
   @Column({ nullable: false })
   text!: string;
@@ -39,45 +38,57 @@ export class TypeormComment {
   tags!: Promise<TypeormCommentUserTag[]>;
   __tags__: Optional<TypeormCommentUserTag[]>;
 
-  @ManyToOne(() => TypeormContent, {
+  @ManyToOne(() => TypeormMedia, {
     nullable: false,
     onDelete: 'CASCADE',
   })
-  content!: Promise<TypeormContent>;
-  __content__: Optional<TypeormContent>;
+  content!: Promise<TypeormMedia>;
+  __content__: Optional<TypeormMedia>;
   @Column()
-  contentId!: TypeormContent['id'];
-}
+  contentId!: TypeormMedia['id'];
 
-// NOTE ChildEntity에서 정의된 모든 property 는 db상에서 nullable임
-@ChildEntity()
-export class TypeormUserComment extends TypeormComment {
-  override commentType = CommentTypeEnum.USER_COMMENT;
-
-  @ManyToOne(() => TypeormUser)
+  // for user comment
+  @ManyToOne(() => TypeormUser, {
+    nullable: true,
+  })
   owner!: Promise<TypeormUser>;
-  @Column()
-  ownerId!: TypeormUser['id'];
-}
+  @Column({ type: 'text', nullable: true })
+  ownerId!: Nullable<TypeormUser['id']>;
 
-@ChildEntity()
-export class TypeormSystemComment extends TypeormComment {
-  override commentType = CommentTypeEnum.SYSTEM_COMMENT;
-
-  @Column({ type: 'text' })
+  // for system comment
+  @Column({ type: 'text', nullable: true })
   subText!: Nullable<string>;
 }
 
-//
+// // NOTE ChildEntity에서 정의된 모든 property 는 db상에서 nullable임
+// @ChildEntity()
+// export class TypeormUserComment extends TypeormComment {
+//   override commentCategory = ECommentCategory.USER_COMMENT;
 
-export function isTypeormUserComment(
-  comment: TypeormComment
-): comment is TypeormUserComment {
-  return comment.commentType === CommentTypeEnum.USER_COMMENT;
-}
+//   @ManyToOne(() => TypeormUser)
+//   owner!: Promise<TypeormUser>;
+//   @Column()
+//   ownerId!: TypeormUser['id'];
+// }
 
-export function isTypeormSystemComment(
-  comment: TypeormComment
-): comment is TypeormSystemComment {
-  return comment.commentType === CommentTypeEnum.SYSTEM_COMMENT;
-}
+// @ChildEntity()
+// export class TypeormSystemComment extends TypeormComment {
+//   override commentCategory = ECommentCategory.SYSTEM_COMMENT;
+
+//   @Column({ type: 'text' })
+//   subText!: Nullable<string>;
+// }
+
+// //
+
+// export function isTypeormUserComment(
+//   comment: TypeormComment
+// ): comment is TypeormUserComment {
+//   return comment.commentCategory === ECommentCategory.USER_COMMENT;
+// }
+
+// export function isTypeormSystemComment(
+//   comment: TypeormComment
+// ): comment is TypeormSystemComment {
+//   return comment.commentCategory === ECommentCategory.SYSTEM_COMMENT;
+// }

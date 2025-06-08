@@ -37,3 +37,13 @@ export const useChangeUsername = () => {
 
   return { changeUsername, isPending };
 };
+
+export const useSeedLogin = () => {
+  const trpcUtils = trpc.useUtils();
+  const { mutateAsync: login, isPending } = trpc.seed!.login.useMutation({
+    onSuccess: () => {
+      trpcUtils.user.getMe.invalidate();
+    },
+  });
+  return { login, isPending };
+};

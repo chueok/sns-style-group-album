@@ -6,6 +6,7 @@ import { CreateExpressContextOptions } from '@trpc/server/adapters/express';
 import { AuthService } from '../auth/auth-service';
 import {
   createAuthInnerContext,
+  createCommentInnerContext,
   createContentInnerContext,
   createGroupInnerContext,
   createSeedInnerContext,
@@ -13,7 +14,9 @@ import {
 } from './inner-context';
 import {
   ContentService,
+  CommentService,
   GroupService,
+  ICommentRepository,
   IContentRepository,
   IGroupRepository,
   IObjectStoragePort,
@@ -27,6 +30,7 @@ import { DiTokens as AuthDiTokens } from '../auth/di-tokens';
 import { DiTokens as UserDiTokens } from '../user/di-tokens';
 import { DiTokens as GroupDiTokens } from '../group/di-tokens';
 import { DiTokens as ContentDiTokens } from '../content/di-tokens';
+import { DiTokens as CommentDiTokens } from '../comment/di-tokens';
 import { DiTokens } from '../di/di-tokens';
 
 @Controller('trpc')
@@ -47,6 +51,10 @@ export class TrpcController {
     @Inject(ContentDiTokens.ContentRepository)
     private readonly contentRepository: IContentRepository,
     private readonly contentService: ContentService,
+
+    @Inject(CommentDiTokens.CommentRepository)
+    private readonly commentRepository: ICommentRepository,
+    private readonly commentService: CommentService,
 
     private readonly dataSource: DataSource,
 
@@ -73,6 +81,10 @@ export class TrpcController {
       content: createContentInnerContext({
         contentService: this.contentService,
         contentRepository: this.contentRepository,
+      }),
+      comment: createCommentInnerContext({
+        commentService: this.commentService,
+        commentRepository: this.commentRepository,
       }),
       ...(ServerConfig.NODE_ENV !== 'production'
         ? {

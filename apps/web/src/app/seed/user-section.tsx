@@ -13,6 +13,7 @@ import {
   useChangeUsername,
   useCreateSeedUser,
   useDeleteSeedUser,
+  useSeedLogin,
 } from '@/trpc/hooks/seed/user';
 import { trpc } from '@/trpc/trpc';
 
@@ -32,7 +33,7 @@ export const UserSection = () => {
     await deleteUser({ id: userId });
   };
 
-  const { mutateAsync: login } = trpc.seed!.login.useMutation();
+  const { login } = useSeedLogin();
   const loginFormAction = async (formData: FormData) => {
     const userId = formData.get('userId') as string;
     await login({ userId });

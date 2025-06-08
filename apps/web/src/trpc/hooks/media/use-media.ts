@@ -1,6 +1,7 @@
 import { useGroupStore } from '@/store/group-store';
 import { trpc } from '@/trpc/trpc';
 
+// TODO: 낙관적 업데이트 구현 필요
 export const useMedia = () => {
   const selectedGroupId = useGroupStore((state) => state.selectedGroupId);
 

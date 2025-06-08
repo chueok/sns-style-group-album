@@ -7,8 +7,6 @@ export const SUser = z.object({
   username: z.string(),
   email: z.string().email().nullable(),
   profileImageUrl: z.string().nullable(),
-  groups: z.array(z.string()),
-  ownGroups: z.array(z.string()),
   groupProfiles: z.array(SGroupProfile),
   invitedGroupList: z.array(SSimpleGroupInfo),
 

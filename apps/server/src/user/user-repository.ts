@@ -4,6 +4,7 @@ import {
   IUserRepository,
   Nullable,
   TEditableUser,
+  TMemberProfile,
   TUser,
   UserId,
 } from '@repo/be-core';
@@ -33,6 +34,49 @@ export class TypeormUserRepository implements IUserRepository {
 
     this.logger = logger || new Logger(TypeormUserRepository.name);
   }
+
+  async findMemberProfiles(payload: {
+    groupId: string;
+    userIds: string[];
+  }): Promise<TMemberProfile[]> {
+    // TODO: 특정 group의 프로파일이 있을 경우 이를 반환하도록 구현 필요.
+    const { groupId, userIds } = payload;
+
+    const result = await this.typeormUserRepository
+      .createQueryBuilder('user')
+      .where('user.id IN (:...userIds)', { userIds })
+      .andWhere('user.deletedDateTime is null')
+      .leftJoinAndSelect('user.userGroupProfiles', 'userGroupProfiles')
+      .getMany();
+
+    return result.map((user) => ({
+      id: user.id,
+      username: user.username || '',
+      profileImageUrl: user.profileImageUrl || null,
+    }));
+  }
+
+  // async findMemberProfilesByGroupId(
+  //   userIds: string[],
+  //   groupId: string
+  // ): Promise<TMemberProfile[]> {
+  //   const result = await this.typeormUserRepository
+  //     .createQueryBuilder('user')
+  //     .where('user.id IN (:...userIds)', { userIds })
+  //     .andWhere('user.deletedDateTime is null')
+  //     .leftJoinAndSelect('user.userGroupProfiles', 'userGroupProfiles')
+  //     .andWhere(
+  //       '(userGroupProfiles.groupId = :groupId OR userGroupProfiles.groupId IS NULL)',
+  //       { groupId }
+  //     )
+  //     .getMany();
+
+  //   return result.map((user) => ({
+  //     id: user.id,
+  //     username: user.username,
+  //     profileImageUrl: user.profileImageUrl,
+  //   }));
+  // }
 
   async isUserInGroup(userId: string, groupId: string): Promise<boolean> {
     const result = await this.typeormUserRepository

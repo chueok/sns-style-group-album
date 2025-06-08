@@ -1,9 +1,9 @@
 import { IsEnum, IsInstance, IsString, IsUUID } from 'class-validator';
 import { EntityWithCUDTime } from '../../../common/entity/entity-with-cudtime';
-import { CommentTypeEnum } from '../enum/comment-type-enum';
-import { CreateCommentEntityPayload } from './type/create-comment-entity-payload';
+import { ECommentCategory } from '../enum/comment-category';
+import { CreateCommentEntityPayload } from '../type/create-comment-entity-payload';
 import { v4 } from 'uuid';
-import { CommentId } from './type/comment-id';
+import { CommentId } from '../type/comment-id';
 import { ContentId } from '../../content/type/content-id';
 import { CommentUserTag } from './comment-user-tag';
 
@@ -12,9 +12,9 @@ export abstract class Comment extends EntityWithCUDTime<CommentId> {
   @IsUUID()
   protected override _id!: CommentId;
 
-  @IsEnum(CommentTypeEnum)
-  protected _type!: CommentTypeEnum;
-  get type(): CommentTypeEnum {
+  @IsEnum(ECommentCategory)
+  protected _type!: ECommentCategory;
+  get type(): ECommentCategory {
     return this._type;
   }
 

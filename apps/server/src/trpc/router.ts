@@ -1,5 +1,6 @@
 import { ServerConfig } from '../config/server-config';
 import { authRouter } from './routers/auth-router';
+import { commentRouter } from './routers/comment-router';
 import { contentRouter } from './routers/content-router';
 import { groupRouter } from './routers/group-router';
 import { seedRouter } from './routers/seed-router';
@@ -11,6 +12,7 @@ export const appRouter = router({
   user: userRouter,
   group: groupRouter,
   content: contentRouter,
+  comment: commentRouter,
   ...(ServerConfig.NODE_ENV !== 'production' ? { seed: seedRouter } : {}),
 });
 

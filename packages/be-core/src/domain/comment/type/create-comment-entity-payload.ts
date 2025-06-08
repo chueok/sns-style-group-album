@@ -1,7 +1,7 @@
-import { Nullable } from '../../../../common/type/common-types';
-import { ContentId } from '../../../content/type/content-id';
-import { UserId } from '../../../user/type/user-id';
-import { CommentUserTag } from '../comment-user-tag';
+import { Nullable } from '../../../common/type/common-types';
+import { ContentId } from '../../content/type/content-id';
+import { UserId } from '../../user/type/user-id';
+import { CommentUserTag } from '../entity/comment-user-tag';
 import { CommentId } from './comment-id';
 
 type CreateNewBaseCommentEntityPayload = {

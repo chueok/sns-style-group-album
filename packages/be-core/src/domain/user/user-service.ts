@@ -1,5 +1,6 @@
 import { Code } from '../../common/exception/code';
 import { Exception } from '../../common/exception/exception';
+import { TMemberProfile } from './entity/member-profile';
 import { TUser } from './entity/user';
 import { IUserRepository } from './user-repository.interface';
 
@@ -29,6 +30,36 @@ export class UserService {
       console.error(error);
       throw error;
     }
+  }
+
+  async getMemberProfiles(payload: {
+    requesterId: string;
+    groupId: string;
+    userIds: string[];
+  }): Promise<TMemberProfile[]> {
+    const { requesterId, userIds, groupId } = payload;
+
+    const isUserInGroup = await this.userRepository.isUserInGroup(
+      requesterId,
+      groupId
+    );
+    if (!isUserInGroup) {
+      throw Exception.new({
+        code: Code.UNAUTHORIZED_ERROR,
+        overrideMessage: 'User is not in group',
+      });
+    }
+
+    const users = await this.userRepository.findMemberProfiles({
+      groupId,
+      userIds,
+    });
+
+    return users.map((user) => ({
+      id: user.id,
+      username: user.username,
+      profileImageUrl: user.profileImageUrl,
+    }));
   }
 
   async deleteUser(id: string): Promise<void> {

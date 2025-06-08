@@ -1,4 +1,5 @@
 import { Nullable } from '../../common/type/common-types';
+import { TMemberProfile } from './entity/member-profile';
 import { TUser } from './entity/user';
 
 export type TEditableUser = Pick<TUser, 'username' | 'profileImageUrl'>;
@@ -11,6 +12,11 @@ export interface IUserRepository {
   updateUser(userId: string, user: Partial<TEditableUser>): Promise<boolean>;
 
   findUserById(id: string): Promise<Nullable<TUser>>;
+
+  findMemberProfiles(payload: {
+    groupId: string;
+    userIds: string[];
+  }): Promise<TMemberProfile[]>;
 
   findUsersByGroupId(groupId: string): Promise<TUser[]>;
 

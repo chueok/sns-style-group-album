@@ -3,6 +3,7 @@ import { ZodError } from 'zod';
 import { Request, Response } from 'express';
 import {
   createAuthInnerContext,
+  createCommentInnerContext,
   createContentInnerContext,
   createGroupInnerContext,
   createSeedInnerContext,
@@ -17,6 +18,7 @@ type Context = {
   userDomain: ReturnType<typeof createUserInnerContext>; // user 는 범용적으로 사용되는 단어로, 오해를 막기 위해 userDomain으로 하였음.
   group: ReturnType<typeof createGroupInnerContext>;
   content: ReturnType<typeof createContentInnerContext>;
+  comment: ReturnType<typeof createCommentInnerContext>;
 
   seed?: ReturnType<typeof createSeedInnerContext>;
 };

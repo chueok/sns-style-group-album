@@ -38,9 +38,7 @@ export class UserMapper {
       username: username || '',
       email,
       profileImageUrl,
-      groups: [],
-      ownGroups: [],
-      groupProfiles: [],
+      groupProfiles: [], // TODO: 그룹 프로파일, invitedGroupList를 일반 TUser에서 리턴해야할지 검토 필요
       invitedGroupList: [],
       createdDateTime,
       updatedDateTime,

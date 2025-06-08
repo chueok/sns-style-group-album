@@ -1,6 +1,8 @@
 import {
+  CommentService,
   ContentService,
   GroupService,
+  ICommentRepository,
   IContentRepository,
   IGroupRepository,
   IObjectStoragePort,
@@ -60,6 +62,19 @@ export const createContentInnerContext = ({
   return {
     contentService,
     contentRepository,
+  };
+};
+
+export const createCommentInnerContext = ({
+  commentService,
+  commentRepository,
+}: {
+  commentService: CommentService;
+  commentRepository: ICommentRepository;
+}) => {
+  return {
+    commentService,
+    commentRepository,
   };
 };
 
