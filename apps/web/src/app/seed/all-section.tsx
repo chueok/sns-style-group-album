@@ -41,7 +41,7 @@ export const AllSection = () => {
           provider: 'google',
         });
         setStep(2);
-      } else if (step === 2) {
+      } else if (step === 2 && user) {
         await editUsername('test user');
         setStep(3);
         return;
@@ -58,7 +58,7 @@ export const AllSection = () => {
       }
     };
     run();
-  }, [step]);
+  }, [step, user]);
 
   const disabled = step !== 0 && step !== MAX_STEP;
 
