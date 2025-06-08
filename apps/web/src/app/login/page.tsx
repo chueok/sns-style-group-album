@@ -9,7 +9,7 @@ import { useLoginWithOauth } from '@/auth/use-login-with-oauth';
 
 export default function LoginPage() {
   const { isPending, login } = useLoginWithOauth({
-    returnTo: '#',
+    returnTo: '/group',
   });
   const loading = isPending;
 

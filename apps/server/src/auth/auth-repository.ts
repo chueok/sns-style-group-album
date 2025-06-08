@@ -32,7 +32,6 @@ export class AuthRepository implements IAuthRepository {
     const createdDateTime = new Date();
 
     const newUser = this.typeormUserRepository.create({
-      username: payload.email,
       email: payload.email,
       profileImageUrl: payload.profileUrl,
       createdDateTime,

@@ -12,7 +12,7 @@ import { DataSource, Repository } from 'typeorm';
 import { TypeormComment } from '../infrastructure/persistence/typeorm/entity/comment/typeorm-comment.entity';
 import { CommentMapper } from './mapper/comment-mapper';
 import { Logger, LoggerService, Optional } from '@nestjs/common';
-import { v1 } from 'uuid';
+import { v6 } from 'uuid';
 import { TypeormMedia } from '../infrastructure/persistence/typeorm/entity/media/typeorm-media.entity';
 
 export class TypeormCommentRepository implements ICommentRepository {
@@ -59,7 +59,7 @@ export class TypeormCommentRepository implements ICommentRepository {
     text: string;
   }): Promise<TComment> {
     const newComment = this.commentRepository.create({
-      id: v1() as CommentId,
+      id: v6() as CommentId,
       commentCategory: comment.category,
       text: comment.text,
       createdDateTime: new Date(),

@@ -19,10 +19,9 @@ import {
 } from '@repo/ui/dropdown-menu';
 import { MoreVertical } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { Card, CardContent } from '@repo/ui/card';
 import { Separator } from '@repo/ui/separator';
 import { Textarea } from '@repo/ui/textarea';
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAddComment } from '@/trpc/hooks/comment/use-add-comment';
 import { useComments } from '@/trpc/hooks/comment/use-comments';
@@ -32,6 +31,7 @@ import { UserName } from '@/widgets/comment/user-name';
 import { useGroupStore } from '@/store/group-store';
 import { CreatedDate } from '@/widgets/comment/created-date';
 import { ScrollArea } from '@repo/ui/scroll-area';
+import { useSwipeGesture } from '@/widgets/common/use-swipe-gesture';
 
 const CommentList = (payload: { contentId: string }) => {
   const { contentId } = payload;
@@ -101,28 +101,61 @@ const AddComment = (payload: { contentId: string }) => {
   }
 
   return (
-    <div className="tw-mb-6">
-      <div className="tw-flex tw-gap-3">
-        <UserAvatar userId={user.id} />
-        <div className="tw-flex-1 tw-flex tw-gap-2">
-          <Textarea
-            ref={textareaRef}
-            placeholder="Add a comment..."
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            className="tw-min-h-[40px] tw-resize-none"
-            onKeyDown={handleKeyDown}
-            disabled={isPending}
-          />
-          <Button
-            onClick={handleAddComment}
-            disabled={!newComment.trim() || isPending}
-            size="sm"
-          >
-            <Send className="tw-h-4 tw-w-4" />
-          </Button>
-        </div>
+    <div className="tw-flex tw-gap-3">
+      <UserAvatar userId={user.id} />
+      <div className="tw-flex-1 tw-flex tw-gap-2">
+        <Textarea
+          ref={textareaRef}
+          placeholder="Add a comment..."
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          className="tw-min-h-[40px] tw-resize-none"
+          onKeyDown={handleKeyDown}
+          disabled={isPending}
+        />
+        <Button
+          onClick={handleAddComment}
+          disabled={!newComment.trim() || isPending}
+          size="sm"
+        >
+          <Send className="tw-h-4 tw-w-4" />
+        </Button>
       </div>
+    </div>
+  );
+};
+
+const ImageContainer = (props: { imageUrl: string; isFullImage: boolean }) => {
+  const { imageUrl, isFullImage } = props;
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const width = imageContainerRef.current?.clientWidth || 0;
+  const height = imageContainerRef.current?.clientHeight || 1;
+  const imageContainerRatio = width / height;
+
+  const [naturalSize, setNaturalSize] = useState({ width: 0, height: 1 });
+  const imageRatio = naturalSize.width / naturalSize.height;
+
+  const isLandscape = imageRatio > imageContainerRatio;
+
+  return (
+    <div
+      ref={imageContainerRef}
+      data-full={isFullImage}
+      className="tw-flex tw-flex-col tw-h-full tw-w-full tw-justify-center"
+    >
+      <img
+        src={imageUrl}
+        data-full={isFullImage}
+        data-landscape={isLandscape}
+        className="data-[landscape=true]:tw-w-full data-[landscape=false]:tw-h-full tw-aspect-auto data-[full=false]:tw-object-cover data-[full=true]:tw-object-contain"
+        onLoad={(e) => {
+          const img = e.target as HTMLImageElement;
+          setNaturalSize({
+            width: img.naturalWidth,
+            height: img.naturalHeight,
+          });
+        }}
+      />
     </div>
   );
 };
@@ -150,17 +183,25 @@ export default function ContentPage() {
 
   const isLiked = false;
 
+  /**
+   * header, image footer, add comment, separator 높이 계산
+   */
+  const headerContainerRef = useRef<HTMLDivElement>(null);
+  const headerHeight = headerContainerRef.current?.clientHeight || 0;
+
+  const imageFooterContainerRef = useRef<HTMLDivElement>(null);
+  const imageFooterHeight = imageFooterContainerRef.current?.clientHeight || 0;
+
+  const addCommentContainerRef = useRef<HTMLDivElement>(null);
+  const addCommentHeight = addCommentContainerRef.current?.clientHeight || 0;
+
+  const separatorHeight = 8;
+
+  /**
+   * 이미지 컨테이너 높이 계산
+   */
   const imageContainerRef = useRef<HTMLDivElement>(null);
-  const width = imageContainerRef.current?.clientWidth || 0;
-  const height = imageContainerRef.current?.clientHeight || 1;
-  const imageContainerRatio = width / height;
-
   const [imageHeight, setImageHeight] = useState(0);
-  const [naturalSize, setNaturalSize] = useState({ width: 0, height: 1 });
-  const imageRatio = naturalSize.width / naturalSize.height;
-
-  const isLandscape = imageRatio > imageContainerRatio;
-
   useEffect(() => {
     if (!imageContainerRef.current) return;
 
@@ -177,16 +218,16 @@ export default function ContentPage() {
     };
   }, []);
 
+  /**
+   * swipe, wheel 이벤트 핸들러
+   */
   const [isFullImage, setIsFullImage] = useState(true);
-
   const handleOnWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     e.stopPropagation();
     if (!imageContainerRef.current) return;
 
     const isDown = e.deltaY > 1;
     const isUp = e.deltaY < -1;
-    // const width = imageRef.current.clientWidth;
-    // const height = imageRef.current.clientHeight;
 
     if (isDown) {
       setIsFullImage(false);
@@ -194,12 +235,28 @@ export default function ContentPage() {
       setIsFullImage(true);
     }
   };
+  const swipeHandlers = useSwipeGesture({
+    horizontalThreshold: 100,
+    verticalThreshold: 100,
+    cancelHorizontalThreshold: 100,
+    cancelVerticalThreshold: 100,
+    onVerticalSwipe: (direction) => {
+      if (direction === 'up') {
+        setIsFullImage(false);
+      } else if (direction === 'down') {
+        setIsFullImage(true);
+      }
+    },
+  });
 
   // TODO: 이미지 크기 변경 시 애니메이션 구현 필요
   return (
     <div className="tw-h-screen tw-mx-auto tw-overflow-hidden">
       {/* Header */}
-      <div className="tw-flex tw-items-center tw-justify-between">
+      <div
+        ref={headerContainerRef}
+        className="tw-flex tw-items-center tw-justify-between"
+      >
         <Button
           variant="ghost"
           size="icon"
@@ -231,26 +288,24 @@ export default function ContentPage() {
       {/* Main Image Display */}
       <div
         ref={imageContainerRef}
-        data-full={isFullImage}
-        className="tw-flex tw-flex-col tw-h-[calc(100%-40px)] tw-justify-center tw-w-full tw-overflow-hidden data-[full=false]:tw-aspect-square data-[full=false]:tw-h-auto"
         onWheel={handleOnWheel}
+        {...swipeHandlers}
+        data-full={isFullImage}
+        className="tw-h-[calc(100%-40px)] tw-w-full tw-overflow-hidden data-[full=false]:tw-aspect-square data-[full=false]:tw-h-auto"
       >
-        <img
-          src={media?.originalUrl}
-          data-full={isFullImage}
-          data-landscape={isLandscape}
-          className="data-[landscape=true]:tw-w-full data-[landscape=false]:tw-h-full tw-aspect-auto data-[full=false]:tw-object-cover data-[full=true]:tw-object-contain"
-          onLoad={(e) => {
-            const img = e.target as HTMLImageElement;
-            setNaturalSize({
-              width: img.naturalWidth,
-              height: img.naturalHeight,
-            });
-          }}
-        />
+        {media?.originalUrl && (
+          <ImageContainer
+            imageUrl={media.originalUrl}
+            isFullImage={isFullImage}
+          />
+        )}
       </div>
+
       {/* Like and Comment Stats */}
-      <div className="tw-flex tw-items-center tw-justify-between tw-px-4">
+      <div
+        ref={imageFooterContainerRef}
+        className="tw-flex tw-items-center tw-justify-between tw-px-4"
+      >
         <div className="tw-flex tw-items-center tw-gap-4">
           <Button
             variant="ghost"
@@ -274,22 +329,35 @@ export default function ContentPage() {
       </div>
 
       {/* Comments List */}
-      <div
-        className="tw-bg-background"
-        style={{
-          height: `calc(100% - ${imageHeight + 36 + 40 + 58}px)`,
-        }}
-      >
-        {contentId && (
-          <div className="tw-h-full">
-            <Separator className="!tw-m-0 !tw-h-2 tw-bg-border" />
+      {contentId && (
+        <div
+          className="tw-bg-background"
+          style={{
+            height: `calc(100% - ${imageHeight + headerHeight + imageFooterHeight}px)`,
+          }}
+        >
+          <Separator
+            className="!tw-m-0 tw-bg-border"
+            style={{
+              height: `${separatorHeight}px`,
+            }}
+          />
+          <div
+            className="tw-h-[calc(100%-8px)]"
+            style={{
+              height: `calc(100% - ${addCommentHeight + separatorHeight}px)`,
+            }}
+          >
             <CommentList contentId={contentId} />
           </div>
-        )}
 
-        {/* Add Comment */}
-        {contentId && <AddComment contentId={contentId} />}
-      </div>
+          {/* Add Comment */}
+
+          <div ref={addCommentContainerRef} className="tw-p-4">
+            <AddComment contentId={contentId} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useProfileDrawer } from '@/providers/profile-drawer/provider';
 import { Button } from '@repo/ui/button';
-import { useEffect, useRef } from 'react';
 
 export default function Home() {
   const {
@@ -13,12 +12,7 @@ export default function Home() {
   } = useProfileDrawer();
 
   return (
-    <div
-      onWheel={scrollHandlers.onWheel}
-      onTouchStart={touchHandlers.onTouchStart}
-      onTouchMove={touchHandlers.onTouchMove}
-      onTouchEnd={touchHandlers.onTouchEnd}
-    >
+    <div {...scrollHandlers} {...touchHandlers}>
       <div>Home</div>
       <Button onClick={open}>Open Drawer</Button>
     </div>

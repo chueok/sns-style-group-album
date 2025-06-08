@@ -16,7 +16,7 @@ import { TypeormLike } from '../infrastructure/persistence/typeorm/entity/like/t
 import { MediaMapper } from './mapper/content-mapper';
 import { Inject, Logger, LoggerService, Optional } from '@nestjs/common';
 import { TypeormGroup } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
-import { v1, v4 } from 'uuid';
+import { v4, v6 } from 'uuid';
 import { DiTokens } from '../di/di-tokens';
 import { ServerConfig } from '../config/server-config';
 import { TypeormMedia } from '../infrastructure/persistence/typeorm/entity/media/typeorm-media.entity';
@@ -180,7 +180,7 @@ export class TypeormContentRepository implements IContentRepository {
         }
 
         const newMedia = this.typeormMediaRepository.create({
-          id: v1(),
+          id: v6(),
           category,
           originalRelativePath: key,
           size,

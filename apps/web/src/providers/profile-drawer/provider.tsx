@@ -3,6 +3,7 @@
 import { createContext, useContext, useMemo, useRef, useState } from 'react';
 import { Drawer, DrawerContent } from '@repo/ui/drawer';
 import { ProfileDrawer } from './profile-drawer';
+import { useSwipeGesture } from '@/widgets/common/use-swipe-gesture';
 
 interface DrawerContextType {
   isOpen: boolean;
@@ -33,8 +34,8 @@ export const useProfileDrawer = () => {
   return context;
 };
 
-const VERTICAL_THRESHOLD = 30;
-const HORIZONTAL_THRESHOLD = 60;
+const CANCEL_THRESHOLD = 30;
+const SWIPE_THRESHOLD = 60;
 
 export const ProfileDrawerProvider = ({
   children,
@@ -46,11 +47,11 @@ export const ProfileDrawerProvider = ({
    */
   const [isOpen, setIsOpen] = useState(false);
   const open = () => {
-    !pinned && setIsOpen(true);
+    !pinned && !isOpen && setIsOpen(true);
   };
 
   const close = () => {
-    !pinned && setIsOpen(false);
+    !pinned && isOpen && setIsOpen(false);
   };
 
   /**
@@ -82,41 +83,19 @@ export const ProfileDrawerProvider = ({
   /**
    * touch handler
    */
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-  const onTouchStart = (e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    if (!touch) return;
-
-    touchStartRef.current = {
-      x: touch.clientX,
-      y: touch.clientY,
-    };
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    if (!touchStartRef.current) return;
-
-    const touch = e.touches[0];
-    if (!touch) return;
-
-    const deltaX = touch.clientX - touchStartRef.current.x;
-    const deltaY = touch.clientY - touchStartRef.current.y;
-
-    // 수직 드래그 량이 많을 경우, 해당 드래그로는 drawer를 열지 않음
-    if (Math.abs(deltaY) > VERTICAL_THRESHOLD) {
-      touchStartRef.current = null;
-      return;
-    }
-
-    if (deltaX > HORIZONTAL_THRESHOLD) {
-      open();
-      touchStartRef.current = null;
-    }
-  };
-
-  const onTouchEnd = () => {
-    touchStartRef.current = null;
-  };
+  const { onTouchStart, onTouchMove, onTouchEnd } = useSwipeGesture({
+    horizontalThreshold: SWIPE_THRESHOLD,
+    verticalThreshold: SWIPE_THRESHOLD,
+    cancelHorizontalThreshold: CANCEL_THRESHOLD,
+    cancelVerticalThreshold: CANCEL_THRESHOLD,
+    onHorizontalSwipe(direction, distance) {
+      if (direction === 'left') {
+        close();
+      } else if (direction === 'right') {
+        open();
+      }
+    },
+  });
 
   /**
    * context setting
