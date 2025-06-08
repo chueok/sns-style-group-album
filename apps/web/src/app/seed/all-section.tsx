@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from '@repo/ui/card';
 import { Button } from '@repo/ui/button';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Progress } from '@repo/ui/progress';
 import { useGroupStore } from '@/store/group-store';
 
@@ -34,27 +34,35 @@ export const AllSection = () => {
   const groupId = useGroupStore((state) => state.selectedGroupId);
 
   const [step, setStep] = useState(0);
+  const isExecuting = useRef<Record<number, boolean>>({});
+
   useEffect(() => {
     const run = async () => {
-      if (step === 1) {
+      if (step === 1 && !isExecuting.current[step]) {
+        isExecuting.current[step] = true;
         const { id: userId } = await createUser({
           provider: 'google',
         });
         setStep(2);
-      } else if (step === 2 && user) {
+      } else if (step === 2 && user && !isExecuting.current[step]) {
+        isExecuting.current[step] = true;
         await editUsername('test user');
         setStep(3);
         return;
-      } else if (step === 3 && user) {
+      } else if (step === 3 && user && !isExecuting.current[step]) {
+        isExecuting.current[step] = true;
         const { id: groupId } = await createGroup('test group');
         setGroup(groupId);
         setStep(4);
-      } else if (step === 4 && user && groupId) {
+      } else if (step === 4 && user && groupId && !isExecuting.current[step]) {
+        isExecuting.current[step] = true;
         await generateSeedMedia({
           groupId,
           ownerId: user.id,
         });
         setStep(5);
+      } else if (step === 5) {
+        isExecuting.current = {};
       }
     };
     run();
