@@ -42,7 +42,7 @@ export const UsernameEditDialog = ({
   const title = isInitial ? '이름을 정해주세요.' : '이름을 수정해주세요.';
 
   return (
-    <DialogContent pinned={isInitial} className="sm:tw-max-w-md">
+    <DialogContent pinned={isInitial} className="tw-w-[300px] sm:tw-w-[448px]">
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
       </DialogHeader>
