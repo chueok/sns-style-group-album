@@ -1,6 +1,7 @@
 import {
   Code,
   Exception,
+  IObjectStoragePort,
   IUserRepository,
   Nullable,
   TEditableUser,
@@ -8,75 +9,112 @@ import {
   TUser,
   UserId,
 } from '@repo/be-core';
-import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import {
   isTypeormUserWith,
   TypeormUser,
 } from '../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
 import { UserMapper } from './mapper/user-mapper';
-import { Logger, LoggerService, Optional } from '@nestjs/common';
+import { Inject, Logger, LoggerService, Optional } from '@nestjs/common';
 import { TypeormUserGroupProfile } from '../infrastructure/persistence/typeorm/entity/user-group-profile/typeorm-user-group-profile.entity';
-import { isTypeormGroupWith } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
+import { DiTokens } from '../di/di-tokens';
+import { ServerConfig } from '../config/server-config';
+
+const generateObjectStorageKey = (userId: string): string => {
+  return `profile-image/${userId}`;
+};
 
 // TODO : 전체 Repository Promise 최적화 필요
 export class TypeormUserRepository implements IUserRepository {
   private readonly userQueryAlias = 'user';
+  private readonly bucketName: string;
 
   private typeormUserRepository: Repository<TypeormUser>;
   private typeormUserGroupProfileRepository: Repository<TypeormUserGroupProfile>;
   private readonly logger: LoggerService;
 
-  constructor(dataSource: DataSource, @Optional() logger?: LoggerService) {
+  constructor(
+    dataSource: DataSource,
+    @Inject(DiTokens.ObjectStorage)
+    private readonly objectStorage: IObjectStoragePort,
+    @Optional() logger?: LoggerService
+  ) {
     this.typeormUserRepository = dataSource.getRepository(TypeormUser);
     this.typeormUserGroupProfileRepository = dataSource.getRepository(
       TypeormUserGroupProfile
     );
 
+    this.bucketName = ServerConfig.OBJECT_STORAGE_PUBLIC_BUCKET;
+
     this.logger = logger || new Logger(TypeormUserRepository.name);
+  }
+
+  private async resolveSignedUrl(entity: TypeormUser): Promise<TypeormUser> {
+    if (entity.profileImageUrl) {
+      entity.profileImageUrl =
+        await this.objectStorage.getPresignedUrlForDownload(
+          this.bucketName,
+          entity.profileImageUrl
+        );
+    }
+    return entity;
+  }
+
+  // TODO: 실패할 경우 profileImageUrl 을 undefined로 초기화 할 것
+  private async resolveSignedUrlList(
+    entityList: TypeormUser[]
+  ): Promise<TypeormUser[]> {
+    const result = await Promise.allSettled(
+      entityList.map((entity) => this.resolveSignedUrl(entity))
+    );
+
+    result.map((result) => {
+      if (result.status === 'rejected') {
+        console.error({ result: result.reason });
+      }
+    });
+
+    return result
+      .map((result) => (result.status === 'fulfilled' ? result.value : null))
+      .filter((result) => result !== null);
+  }
+
+  async createProfileImageUploadUrl(userId: string): Promise<string> {
+    const key = generateObjectStorageKey(userId);
+    const url = await this.objectStorage.getPresignedUrlForUpload(
+      this.bucketName,
+      key,
+      3 * 60 // 3분
+    );
+    await this.typeormUserRepository.update(userId, {
+      profileImageUrl: key,
+    });
+
+    return url;
   }
 
   async findMemberProfiles(payload: {
     groupId: string;
     userIds: string[];
   }): Promise<TMemberProfile[]> {
-    // TODO: 특정 group의 프로파일이 있을 경우 이를 반환하도록 구현 필요.
     const { groupId, userIds } = payload;
 
     const result = await this.typeormUserRepository
       .createQueryBuilder('user')
       .where('user.id IN (:...userIds)', { userIds })
       .andWhere('user.deletedDateTime is null')
-      .leftJoinAndSelect('user.userGroupProfiles', 'userGroupProfiles')
+      .leftJoin('user.groups', 'groups')
+      .andWhere('groups.id = :groupId', { groupId })
       .getMany();
 
-    return result.map((user) => ({
-      id: user.id,
-      username: user.username || '',
-      profileImageUrl: user.profileImageUrl || null,
+    const resolved = await this.resolveSignedUrlList(result);
+
+    return resolved.map((resolvedUser) => ({
+      id: resolvedUser.id,
+      username: resolvedUser.username || '',
+      profileImageUrl: resolvedUser.profileImageUrl || null,
     }));
   }
-
-  // async findMemberProfilesByGroupId(
-  //   userIds: string[],
-  //   groupId: string
-  // ): Promise<TMemberProfile[]> {
-  //   const result = await this.typeormUserRepository
-  //     .createQueryBuilder('user')
-  //     .where('user.id IN (:...userIds)', { userIds })
-  //     .andWhere('user.deletedDateTime is null')
-  //     .leftJoinAndSelect('user.userGroupProfiles', 'userGroupProfiles')
-  //     .andWhere(
-  //       '(userGroupProfiles.groupId = :groupId OR userGroupProfiles.groupId IS NULL)',
-  //       { groupId }
-  //     )
-  //     .getMany();
-
-  //   return result.map((user) => ({
-  //     id: user.id,
-  //     username: user.username,
-  //     profileImageUrl: user.profileImageUrl,
-  //   }));
-  // }
 
   async isUserInGroup(userId: string, groupId: string): Promise<boolean> {
     const result = await this.typeormUserRepository
@@ -128,27 +166,9 @@ export class TypeormUserRepository implements IUserRepository {
       return null;
     }
 
-    const groups = ormUser.__groups__;
-    const ownGroups = ormUser.__ownGroups__;
-    const userGroupProfile = ormUser.__userGroupProfiles__;
-    const invitedGroups = ormUser.__invitedGroups__;
+    const resolved = await this.resolveSignedUrl(ormUser);
 
-    const invitedGroupsElements = invitedGroups
-      .map((invitedGroup) => {
-        if (
-          !isTypeormGroupWith(invitedGroup, 'memberProfiles') ||
-          !isTypeormGroupWith(invitedGroup, 'owner')
-        ) {
-          return null;
-        }
-        const memberProfiles = invitedGroup.__memberProfiles__;
-        const owner = invitedGroup.__owner__;
-
-        return { group: invitedGroup, memberProfiles, owner };
-      })
-      .filter((element) => element !== null);
-
-    const user = UserMapper.toDomainEntity(ormUser);
+    const user = UserMapper.toDomainEntity(resolved);
 
     return user;
   }
@@ -166,27 +186,9 @@ export class TypeormUserRepository implements IUserRepository {
       .andWhere('user.deletedDateTime is null')
       .getMany();
 
-    const elements = await Promise.all(
-      ormUsers.map(async (ormUser) => {
-        const invitedGroups = await ormUser.invitedGroups;
-        const invitedGroupsElements = await Promise.all(
-          invitedGroups.map(async (invitedGroup) => {
-            const memberProfiles = await invitedGroup.memberProfiles;
-            const owner = await invitedGroup.owner;
-            return { group: invitedGroup, memberProfiles, owner };
-          })
-        );
-        return {
-          user: ormUser,
-          groups: await ormUser.groups,
-          ownGroups: await ormUser.ownGroups,
-          userGroupProfiles: await ormUser.userGroupProfiles,
-          invitedGroupsElements,
-        };
-      })
-    );
+    const resolved = await this.resolveSignedUrlList(ormUsers);
 
-    const users = UserMapper.toDomainEntityList(ormUsers);
+    const users = UserMapper.toDomainEntityList(resolved);
 
     return users;
   }
@@ -253,13 +255,5 @@ export class TypeormUserRepository implements IUserRepository {
       .getOne();
 
     return result !== null;
-  }
-
-  private extendQueryWithNotDeleted(
-    queryBuilder: SelectQueryBuilder<TypeormUser>
-  ): SelectQueryBuilder<TypeormUser> {
-    return queryBuilder.andWhere(
-      `${this.userQueryAlias}.deletedDateTime is null`
-    );
   }
 }

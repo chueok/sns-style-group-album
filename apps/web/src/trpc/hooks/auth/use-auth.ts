@@ -44,5 +44,37 @@ export const useAuth = () => {
     return editProfileMutation({ username });
   };
 
-  return { user, logout, editUsername };
+  const { mutateAsync: generateProfileImageUploadUrlMutation } =
+    trpc.user.generateProfileImageUploadUrl.useMutation({});
+
+  // TODO: profile 수정만이 아니라, 삭제도 구현 필요함
+  const editProfileImage = async (file: File) => {
+    if (!user) {
+      return;
+    }
+
+    if (file.size > 1024 * 1024) {
+      throw new Error('프로필 이미지는 1MB 이하여야 합니다.');
+    }
+
+    const { url } = await generateProfileImageUploadUrlMutation();
+
+    const response = await fetch(url, {
+      method: 'PUT',
+      body: file,
+      headers: {
+        'Content-Type': file.type,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to upload profile image');
+    }
+
+    utils.user.getMe.invalidate();
+
+    return;
+  };
+
+  return { user, logout, editUsername, editProfileImage };
 };

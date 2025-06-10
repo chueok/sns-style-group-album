@@ -29,5 +29,5 @@ export class DiTokens {
   static readonly DeleteContentUsecase = Symbol('DeleteContentUsecase');
 
   // storage
-  static readonly MediaObjectStorage = Symbol('MediaObjectStorage');
+  static readonly ObjectStorage = Symbol('ObjectStorage');
 }

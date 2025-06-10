@@ -58,7 +58,7 @@ export class TrpcController {
 
     private readonly dataSource: DataSource,
 
-    @Inject(DiTokens.MediaObjectStorage)
+    @Inject(DiTokens.ObjectStorage)
     private readonly objectStorage: IObjectStoragePort
   ) {}
 

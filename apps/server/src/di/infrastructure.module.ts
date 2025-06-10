@@ -28,7 +28,7 @@ const globalProviders: Provider[] = [
 
 const objectStorageProviders: Provider[] = [
   {
-    provide: DiTokens.MediaObjectStorage,
+    provide: DiTokens.ObjectStorage,
     useFactory: async () => {
       const objectStorage = new MinioObjectStorage();
       return objectStorage;

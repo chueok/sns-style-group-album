@@ -66,39 +66,42 @@ export const userRouter = router({
 
     await userService.deleteUser(jwtUser.id);
 
-    return { success: true };
+    return;
   }),
-
-  editGroupProfile: authProcedure
-    .input(
-      z.object({
-        groupId: z.string(),
-        username: z.string().optional(),
-        profileImageUrl: z.string().optional(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { user: jwtUser } = ctx;
-      const { userService } = ctx.userDomain;
-
-      await userService.editGroupProfile({ userId: jwtUser.id, ...input });
-
-      return { success: true };
-    }),
 
   editDefaultProfile: authProcedure
     .input(
       z.object({
-        username: z.string().optional(),
-        profileImageUrl: z.string().optional(),
+        username: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const { user: jwtUser } = ctx;
       const { userService } = ctx.userDomain;
+      const { username } = input;
 
-      await userService.editDefaultProfile({ userId: jwtUser.id, ...input });
+      await userService.editDefaultProfile({
+        userId: jwtUser.id,
+        username,
+      });
 
-      return { success: true };
+      return;
+    }),
+
+  generateProfileImageUploadUrl: authProcedure
+    .output(
+      z.object({
+        url: z.string(),
+      })
+    )
+    .mutation(async ({ ctx }) => {
+      const { user: jwtUser } = ctx;
+      const { userService } = ctx.userDomain;
+
+      const url = await userService.generateProfileImageUploadUrl({
+        requesterId: jwtUser.id,
+      });
+
+      return { url };
     }),
 });

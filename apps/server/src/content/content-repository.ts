@@ -45,7 +45,7 @@ export class TypeormContentRepository implements IContentRepository {
 
   constructor(
     dataSource: DataSource,
-    @Inject(DiTokens.MediaObjectStorage)
+    @Inject(DiTokens.ObjectStorage)
     private readonly mediaObjectStorage: IObjectStoragePort,
     @Optional() logger?: LoggerService
   ) {
@@ -195,7 +195,7 @@ export class TypeormContentRepository implements IContentRepository {
 
         const url = await this.mediaObjectStorage.getPresignedUrlForUpload(
           this.bucketName,
-          key
+          key // TODO: 몇 초 동안 유효하게 할지 결정 필요.
         );
 
         return url;

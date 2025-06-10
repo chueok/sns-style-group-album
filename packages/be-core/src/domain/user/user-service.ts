@@ -106,9 +106,8 @@ export class UserService {
   async editDefaultProfile(payload: {
     userId: string;
     username?: string;
-    profileImageUrl?: string;
   }): Promise<TUser> {
-    const { userId, username, profileImageUrl } = payload;
+    const { userId, username } = payload;
 
     const changes: Partial<{
       username: string;
@@ -116,9 +115,6 @@ export class UserService {
     }> = {};
     if (username) {
       changes.username = username;
-    }
-    if (profileImageUrl) {
-      changes.profileImageUrl = profileImageUrl;
     }
     if (Object.keys(changes).length === 0) {
       throw Exception.new({
@@ -144,5 +140,14 @@ export class UserService {
     }
 
     return user;
+  }
+
+  async generateProfileImageUploadUrl(payload: {
+    requesterId: string;
+  }): Promise<string> {
+    const { requesterId } = payload;
+    const url =
+      await this.userRepository.createProfileImageUploadUrl(requesterId);
+    return url;
   }
 }

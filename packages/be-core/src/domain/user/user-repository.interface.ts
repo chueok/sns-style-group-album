@@ -30,4 +30,6 @@ export interface IUserRepository {
   isUserInGroup(userId: string, groupId: string): Promise<boolean>;
 
   deleteUser(userId: string): Promise<void>;
+
+  createProfileImageUploadUrl(userId: string): Promise<string>;
 }
