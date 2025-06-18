@@ -12,33 +12,11 @@ import { GroupList } from './group-list';
 import { useAuth } from '@/trpc/hooks/auth/use-auth';
 import { DrawerTitle, DrawerDescription } from '@repo/ui/drawer';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
-import { useEffect } from 'react';
-import { UsernameEditDialog } from '@/widgets/username/username-edit-dialog';
-import { useDialog } from '../dialog-provider';
-
-// 초기 유저 이름 셋팅
-const useInitialUsernameSetting = () => {
-  const { user } = useAuth();
-
-  const dialog = useDialog(); // TODO: useDialog 사용하지 않도록 변경 필요
-
-  const openInitialUsernameDialog = () =>
-    dialog.open(
-      ({ isOpen, close }) => (
-        <UsernameEditDialog isInitial={true} close={close} />
-      ),
-      true
-    );
-
-  useEffect(() => {
-    if (user && !user.username) {
-      openInitialUsernameDialog();
-    }
-  }, [user]);
-};
+import { InitialUsernameEditDialog } from '@/widgets/username/initial-username-edit-dialog';
 
 export const ProfileDrawer = () => {
   const { logout } = useAuth();
+  const { user } = useAuth();
 
   const handleSettings = () => {
     console.log('settings');
@@ -48,10 +26,9 @@ export const ProfileDrawer = () => {
     console.log('activity history');
   };
 
-  useInitialUsernameSetting();
-
   return (
     <div className="tw-flex tw-flex-col tw-h-full">
+      {user?.username === '' && <InitialUsernameEditDialog />}
       <VisuallyHidden>
         <DrawerTitle>Profile</DrawerTitle>
         <DrawerDescription>Profile settings and management</DrawerDescription>

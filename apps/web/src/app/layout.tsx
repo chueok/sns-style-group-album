@@ -3,7 +3,6 @@ import localFont from 'next/font/local';
 import '@repo/ui/global.css';
 import { Toaster } from 'sonner';
 import { TRPCProvider } from '@/trpc/provider';
-import { DialogProvider } from '@/providers/dialog-provider';
 import { FloatingProvider } from '@/providers/floating-provider/context';
 import { ProfileDrawerProvider } from '@/providers/profile-drawer/provider';
 
@@ -31,11 +30,9 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <TRPCProvider>
           <Toaster />
-          <DialogProvider>
-            <FloatingProvider>
-              <ProfileDrawerProvider>{children}</ProfileDrawerProvider>
-            </FloatingProvider>
-          </DialogProvider>
+          <FloatingProvider>
+            <ProfileDrawerProvider>{children}</ProfileDrawerProvider>
+          </FloatingProvider>
         </TRPCProvider>
       </body>
     </html>
