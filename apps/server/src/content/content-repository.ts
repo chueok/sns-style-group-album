@@ -11,7 +11,7 @@ import {
   UserId,
 } from '@repo/be-core';
 import { DataSource, Repository } from 'typeorm';
-import { MediaMapper } from './mapper/content-mapper';
+import { MediaMapper } from './mapper/media-mapper';
 import { Inject, Logger, LoggerService, Optional } from '@nestjs/common';
 import { TypeormGroup } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
 import { v4, v6 } from 'uuid';
@@ -75,25 +75,25 @@ export class TypeormContentRepository implements IContentRepository {
     return MediaMapper.toDomainEntity(resolved);
   }
 
-  async isMediaOwner(payload: {
+  async isContentOwner(payload: {
     userId: string;
-    mediaId: string;
+    contentId: string;
   }): Promise<boolean> {
     const result = await this.typeormContentRepository.count({
       where: {
         ownerId: payload.userId as UserId,
-        id: payload.mediaId as ContentId,
+        id: payload.contentId as ContentId,
       },
     });
     return result > 0;
   }
-  async hasAccessToMedia(payload: {
+  async hasAccessToContent(payload: {
     userId: string;
-    mediaId: string;
+    contentId: string;
   }): Promise<boolean> {
     const result = await this.typeormContentRepository.count({
       where: {
-        id: payload.mediaId as ContentId,
+        id: payload.contentId as ContentId,
         group: {
           members: { id: payload.userId as UserId },
         },

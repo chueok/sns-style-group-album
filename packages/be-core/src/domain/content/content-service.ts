@@ -76,9 +76,9 @@ export class ContentService {
   }): Promise<TMedia> {
     const { requesterId, contentId } = payload;
 
-    const hasAccess = await this.contentRepository.hasAccessToMedia({
+    const hasAccess = await this.contentRepository.hasAccessToContent({
       userId: requesterId,
-      mediaId: contentId,
+      contentId: contentId,
     });
     if (!hasAccess) {
       throw Exception.new({

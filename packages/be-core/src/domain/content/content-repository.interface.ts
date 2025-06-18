@@ -43,11 +43,14 @@ export interface IContentRepository {
 
   isGroupMember(payload: { userId: string; groupId: string }): Promise<boolean>;
 
-  isMediaOwner(payload: { userId: string; mediaId: string }): Promise<boolean>;
-
-  hasAccessToMedia(payload: {
+  isContentOwner(payload: {
     userId: string;
-    mediaId: string;
+    contentId: string;
+  }): Promise<boolean>;
+
+  hasAccessToContent(payload: {
+    userId: string;
+    contentId: string;
   }): Promise<boolean>;
 
   createMediaUploadUrls(payload: {
