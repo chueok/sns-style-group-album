@@ -32,4 +32,6 @@ export interface IUserRepository {
   deleteUser(userId: string): Promise<void>;
 
   createProfileImageUploadUrl(userId: string): Promise<string>;
+
+  deleteProfileImage(userId: string): Promise<void>;
 }

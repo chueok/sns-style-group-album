@@ -47,7 +47,6 @@ export const useAuth = () => {
   const { mutateAsync: generateProfileImageUploadUrlMutation } =
     trpc.user.generateProfileImageUploadUrl.useMutation({});
 
-  // TODO: profile 수정만이 아니라, 삭제도 구현 필요함
   const editProfileImage = async (file: File) => {
     if (!user) {
       return;
@@ -71,10 +70,24 @@ export const useAuth = () => {
       throw new Error('Failed to upload profile image');
     }
 
-    utils.user.getMe.invalidate();
+    await utils.user.getMe.invalidate();
 
     return;
   };
 
-  return { user, logout, editUsername, editProfileImage };
+  const { mutateAsync: deleteProfileImageMutation } =
+    trpc.user.deleteProfileImage.useMutation({
+      onSuccess: () => {
+        utils.user.getMe.invalidate();
+      },
+    });
+
+  const deleteProfileImage = async () => {
+    if (!user) {
+      return;
+    }
+    return deleteProfileImageMutation();
+  };
+
+  return { user, logout, editUsername, editProfileImage, deleteProfileImage };
 };

@@ -20,7 +20,7 @@ import { useDialog } from '../dialog-provider';
 const useInitialUsernameSetting = () => {
   const { user } = useAuth();
 
-  const dialog = useDialog();
+  const dialog = useDialog(); // TODO: useDialog 사용하지 않도록 변경 필요
 
   const openInitialUsernameDialog = () =>
     dialog.open(

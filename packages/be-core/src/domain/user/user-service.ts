@@ -150,4 +150,9 @@ export class UserService {
       await this.userRepository.createProfileImageUploadUrl(requesterId);
     return url;
   }
+
+  async deleteProfileImage(payload: { requesterId: string }): Promise<void> {
+    const { requesterId } = payload;
+    await this.userRepository.deleteProfileImage(requesterId);
+  }
 }

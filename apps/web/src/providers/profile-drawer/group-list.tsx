@@ -2,8 +2,13 @@
 
 import { Button } from '@repo/ui/button';
 import { Check, Files, Plus, Users } from 'lucide-react';
-import { useDialog } from '../dialog-provider';
-import { DialogFooter } from '@repo/ui/dialog';
+import {
+  Dialog,
+  DialogClose,
+  DialogDescription,
+  DialogFooter,
+  DialogTrigger,
+} from '@repo/ui/dialog';
 import { FormMessage } from '@repo/ui/form';
 import { FormControl, FormItem } from '@repo/ui/form';
 import { FormField } from '@repo/ui/form';
@@ -18,17 +23,18 @@ import { useForm } from 'react-hook-form';
 import { useCreateGroup } from '@/trpc/hooks/group/use-create-group';
 import { useGroupList } from '@/trpc/hooks/group/use-group-list';
 import { useGroupStore } from '@/store/group-store';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Label } from '@repo/ui/label';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 const createGroupFormSchema = z.object({
   name: z.string().min(1, '최소 1자 이상 입력해주세요.'),
 });
 
-const GroupCreationFlowDialog = ({ close }: { close: () => void }) => {
+const GroupCreationFlowDialog = () => {
   const [isCreated, setIsCreated] = useState(false);
   const [groupName, setGroupName] = useState('');
-  const [inviteLink, setInviteLink] = useState('example-urlssssdf');
+  const [inviteLink, setInviteLink] = useState('example-urlssssdf'); // TODO: 실제 invite link 구현 필요
   const [isCopied, setIsCopied] = useState(false);
 
   const form = useForm<z.infer<typeof createGroupFormSchema>>({
@@ -54,76 +60,98 @@ const GroupCreationFlowDialog = ({ close }: { close: () => void }) => {
     }, 2000);
   };
 
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    setIsCreated(false);
+    setGroupName('');
+    // setInviteLink('');
+    setIsCopied(false);
+    form.reset();
+  }, [isOpen]);
+
   return (
-    <DialogContent className="!tw-max-w-[300px] sm:!tw-max-w-sm">
-      {!isCreated ? (
-        <>
-          <DialogHeader>
-            <DialogTitle>그룹 이름을 정해주세요.</DialogTitle>
-          </DialogHeader>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="tw-space-y-4"
-            >
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter className="sm:tw-justify-start">
-                <Button type="submit">확인</Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </>
-      ) : (
-        <>
-          <DialogHeader>
-            <DialogTitle>{groupName}</DialogTitle>
-          </DialogHeader>
-          <div className="tw-w-full tw-space-y-2">
-            <Label htmlFor="group-invite-link">그룹 초대 링크</Label>
-            <div className="tw-relative">
-              <Input id="group-invite-link" value={inviteLink} disabled />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="tw-w-8 tw-h-8 tw-rounded-full tw-absolute tw-right-1 tw-top-[calc(50%-16px)]"
-                onClick={handleCopyButtonClick}
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="tw-h-6 tw-w-6 tw-ml-auto"
+        >
+          <Plus className="tw-h-3 tw-w-3" />
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="!tw-max-w-[300px] sm:!tw-max-w-sm">
+        {!isCreated ? (
+          <>
+            <DialogHeader>
+              <DialogTitle>그룹 이름을 정해주세요.</DialogTitle>
+              <VisuallyHidden>
+                <DialogDescription>
+                  Make a group name to invite your friends.
+                </DialogDescription>
+              </VisuallyHidden>
+            </DialogHeader>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="tw-space-y-4"
               >
-                {isCopied ? (
-                  <Check className="tw-h-4 tw-w-4 tw-text-muted-foreground" />
-                ) : (
-                  <Files className="tw-h-4 tw-w-4 tw-text-muted-foreground" />
-                )}
-              </Button>
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <DialogFooter className="sm:tw-justify-start">
+                  <Button type="submit">확인</Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>{groupName}</DialogTitle>
+            </DialogHeader>
+            <div className="tw-w-full tw-space-y-2">
+              <Label htmlFor="group-invite-link">그룹 초대 링크</Label>
+              <div className="tw-relative">
+                <Input id="group-invite-link" value={inviteLink} disabled />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="tw-w-8 tw-h-8 tw-rounded-full tw-absolute tw-right-1 tw-top-[calc(50%-16px)]"
+                  onClick={handleCopyButtonClick}
+                >
+                  {isCopied ? (
+                    <Check className="tw-h-4 tw-w-4 tw-text-muted-foreground" />
+                  ) : (
+                    <Files className="tw-h-4 tw-w-4 tw-text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
             </div>
-          </div>
-          <DialogFooter className="sm:tw-justify-start">
-            <Button onClick={close}>확인</Button>
-          </DialogFooter>
-        </>
-      )}
-    </DialogContent>
+            <DialogFooter className="sm:tw-justify-start">
+              <DialogClose asChild>
+                <Button>닫기</Button>
+              </DialogClose>
+            </DialogFooter>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 };
 
 export const GroupList = () => {
-  const dialog = useDialog();
-  const openCreateGroupDialog = () => {
-    dialog.open(({ isOpen, close }) => (
-      <GroupCreationFlowDialog close={close} />
-    ));
-  };
-
   const { groups } = useGroupList();
 
   const { selectedGroupId, setSelectedGroupId } = useGroupStore();
@@ -135,15 +163,7 @@ export const GroupList = () => {
         <span className="tw-text-sm tw-font-medium tw-text-muted-foreground">
           그룹 목록
         </span>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="tw-h-6 tw-w-6 tw-ml-auto"
-          onClick={openCreateGroupDialog}
-          // ref={ref}
-        >
-          <Plus className="tw-h-3 tw-w-3" />
-        </Button>
+        <GroupCreationFlowDialog />
       </div>
       <div className="tw-ml-2">
         {groups.map((group) => {

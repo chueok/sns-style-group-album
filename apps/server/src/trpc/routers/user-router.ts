@@ -104,4 +104,13 @@ export const userRouter = router({
 
       return { url };
     }),
+
+  deleteProfileImage: authProcedure.mutation(async ({ ctx }) => {
+    const { user: jwtUser } = ctx;
+    const { userService } = ctx.userDomain;
+
+    await userService.deleteProfileImage({ requesterId: jwtUser.id });
+
+    return;
+  }),
 });

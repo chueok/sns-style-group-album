@@ -28,6 +28,10 @@ export class MinioObjectStorage implements IObjectStoragePort {
     }
   }
 
+  async deleteObject(bucketName: string, key: string): Promise<void> {
+    await this.client.removeObject(bucketName, key);
+  }
+
   private async clearAllBuckets(): Promise<void> {
     if (ServerConfig.NODE_ENV !== 'development') {
       process.exit(1);

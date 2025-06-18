@@ -11,4 +11,5 @@ export interface IObjectStoragePort {
     expiresInSeconds?: number
   ): Promise<string>;
   getPublicUrlForDownload(bucketName: string, key: string): Promise<string>;
+  deleteObject(bucketName: string, key: string): Promise<void>;
 }

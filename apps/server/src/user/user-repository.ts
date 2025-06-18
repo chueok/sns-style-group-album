@@ -9,7 +9,7 @@ import {
   TUser,
   UserId,
 } from '@repo/be-core';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, IsNull, Repository } from 'typeorm';
 import {
   isTypeormUserWith,
   TypeormUser,
@@ -44,9 +44,34 @@ export class TypeormUserRepository implements IUserRepository {
       TypeormUserGroupProfile
     );
 
-    this.bucketName = ServerConfig.OBJECT_STORAGE_PUBLIC_BUCKET;
+    this.bucketName = ServerConfig.OBJECT_STORAGE_MEDIA_BUCKET;
 
     this.logger = logger || new Logger(TypeormUserRepository.name);
+  }
+  async deleteProfileImage(userId: string): Promise<void> {
+    const user = await this.typeormUserRepository.findOne({
+      where: {
+        id: userId as UserId,
+        deletedDateTime: IsNull(),
+      },
+    });
+
+    if (!user) {
+      throw Exception.new({
+        code: Code.ENTITY_NOT_FOUND_ERROR,
+        overrideMessage: 'User not found',
+      });
+    }
+
+    if (user.profileImageUrl) {
+      await this.objectStorage.deleteObject(
+        this.bucketName,
+        user.profileImageUrl
+      );
+      await this.typeormUserRepository.update(userId, {
+        profileImageUrl: null,
+      });
+    }
   }
 
   private async resolveSignedUrl(entity: TypeormUser): Promise<TypeormUser> {
