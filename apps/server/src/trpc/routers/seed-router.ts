@@ -8,11 +8,11 @@ import { IsNull } from 'typeorm';
 import { TypeormOauth } from '../../infrastructure/persistence/typeorm/entity/oauth/typeorm-oauth.entity';
 import { EContentCategory, GroupId, UserId } from '@repo/be-core';
 import { TypeormGroup } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
-import { v4 } from 'uuid';
+import { v4, v6 } from 'uuid';
 import * as fs from 'fs';
 import * as path from 'path';
-import { TypeormMedia } from '../../infrastructure/persistence/typeorm/entity/media/typeorm-media.entity';
 import { ServerConfig } from '../../config/server-config';
+import { TypeormMedia } from '../../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
 
 const getSeedContext = (ctx): ReturnType<typeof createSeedInnerContext> => {
   return ctx.seed;
@@ -373,12 +373,15 @@ export const seedRouter = router({
           path.join(process.cwd(), 'seed-data/random-img-1000', file)
         );
 
-      console.log(filePaths);
-
       // 현재 시간으로부터 30일 전까지의 랜덤한 날짜 생성
       const endDate = new Date();
       const startDate = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000); // 30일 전
 
+      const dateList = filePaths
+        .map(() => generateRandomDate(startDate, endDate))
+        .sort((a, b) => a.getTime() - b.getTime()); // 오름차순 정렬
+
+      let i = 0;
       for (const filePath of filePaths) {
         // 파일 정보 가져오기
         const stats = fs.statSync(filePath);
@@ -392,7 +395,7 @@ export const seedRouter = router({
         const originalRelativePath = `seed/${fileName}`;
 
         const newMedia = mediaRepository.create({
-          id: v4(),
+          id: v6(),
           category,
           originalRelativePath,
           size: stats.size,
@@ -400,7 +403,7 @@ export const seedRouter = router({
           mimeType,
           ownerId,
           groupId,
-          createdDateTime: generateRandomDate(startDate, endDate),
+          createdDateTime: dateList[i],
         });
 
         await mediaRepository.save(newMedia);
@@ -410,6 +413,8 @@ export const seedRouter = router({
           originalRelativePath,
           filePath
         );
+
+        i++;
       }
     }),
 });

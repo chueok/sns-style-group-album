@@ -13,7 +13,7 @@ import { TypeormComment } from '../infrastructure/persistence/typeorm/entity/com
 import { CommentMapper } from './mapper/comment-mapper';
 import { Logger, LoggerService, Optional } from '@nestjs/common';
 import { v6 } from 'uuid';
-import { TypeormMedia } from '../infrastructure/persistence/typeorm/entity/media/typeorm-media.entity';
+import { TypeormMedia } from '../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
 
 export class TypeormCommentRepository implements ICommentRepository {
   private readonly commentRepository: Repository<TypeormComment>;

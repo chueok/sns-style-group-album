@@ -7,7 +7,7 @@ import {
   TImage,
   SMedia,
 } from '@repo/be-core';
-import { TypeormMedia } from '../../infrastructure/persistence/typeorm/entity/media/typeorm-media.entity';
+import { TypeormMedia } from '../../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
 
 export class MediaMapper {
   public static toDomainEntity(payload: TypeormMedia): TMedia {

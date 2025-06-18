@@ -22,7 +22,6 @@ import { TypeormUser } from '../user/typeorm-user.entity';
 import { TypeormLike } from '../like/typeorm-like.entity';
 import { TableAlias } from '../table-alias';
 
-// NOTE: deprecated
 @Entity(TableAlias.CONTENT)
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
 export class TypeormContent {
@@ -30,7 +29,7 @@ export class TypeormContent {
   id!: ContentId;
 
   @Column({ type: 'varchar', nullable: false })
-  contentCategory!: EContentCategory;
+  category!: EContentCategory;
 
   @Column({ type: 'text', nullable: true })
   thumbnailRelativePath!: Nullable<string>;
@@ -82,7 +81,7 @@ export class TypeormContent {
 
 @ChildEntity()
 export class TypeormSystemContent extends TypeormContent {
-  override contentCategory: EContentCategory.SYSTEM = EContentCategory.SYSTEM;
+  override category: EContentCategory.SYSTEM = EContentCategory.SYSTEM;
 
   @Column()
   text!: string;
@@ -93,7 +92,7 @@ export class TypeormSystemContent extends TypeormContent {
 
 @ChildEntity()
 export class TypeormMedia extends TypeormContent {
-  override contentCategory!: EContentCategory.IMAGE | EContentCategory.VIDEO;
+  override category!: EContentCategory.IMAGE | EContentCategory.VIDEO;
   override referred!: Promise<never[]>; // empty array
 
   @Column({ type: 'text' })
@@ -112,7 +111,7 @@ export class TypeormMedia extends TypeormContent {
 
 @ChildEntity()
 export class TypeormPost extends TypeormContent {
-  override contentCategory = EContentCategory.POST;
+  override category = EContentCategory.POST;
   @Column()
   title!: string;
   @Column()
@@ -121,7 +120,7 @@ export class TypeormPost extends TypeormContent {
 
 @ChildEntity()
 export class TypeormBucket extends TypeormContent {
-  override contentCategory = EContentCategory.BUCKET;
+  override category = EContentCategory.BUCKET;
   @Column()
   title!: string;
   @Column({ type: 'varchar' })
@@ -130,7 +129,7 @@ export class TypeormBucket extends TypeormContent {
 
 @ChildEntity()
 export class TypeormSchedule extends TypeormContent {
-  override contentCategory = EContentCategory.SCHEDULE;
+  override category = EContentCategory.SCHEDULE;
   @Column()
   title!: string;
 
@@ -142,39 +141,4 @@ export class TypeormSchedule extends TypeormContent {
 
   @Column({ type: 'boolean' })
   isAllDay!: boolean;
-}
-
-//
-
-export function isTypeormSystemContent(
-  content: TypeormContent
-): content is TypeormSystemContent {
-  return content.contentCategory === EContentCategory.SYSTEM;
-}
-
-export function isTypeormMediaContent(
-  content: TypeormContent
-): content is TypeormMedia {
-  return (
-    content.contentCategory === EContentCategory.IMAGE ||
-    content.contentCategory === EContentCategory.VIDEO
-  );
-}
-
-export function isTypeormPostContent(
-  content: TypeormContent
-): content is TypeormPost {
-  return content.contentCategory === EContentCategory.POST;
-}
-
-export function isTypeormBucketContent(
-  content: TypeormContent
-): content is TypeormBucket {
-  return content.contentCategory === EContentCategory.BUCKET;
-}
-
-export function isTypeormScheduleContent(
-  content: TypeormContent
-): content is TypeormSchedule {
-  return content.contentCategory === EContentCategory.SCHEDULE;
 }

@@ -10,7 +10,7 @@ import { CommentId, ECommentCategory, Nullable, Optional } from '@repo/be-core';
 import { TypeormUser } from '../user/typeorm-user.entity';
 import { TableAlias } from '../table-alias';
 import { TypeormCommentUserTag } from '../commet-user-tag/typeorm-comment-user-tag.entity';
-import { TypeormMedia } from '../media/typeorm-media.entity';
+import { TypeormContent } from '../content/typeorm-content.entity';
 
 @Entity(TableAlias.COMMENT)
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
@@ -38,14 +38,14 @@ export class TypeormComment {
   tags!: Promise<TypeormCommentUserTag[]>;
   __tags__: Optional<TypeormCommentUserTag[]>;
 
-  @ManyToOne(() => TypeormMedia, {
+  @ManyToOne(() => TypeormContent, {
     nullable: false,
     onDelete: 'CASCADE',
   })
-  content!: Promise<TypeormMedia>;
-  __content__: Optional<TypeormMedia>;
+  content!: Promise<TypeormContent>;
+  __content__: Optional<TypeormContent>;
   @Column()
-  contentId!: TypeormMedia['id'];
+  contentId!: TypeormContent['id'];
 
   // for user comment
   @ManyToOne(() => TypeormUser, {

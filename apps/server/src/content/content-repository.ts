@@ -1,5 +1,6 @@
 import {
   Code,
+  ContentId,
   EContentCategory,
   Exception,
   IContentRepository,
@@ -16,7 +17,10 @@ import { TypeormGroup } from '../infrastructure/persistence/typeorm/entity/group
 import { v4, v6 } from 'uuid';
 import { DiTokens } from '../di/di-tokens';
 import { ServerConfig } from '../config/server-config';
-import { TypeormMedia } from '../infrastructure/persistence/typeorm/entity/media/typeorm-media.entity';
+import {
+  TypeormContent,
+  TypeormMedia,
+} from '../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
 
 const generateKey = (payload: {
   groupId: string;
@@ -30,8 +34,9 @@ export class TypeormContentRepository implements IContentRepository {
   public static commentLimit = 5;
   public static likeLimit = 5;
 
-  private readonly typeormMediaRepository: Repository<TypeormMedia>;
   private readonly typeormGroupRepository: Repository<TypeormGroup>;
+  private readonly typeormContentRepository: Repository<TypeormContent>;
+  private readonly typeormMediaContentRepository: Repository<TypeormMedia>;
 
   private readonly bucketName: string;
 
@@ -43,8 +48,9 @@ export class TypeormContentRepository implements IContentRepository {
     private readonly mediaObjectStorage: IObjectStoragePort,
     @Optional() logger?: LoggerService
   ) {
-    this.typeormMediaRepository = dataSource.getRepository(TypeormMedia);
     this.typeormGroupRepository = dataSource.getRepository(TypeormGroup);
+    this.typeormMediaContentRepository = dataSource.getRepository(TypeormMedia);
+    this.typeormContentRepository = dataSource.getRepository(TypeormContent);
 
     this.bucketName = ServerConfig.OBJECT_STORAGE_MEDIA_BUCKET;
 
@@ -52,9 +58,9 @@ export class TypeormContentRepository implements IContentRepository {
   }
 
   async findMediaById(id: string): Promise<TMedia> {
-    const result = await this.typeormMediaRepository.findOne({
+    const result = await this.typeormMediaContentRepository.findOne({
       where: {
-        id,
+        id: id as ContentId,
       },
     });
     if (!result) {
@@ -68,14 +74,15 @@ export class TypeormContentRepository implements IContentRepository {
 
     return MediaMapper.toDomainEntity(resolved);
   }
+
   async isMediaOwner(payload: {
     userId: string;
     mediaId: string;
   }): Promise<boolean> {
-    const result = await this.typeormMediaRepository.count({
+    const result = await this.typeormContentRepository.count({
       where: {
         ownerId: payload.userId as UserId,
-        id: payload.mediaId,
+        id: payload.mediaId as ContentId,
       },
     });
     return result > 0;
@@ -84,9 +91,9 @@ export class TypeormContentRepository implements IContentRepository {
     userId: string;
     mediaId: string;
   }): Promise<boolean> {
-    const result = await this.typeormMediaRepository.count({
+    const result = await this.typeormContentRepository.count({
       where: {
-        id: payload.mediaId,
+        id: payload.mediaId as ContentId,
         group: {
           members: { id: payload.userId as UserId },
         },
@@ -173,9 +180,10 @@ export class TypeormContentRepository implements IContentRepository {
           });
         }
 
-        const newMedia = this.typeormMediaRepository.create({
+        const newMedia = this.typeormMediaContentRepository.create({
           id: v6(),
           category,
+          thumbnailRelativePath: key, // TODO: 썸네일 생성 필요.
           originalRelativePath: key,
           size,
           ext,
@@ -185,7 +193,7 @@ export class TypeormContentRepository implements IContentRepository {
           createdDateTime: new Date(),
         });
 
-        await this.typeormMediaRepository.save(newMedia);
+        await this.typeormMediaContentRepository.save(newMedia);
 
         const url = await this.mediaObjectStorage.getPresignedUrlForUpload(
           this.bucketName,
@@ -205,7 +213,7 @@ export class TypeormContentRepository implements IContentRepository {
   }): Promise<TMediaPaginationResult<TMedia>> {
     const { groupId, pagination } = payload;
 
-    const queryBuilder = this.typeormMediaRepository
+    const queryBuilder = this.typeormMediaContentRepository
       .createQueryBuilder('content')
       .leftJoin('content.group', 'group')
       .where('group.id = :groupId', { groupId })
