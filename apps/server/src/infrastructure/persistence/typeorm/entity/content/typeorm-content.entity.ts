@@ -22,6 +22,7 @@ import { TypeormUser } from '../user/typeorm-user.entity';
 import { TypeormLike } from '../like/typeorm-like.entity';
 import { TableAlias } from '../table-alias';
 
+// NOTE: deprecated
 @Entity(TableAlias.CONTENT)
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
 export class TypeormContent {

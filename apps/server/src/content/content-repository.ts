@@ -10,9 +10,6 @@ import {
   UserId,
 } from '@repo/be-core';
 import { DataSource, Repository } from 'typeorm';
-import { TypeormContent } from '../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
-import { TypeormComment } from '../infrastructure/persistence/typeorm/entity/comment/typeorm-comment.entity';
-import { TypeormLike } from '../infrastructure/persistence/typeorm/entity/like/typeorm-like.entity';
 import { MediaMapper } from './mapper/content-mapper';
 import { Inject, Logger, LoggerService, Optional } from '@nestjs/common';
 import { TypeormGroup } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
@@ -33,10 +30,7 @@ export class TypeormContentRepository implements IContentRepository {
   public static commentLimit = 5;
   public static likeLimit = 5;
 
-  private readonly typeormContentRepository: Repository<TypeormContent>;
   private readonly typeormMediaRepository: Repository<TypeormMedia>;
-  private readonly typeormCommentRepository: Repository<TypeormComment>;
-  private readonly typeormLikeRepository: Repository<TypeormLike>;
   private readonly typeormGroupRepository: Repository<TypeormGroup>;
 
   private readonly bucketName: string;
@@ -49,10 +43,7 @@ export class TypeormContentRepository implements IContentRepository {
     private readonly mediaObjectStorage: IObjectStoragePort,
     @Optional() logger?: LoggerService
   ) {
-    this.typeormContentRepository = dataSource.getRepository(TypeormContent);
     this.typeormMediaRepository = dataSource.getRepository(TypeormMedia);
-    this.typeormCommentRepository = dataSource.getRepository(TypeormComment);
-    this.typeormLikeRepository = dataSource.getRepository(TypeormLike);
     this.typeormGroupRepository = dataSource.getRepository(TypeormGroup);
 
     this.bucketName = ServerConfig.OBJECT_STORAGE_MEDIA_BUCKET;
@@ -104,6 +95,9 @@ export class TypeormContentRepository implements IContentRepository {
     return result > 0;
   }
 
+  /**
+   * Typeorm Media entity의 url을 signed url로 변경
+   */
   private async resolveSignedUrl(entity: TypeormMedia): Promise<TypeormMedia> {
     if (entity.originalRelativePath) {
       entity.originalRelativePath =

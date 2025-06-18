@@ -1,8 +1,9 @@
-import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
 import { TableAlias } from '../table-alias';
 import { EContentCategory, Nullable, Optional } from '@repo/be-core';
 import { TypeormGroup } from '../group/typeorm-group.entity';
 import { TypeormUser } from '../user/typeorm-user.entity';
+import { TypeormLike } from '../like/typeorm-like.entity';
 
 @Entity(TableAlias.MEDIA)
 export class TypeormMedia {
@@ -52,4 +53,8 @@ export class TypeormMedia {
   __owner__: Optional<TypeormUser>;
   @Column()
   ownerId!: TypeormUser['id'];
+
+  @OneToMany(() => TypeormLike, (like) => like.content)
+  likes!: Promise<TypeormLike[]>;
+  __likes__: Optional<TypeormLike[]>;
 }
