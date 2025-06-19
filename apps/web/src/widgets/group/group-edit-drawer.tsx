@@ -102,7 +102,7 @@ export const EditGroupDrawer = () => {
                 <DrawerClose onClick={() => setIsOpen(false)}>
                   <ChevronLeft className="tw-h-6 tw-w-6 tw-text-muted-foreground" />
                 </DrawerClose>
-                <DrawerTitle>{group.name}</DrawerTitle>
+                <DrawerTitle>{group.name} 상세정보</DrawerTitle>
                 <ChevronLeft className="tw-h-6 tw-w-6 tw-invisible" />
               </div>
             </DrawerHeader>
