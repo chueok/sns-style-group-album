@@ -3,9 +3,6 @@ import { useInvitationCode } from '@/trpc/hooks/group/use-invitation-link';
 import { getFrontendUrl } from '@/utils';
 import { Button } from '@repo/ui/button';
 import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -16,6 +13,7 @@ import { Label } from '@repo/ui/label';
 import { Check, Files } from 'lucide-react';
 import { useState } from 'react';
 
+// TODO: 공유 버튼 눌렀을 때 액션하도록 구현 필요
 export const GroupInvitationDialogContent = ({
   groupId,
 }: {
@@ -59,9 +57,12 @@ export const GroupInvitationDialogContent = ({
           </Button>
         </div>
       </div>
-      <DialogFooter className="sm:tw-justify-start">
+      <DialogFooter className="!tw-flex !tw-flex-row-reverse tw-gap-2">
+        <Button className="tw-w-full">공유</Button>
         <DialogClose asChild>
-          <Button>닫기</Button>
+          <Button variant="outline" className="tw-w-full">
+            닫기
+          </Button>
         </DialogClose>
       </DialogFooter>
     </>

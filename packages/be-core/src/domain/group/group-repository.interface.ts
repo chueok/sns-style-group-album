@@ -66,6 +66,7 @@ export interface IGroupRepository {
    ****************************************************/
   generateInvitationCode(groupId: string): Promise<string>;
 
+  // invitation code가 없을 경우 생성하고 반환
   getInvitationCode(groupId: string): Promise<string>;
 
   deleteInvitationCode(groupId: string): Promise<boolean>;
@@ -74,11 +75,9 @@ export interface IGroupRepository {
 
   isJoinRequestUser(groupId: string, userId: string): Promise<boolean>;
 
-  /**
-   * 첫번째 파라미터로 groupId 가 아닌 code를 받고 있음.
-   * 도메인 친화적으로 repository interface 설계하였음.
-   */
-  addJoinRequestUsers(code: string, userIdList: string[]): Promise<boolean>;
+  findGroupByInvitationCode(code: string): Promise<Nullable<TGroup>>;
+
+  addJoinRequestUsers(groupId: string, userIdList: string[]): Promise<boolean>;
 
   deleteJoinRequestUsers(
     groupId: string,

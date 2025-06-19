@@ -164,10 +164,27 @@ export class GroupService {
     invitationCode: string;
   }): Promise<void> {
     const { requesterId, invitationCode } = payload;
-    const result = await this.groupRepository.addJoinRequestUsers(
-      invitationCode,
-      [requesterId]
-    );
+
+    const group =
+      await this.groupRepository.findGroupByInvitationCode(invitationCode);
+    if (!group) {
+      throw Exception.new({
+        code: Code.ENTITY_NOT_FOUND_ERROR,
+        overrideMessage: 'Group not found',
+      });
+    }
+
+    const isMember = await this.groupRepository.isMember(group.id, requesterId);
+    if (isMember) {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: 'requester already member',
+      });
+    }
+
+    const result = await this.groupRepository.addJoinRequestUsers(group.id, [
+      requesterId,
+    ]);
     if (!result) {
       throw Exception.new({
         code: Code.INTERNAL_ERROR,

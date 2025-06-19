@@ -27,6 +27,19 @@ export class TypeormGroupRepository implements IGroupRepository {
     this.logger = logger || new Logger(TypeormGroupRepository.name);
   }
 
+  async findGroupByInvitationCode(code: string): Promise<Nullable<TGroup>> {
+    const ormGroup = await this.typeormGroupRepository.findOne({
+      where: { invitationCode: code },
+    });
+
+    if (!ormGroup) {
+      return null;
+    }
+
+    const domainGroup = GroupMapper.toDomainEntity(ormGroup);
+    return domainGroup;
+  }
+
   async findMembers(
     groupId: string,
     pagination: TGroupsPaginationParams
@@ -194,11 +207,11 @@ export class TypeormGroupRepository implements IGroupRepository {
   }
 
   async addJoinRequestUsers(
-    code: string,
+    groupId: string,
     userIdList: string[]
   ): Promise<boolean> {
     const group = await this.typeormGroupRepository.findOne({
-      where: { invitationCode: code },
+      where: { id: groupId as GroupId },
       select: ['id'],
     });
     if (!group) {
