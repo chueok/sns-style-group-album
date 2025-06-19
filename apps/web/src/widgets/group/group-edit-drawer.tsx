@@ -15,7 +15,7 @@ import {
 } from '@repo/ui/drawer';
 import { Separator } from '@repo/ui/separator';
 import { Switch } from '@repo/ui/switch';
-import { Bell, Cake, ChevronLeft, Info, Users } from 'lucide-react';
+import { Bell, Cake, ChevronLeft, Crown, Info, Users } from 'lucide-react';
 import { useState } from 'react';
 import { GroupNameEditDialog } from './group-name-edit-dialog';
 import { GroupInvitationDialog } from './group-invitation-dialog';
@@ -28,17 +28,24 @@ const ErrorComponent = () => {
 const MemberItemComponent = ({
   username,
   profileImageUrl,
+  isOwner,
 }: {
   id: string;
   username: string;
   profileImageUrl?: string;
+  isOwner: boolean;
 }) => {
   return (
     <div className="tw-flex tw-flex-row tw-items-center tw-gap-4">
-      <Avatar className="tw-h-8 tw-w-8">
-        <AvatarImage src={profileImageUrl} />
-        <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
-      </Avatar>
+      <div className="tw-relative">
+        <Avatar className="tw-h-8 tw-w-8">
+          <AvatarImage src={profileImageUrl} />
+          <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
+        </Avatar>
+        {isOwner && (
+          <Crown className="tw-absolute tw-bottom-0 tw-right-0 tw-h-4 tw-w-4 tw-text-yellow-500 tw-fill-yellow-500" />
+        )}
+      </div>
       <span>{username}</span>
     </div>
   );
@@ -142,16 +149,20 @@ export const EditGroupDrawer = () => {
               <Card className="tw-mx-4 tw-py-2">
                 <CardContent className="tw-flex tw-flex-col tw-gap-2 tw-py-0">
                   <GroupInvitationDialog groupId={group.id} />
-                  {memberProfiles.map((memberProfile) => (
-                    <MemberItemComponent
-                      key={memberProfile.id}
-                      id={memberProfile.id}
-                      username={memberProfile.username}
-                      profileImageUrl={
-                        memberProfile.profileImageUrl || undefined
-                      }
-                    />
-                  ))}
+                  {memberProfiles.map((memberProfile) => {
+                    const isOwner = memberProfile.id === group.ownerId;
+                    return (
+                      <MemberItemComponent
+                        key={memberProfile.id}
+                        id={memberProfile.id}
+                        username={memberProfile.username}
+                        profileImageUrl={
+                          memberProfile.profileImageUrl || undefined
+                        }
+                        isOwner={isOwner}
+                      />
+                    );
+                  })}
                 </CardContent>
               </Card>
             </div>
