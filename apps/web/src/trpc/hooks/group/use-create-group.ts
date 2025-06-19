@@ -4,8 +4,9 @@ export const useCreateGroup = () => {
   const utils = trpc.useUtils();
   const { mutateAsync: createGroupMutation } =
     trpc.group.createGroup.useMutation({
-      onSuccess: () => {
+      onSuccess: (data) => {
         utils.group.getMyMemberGroups.invalidate();
+        utils.group.getGroup.setData({ groupId: data.id }, data);
       },
     });
 

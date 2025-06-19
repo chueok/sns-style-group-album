@@ -1,5 +1,6 @@
 import {
   Dialog,
+  DialogClose,
   DialogDescription,
   DialogFooter,
   DialogTrigger,
@@ -20,7 +21,7 @@ import { useAuth } from '@/trpc/hooks/auth/use-auth';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { useChangeGroupName } from '@/trpc/hooks/group/use-change-group-name';
 import { Loader2, Pen } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const groupnameFormSchema = z.object({
   groupname: z.string().min(1, '최소 1자 이상 입력해주세요.'),
@@ -52,6 +53,10 @@ export const GroupNameEditDialog = (payload: { groupId: string }) => {
 
   const [isOpen, setIsOpen] = useState(false);
 
+  useEffect(() => {
+    form.reset();
+  }, [isOpen]);
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -65,7 +70,7 @@ export const GroupNameEditDialog = (payload: { groupId: string }) => {
           </span>
         </Button>
       </DialogTrigger>
-      <DialogContent pinned className="tw-w-[300px] sm:tw-w-[448px]">
+      <DialogContent pinned className="!tw-max-w-[300px] sm:!tw-max-w-sm">
         <DialogHeader>
           <DialogTitle>그룹명 변경</DialogTitle>
           <VisuallyHidden>
@@ -86,7 +91,10 @@ export const GroupNameEditDialog = (payload: { groupId: string }) => {
                 </FormItem>
               )}
             />
-            <DialogFooter className="sm:tw-justify-start">
+            <DialogFooter className="sm:tw-justify-start tw-gap-2">
+              <DialogClose asChild>
+                <Button variant="outline">취소</Button>
+              </DialogClose>
               <Button type="submit" disabled={isPending}>
                 확인
                 {isPending && <Loader2 className="tw-h-4 tw-w-4 tw-ml-2" />}

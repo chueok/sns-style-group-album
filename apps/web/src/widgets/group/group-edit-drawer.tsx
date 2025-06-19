@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { GroupNameEditDialog } from './group-name-edit-dialog';
+import { GroupInvitationDialog } from './group-invitation-dialog';
 
 const ErrorComponent = () => {
   return <div>Error</div>;
@@ -107,7 +108,7 @@ export const EditGroupDrawer = () => {
               </div>
             </DrawerHeader>
             <Separator />
-            <div className="tw-flex tw-flex-row tw-items-center tw-justify-between tw-gap-2 tw-p-4">
+            <div className="tw-flex tw-flex-row tw-items-center tw-justify-between tw-gap-2 tw-px-4 tw-py-2">
               <div className="tw-flex tw-flex-row tw-gap-2">
                 <Cake className="tw-h-4 tw-w-4 tw-text-muted-foreground" />
                 <span className="tw-text-sm tw-font-medium tw-text-muted-foreground">
@@ -140,7 +141,7 @@ export const EditGroupDrawer = () => {
             </Button>
             {isOwner && <GroupNameEditDialog groupId={group.id} />}
             <div>
-              <div className="tw-flex tw-flex-row tw-items-center tw-justify-start tw-gap-2 tw-p-4">
+              <div className="tw-flex tw-flex-row tw-items-center tw-justify-start tw-gap-2 tw-px-4 tw-py-2">
                 <Users className="tw-h-4 tw-w-4 tw-text-muted-foreground" />
                 <span className="tw-text-sm tw-font-medium tw-text-muted-foreground">
                   그룹 멤버
@@ -148,15 +149,7 @@ export const EditGroupDrawer = () => {
               </div>
               <Card className="tw-mx-4 tw-py-2">
                 <CardContent className="tw-flex tw-flex-col tw-gap-2 tw-py-0">
-                  <Button
-                    variant="ghost"
-                    className="tw-w-full !tw-justify-start tw-gap-4 !tw-p-0 tw-h-8"
-                  >
-                    <UserRoundPlus className="tw-h-8 tw-w-8 tw-p-1 tw-text-muted-foreground" />
-                    <span className="tw-text-sm tw-font-medium tw-text-muted-foreground">
-                      친구 초대하기
-                    </span>
-                  </Button>
+                  <GroupInvitationDialog groupId={group.id} />
                   {memberProfiles.map((memberProfile) => (
                     <MemberItemComponent
                       key={memberProfile.id}

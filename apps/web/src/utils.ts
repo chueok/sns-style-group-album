@@ -9,3 +9,15 @@ export const getBackendUrl = (): string => {
 
   return backendServerUri;
 };
+
+export const getFrontendUrl = (): string => {
+  const frontendServerUri = process.env.NEXT_PUBLIC_FRONTEND_URL;
+
+  if (typeof frontendServerUri !== 'string') {
+    throw new Error(
+      'environment variable "NEXT_PUBLIC_FRONTEND_URL" is not set'
+    );
+  }
+
+  return frontendServerUri;
+};
