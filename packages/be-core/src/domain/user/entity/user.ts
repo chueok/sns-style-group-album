@@ -7,8 +7,8 @@ export const SUser = z.object({
   username: z.string(),
   email: z.string().email().nullable(),
   profileImageUrl: z.string().nullable(),
-  groupProfiles: z.array(SGroupProfile),
-  invitedGroupList: z.array(SSimpleGroupInfo),
+  groupProfiles: z.array(SGroupProfile), // TODO: groupProfiles 는 추후 필요시 추가 예정으로, 삭제 가능
+  invitedGroupList: z.array(SSimpleGroupInfo), // TODO: invitedGroupList는 별도 관리 예정으로, 삭제 필요
 
   createdDateTime: z.date(),
   updatedDateTime: z.date().nullable(),

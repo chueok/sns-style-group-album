@@ -4,8 +4,8 @@ import {
   Nullable,
   TGroup,
   UserId,
-  TPaginationParams,
-  TPaginatedResult,
+  TGroupsPaginationParams,
+  TGroupsPaginatedResult,
   TGroupMember,
 } from '@repo/be-core';
 import { DataSource, Repository } from 'typeorm';
@@ -13,7 +13,7 @@ import { TypeormGroup } from '../infrastructure/persistence/typeorm/entity/group
 import { Logger, LoggerService, Optional } from '@nestjs/common';
 import { MemberMapper } from './mapper/member-mapper';
 import { TypeormUser } from '../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
-import { v4 } from 'uuid';
+import { v4, v6 } from 'uuid';
 import { GroupMapper } from './mapper/group-mapper';
 
 export class TypeormGroupRepository implements IGroupRepository {
@@ -29,8 +29,10 @@ export class TypeormGroupRepository implements IGroupRepository {
 
   async findMembers(
     groupId: string,
-    pagination?: TPaginationParams
-  ): Promise<TPaginatedResult<TGroupMember>> {
+    pagination: TGroupsPaginationParams
+  ): Promise<TGroupsPaginatedResult<TGroupMember>> {
+    const page = pagination.page ?? 1;
+
     const queryBuilder = this.typeormUserRepository
       .createQueryBuilder('user')
       .innerJoin('user.groups', 'groups', 'groups.id = :groupId', { groupId })
@@ -41,7 +43,7 @@ export class TypeormGroupRepository implements IGroupRepository {
 
     if (pagination) {
       queryBuilder
-        .skip((pagination.page - 1) * pagination.pageSize)
+        .skip((page - 1) * pagination.pageSize)
         .take(pagination.pageSize);
     }
 
@@ -52,9 +54,9 @@ export class TypeormGroupRepository implements IGroupRepository {
     return {
       items: domainMembers,
       total,
-      page: pagination?.page || 1,
-      pageSize: pagination?.pageSize || total,
-      totalPages: pagination ? Math.ceil(total / pagination.pageSize) : 1,
+      page,
+      pageSize: pagination.pageSize,
+      totalPages: Math.ceil(total / pagination.pageSize),
     };
   }
 
@@ -221,7 +223,7 @@ export class TypeormGroupRepository implements IGroupRepository {
     name: string;
   }): Promise<TGroup> {
     const ormEntity = this.typeormGroupRepository.create();
-    ormEntity.id = v4() as GroupId;
+    ormEntity.id = v6() as GroupId;
     ormEntity.ownerId = payload.ownerId as UserId;
     ormEntity.name = payload.name;
 
@@ -288,10 +290,13 @@ export class TypeormGroupRepository implements IGroupRepository {
     return domainGroup;
   }
 
-  async findGroupsByOwnerId(
-    ownerId: UserId,
-    pagination?: TPaginationParams
-  ): Promise<TPaginatedResult<TGroup>> {
+  async findGroupsByOwnerId(payload: {
+    ownerId: UserId;
+    pagination: TGroupsPaginationParams;
+  }): Promise<TGroupsPaginatedResult<TGroup>> {
+    const { ownerId, pagination } = payload;
+    const page = pagination.page ?? 1;
+
     const queryBuilder = this.typeormGroupRepository
       .createQueryBuilder('group')
       .where('group.ownerId = :ownerId', { ownerId })
@@ -301,7 +306,7 @@ export class TypeormGroupRepository implements IGroupRepository {
 
     if (pagination) {
       queryBuilder
-        .skip((pagination.page - 1) * pagination.pageSize)
+        .skip((page - 1) * pagination.pageSize)
         .take(pagination.pageSize);
     }
 
@@ -312,29 +317,31 @@ export class TypeormGroupRepository implements IGroupRepository {
     return {
       items: domainGroups,
       total,
-      page: pagination?.page || 1,
-      pageSize: pagination?.pageSize || total,
-      totalPages: pagination ? Math.ceil(total / pagination.pageSize) : 1,
+      page,
+      pageSize: pagination.pageSize,
+      totalPages: Math.ceil(total / pagination.pageSize),
     };
   }
 
-  async findGroupsByMemberId(
-    userId: UserId,
-    pagination?: TPaginationParams
-  ): Promise<TPaginatedResult<TGroup>> {
+  async findGroupsByMemberId(payload: {
+    userId: UserId;
+    pagination: TGroupsPaginationParams;
+  }): Promise<TGroupsPaginatedResult<TGroup>> {
+    const { userId, pagination } = payload;
+    const page = pagination.page ?? 1;
+
     const queryBuilder = this.typeormGroupRepository
       .createQueryBuilder('group')
       .leftJoin('group.members', 'members')
       .where('members.id = :userId', { userId })
-      .andWhere('group.deletedDateTime is null');
+      .andWhere('group.deletedDateTime is null')
+      .orderBy('group.createdDateTime', 'ASC');
 
     const total = await queryBuilder.getCount();
 
-    if (pagination) {
-      queryBuilder
-        .skip((pagination.page - 1) * pagination.pageSize)
-        .take(pagination.pageSize);
-    }
+    queryBuilder
+      .skip((page - 1) * pagination.pageSize)
+      .take(pagination.pageSize);
 
     const ormGroups = await queryBuilder.getMany();
 
@@ -343,9 +350,9 @@ export class TypeormGroupRepository implements IGroupRepository {
     return {
       items: domainGroups,
       total,
-      page: pagination?.page || 1,
-      pageSize: pagination?.pageSize || total,
-      totalPages: pagination ? Math.ceil(total / pagination.pageSize) : 1,
+      page,
+      pageSize: pagination.pageSize,
+      totalPages: Math.ceil(total / pagination.pageSize),
     };
   }
 }

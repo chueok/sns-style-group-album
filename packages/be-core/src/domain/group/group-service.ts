@@ -3,8 +3,8 @@ import { Exception } from '../../common/exception/exception';
 import { TGroup, TGroupMember } from './entity/group';
 import {
   IGroupRepository,
-  TPaginatedResult,
-  TPaginationParams,
+  TGroupsPaginatedResult,
+  TGroupsPaginationParams,
 } from './group-repository.interface';
 
 export class GroupService {
@@ -89,17 +89,29 @@ export class GroupService {
     }
   }
 
-  async getMyMemberGroups(
-    requesterId: string
-  ): Promise<TPaginatedResult<TGroup>> {
-    const groupList =
-      await this.groupRepository.findGroupsByMemberId(requesterId);
+  async getMyMemberGroups(payload: {
+    requesterId: string;
+    pagination: TGroupsPaginationParams;
+  }): Promise<TGroupsPaginatedResult<TGroup>> {
+    const { requesterId, pagination } = payload;
+
+    const groupList = await this.groupRepository.findGroupsByMemberId({
+      userId: requesterId,
+      pagination,
+    });
     return groupList;
   }
 
-  async getMyOwnGroups(requesterId: string): Promise<TPaginatedResult<TGroup>> {
-    const ownGroupList =
-      await this.groupRepository.findGroupsByOwnerId(requesterId);
+  async getMyOwnGroups(payload: {
+    requesterId: string;
+    pagination: TGroupsPaginationParams;
+  }): Promise<TGroupsPaginatedResult<TGroup>> {
+    const { requesterId, pagination } = payload;
+
+    const ownGroupList = await this.groupRepository.findGroupsByOwnerId({
+      ownerId: requesterId,
+      pagination,
+    });
     return ownGroupList;
   }
 
@@ -233,8 +245,8 @@ export class GroupService {
   async getMemberList(payload: {
     requesterId: string;
     groupId: string;
-    pagination?: TPaginationParams;
-  }): Promise<TPaginatedResult<TGroupMember>> {
+    pagination: TGroupsPaginationParams;
+  }): Promise<TGroupsPaginatedResult<TGroupMember>> {
     const { requesterId, groupId, pagination } = payload;
     const isMember = await this.groupRepository.isMember(groupId, requesterId);
     if (!isMember) {

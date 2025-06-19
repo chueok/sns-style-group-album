@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { authProcedure, router } from '../trpc';
-import { Code, Exception } from '@repo/be-core';
+import { Code, Exception, SMemberPaginationParams } from '@repo/be-core';
 
 export const userRouter = router({
   getMe: authProcedure.query(async ({ ctx }) => {
@@ -58,6 +58,25 @@ export const userRouter = router({
       }
 
       return user;
+    }),
+
+  getMemberProfilesByPagination: authProcedure
+    .input(
+      SMemberPaginationParams.extend({
+        groupId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { user: jwtUser } = ctx;
+      const { userService } = ctx.userDomain;
+
+      const result = await userService.getMemberProfilesByPagination({
+        requesterId: jwtUser.id,
+        groupId: input.groupId,
+        pagination: input,
+      });
+
+      return result;
     }),
 
   deleteUser: authProcedure.mutation(async ({ ctx }) => {

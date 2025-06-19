@@ -6,6 +6,7 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  Info,
 } from 'lucide-react';
 import { ProfileHeader } from './profile-header';
 import { GroupList } from './group-list';
@@ -13,10 +14,10 @@ import { useAuth } from '@/trpc/hooks/auth/use-auth';
 import { DrawerTitle, DrawerDescription } from '@repo/ui/drawer';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { InitialUsernameEditDialog } from '@/widgets/username/initial-username-edit-dialog';
+import { EditGroupDrawer } from '../../widgets/group/group-edit-drawer';
 
 export const ProfileDrawer = () => {
-  const { logout } = useAuth();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const handleSettings = () => {
     console.log('settings');
@@ -45,6 +46,10 @@ export const ProfileDrawer = () => {
           <GroupList />
         </div>
 
+        <Separator />
+
+        {/* Selected Group Detail */}
+        <EditGroupDrawer />
         <Separator />
 
         {/* Invite to Selected Group */}

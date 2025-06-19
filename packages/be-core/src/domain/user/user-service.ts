@@ -2,7 +2,11 @@ import { Code } from '../../common/exception/code';
 import { Exception } from '../../common/exception/exception';
 import { TMemberProfile } from './entity/member-profile';
 import { TUser } from './entity/user';
-import { IUserRepository } from './user-repository.interface';
+import {
+  IUserRepository,
+  TMemberPaginatedResult,
+  TMemberPaginationParams,
+} from './user-repository.interface';
 
 export class UserService {
   constructor(private readonly userRepository: IUserRepository) {}
@@ -60,6 +64,32 @@ export class UserService {
       username: user.username,
       profileImageUrl: user.profileImageUrl,
     }));
+  }
+
+  async getMemberProfilesByPagination(payload: {
+    requesterId: string;
+    groupId: string;
+    pagination: TMemberPaginationParams;
+  }): Promise<TMemberPaginatedResult<TMemberProfile>> {
+    const { requesterId, groupId, pagination } = payload;
+
+    const isUserInGroup = await this.userRepository.isUserInGroup(
+      requesterId,
+      groupId
+    );
+    if (!isUserInGroup) {
+      throw Exception.new({
+        code: Code.UNAUTHORIZED_ERROR,
+        overrideMessage: 'User is not in group',
+      });
+    }
+
+    const result = await this.userRepository.findMemberProfilesByPagination({
+      groupId,
+      pagination,
+    });
+
+    return result;
   }
 
   async deleteUser(id: string): Promise<void> {

@@ -346,7 +346,10 @@ export const seedRouter = router({
         group: { groupRepository },
       } = ctx;
 
-      const group = await groupRepository.findMembers(input.groupId);
+      const group = await groupRepository.findMembers(input.groupId, {
+        page: 1,
+        pageSize: 100,
+      });
       return group.items.map((member) => ({
         id: member.userId,
         username: member.username,

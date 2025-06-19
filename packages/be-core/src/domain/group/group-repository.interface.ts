@@ -1,12 +1,15 @@
 import { Nullable } from '../../common/type/common-types';
 import { TGroup, TGroupMember } from './entity/group';
+import { z } from 'zod';
 
-export type TPaginationParams = {
-  page: number;
-  pageSize: number;
-};
+export const SGroupsPaginationParams = z.object({
+  page: z.number().nullish(),
+  pageSize: z.number(),
+});
 
-export type TPaginatedResult<T> = {
+export type TGroupsPaginationParams = z.infer<typeof SGroupsPaginationParams>;
+
+export type TGroupsPaginatedResult<T> = {
   items: T[];
   total: number;
   page: number;
@@ -29,15 +32,15 @@ export interface IGroupRepository {
 
   findGroupById(groupId: string): Promise<Nullable<TGroup>>;
 
-  findGroupsByOwnerId(
-    ownerId: string,
-    pagination?: TPaginationParams
-  ): Promise<TPaginatedResult<TGroup>>;
+  findGroupsByOwnerId(payload: {
+    ownerId: string;
+    pagination: TGroupsPaginationParams;
+  }): Promise<TGroupsPaginatedResult<TGroup>>;
 
-  findGroupsByMemberId(
-    userId: string,
-    pagination?: TPaginationParams
-  ): Promise<TPaginatedResult<TGroup>>;
+  findGroupsByMemberId(payload: {
+    userId: string;
+    pagination: TGroupsPaginationParams;
+  }): Promise<TGroupsPaginatedResult<TGroup>>;
 
   /****************************************************
    * 멤버 관리를 위한 함수 모음
@@ -48,8 +51,8 @@ export interface IGroupRepository {
 
   findMembers(
     groupId: string,
-    pagination?: TPaginationParams
-  ): Promise<TPaginatedResult<TGroupMember>>;
+    pagination: TGroupsPaginationParams
+  ): Promise<TGroupsPaginatedResult<TGroupMember>>;
 
   /****************************************************
    * 권한 확인을 위한 함수 모음

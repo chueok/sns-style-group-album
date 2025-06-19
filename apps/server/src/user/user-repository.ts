@@ -5,6 +5,8 @@ import {
   IUserRepository,
   Nullable,
   TEditableUser,
+  TMemberPaginatedResult,
+  TMemberPaginationParams,
   TMemberProfile,
   TUser,
   UserId,
@@ -48,6 +50,7 @@ export class TypeormUserRepository implements IUserRepository {
 
     this.logger = logger || new Logger(TypeormUserRepository.name);
   }
+
   async deleteProfileImage(userId: string): Promise<void> {
     const user = await this.typeormUserRepository.findOne({
       where: {
@@ -139,6 +142,42 @@ export class TypeormUserRepository implements IUserRepository {
       username: resolvedUser.username || '',
       profileImageUrl: resolvedUser.profileImageUrl || null,
     }));
+  }
+
+  async findMemberProfilesByPagination(payload: {
+    groupId: string;
+    pagination: TMemberPaginationParams;
+  }): Promise<TMemberPaginatedResult<TMemberProfile>> {
+    const page = payload.pagination.page ?? 1;
+
+    const queryBuilder = this.typeormUserRepository
+      .createQueryBuilder('user')
+      .leftJoin('user.groups', 'groups')
+      .where('groups.id = :groupId', { groupId: payload.groupId })
+      .andWhere('user.deletedDateTime is null')
+      .orderBy('user.username', 'ASC');
+
+    const total = await queryBuilder.getCount();
+
+    queryBuilder
+      .skip((page - 1) * payload.pagination.pageSize)
+      .take(payload.pagination.pageSize);
+
+    const ormUsers = await queryBuilder.getMany();
+
+    const resolved = await this.resolveSignedUrlList(ormUsers);
+
+    return {
+      items: resolved.map((resolvedUser) => ({
+        id: resolvedUser.id,
+        username: resolvedUser.username || '',
+        profileImageUrl: resolvedUser.profileImageUrl || null,
+      })),
+      total,
+      page,
+      pageSize: payload.pagination.pageSize,
+      totalPages: Math.ceil(total / payload.pagination.pageSize),
+    };
   }
 
   async isUserInGroup(userId: string, groupId: string): Promise<boolean> {

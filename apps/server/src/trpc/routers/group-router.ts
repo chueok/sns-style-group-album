@@ -1,5 +1,6 @@
 import z from 'zod';
 import { authProcedure, router } from '../trpc';
+import { SGroup, SGroupsPaginationParams } from '@repo/be-core';
 
 export const groupRouter = router({
   createGroup: authProcedure
@@ -60,26 +61,37 @@ export const groupRouter = router({
       });
     }),
 
-  getMyMemberGroups: authProcedure.query(async ({ ctx }) => {
-    const {
-      user,
-      group: { groupService },
-    } = ctx;
-    const groupList = await groupService.getMyMemberGroups(user.id);
-    return groupList;
-  }),
+  getMyMemberGroups: authProcedure
+    .input(SGroupsPaginationParams)
+    .query(async ({ input, ctx }) => {
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      const groupList = await groupService.getMyMemberGroups({
+        requesterId: user.id,
+        pagination: input,
+      });
+      return groupList;
+    }),
 
-  getMyOwnGroups: authProcedure.query(async ({ ctx }) => {
-    const {
-      user,
-      group: { groupService },
-    } = ctx;
-    const groupList = await groupService.getMyOwnGroups(user.id);
-    return groupList;
-  }),
+  getMyOwnGroups: authProcedure
+    .input(SGroupsPaginationParams)
+    .query(async ({ input, ctx }) => {
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      const groupList = await groupService.getMyOwnGroups({
+        requesterId: user.id,
+        pagination: input,
+      });
+      return groupList;
+    }),
 
   getGroup: authProcedure
     .input(z.object({ groupId: z.string() }))
+    .output(SGroup)
     .query(async ({ input, ctx }) => {
       const { groupId } = input;
       const {
@@ -150,5 +162,25 @@ export const groupRouter = router({
         groupId,
         memberId,
       });
+    }),
+
+  getMemberList: authProcedure
+    .input(
+      SGroupsPaginationParams.extend({
+        groupId: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { groupId, ...pagination } = input;
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      const memberList = await groupService.getMemberList({
+        requesterId: user.id,
+        groupId,
+        pagination,
+      });
+      return memberList;
     }),
 });

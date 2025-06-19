@@ -1,6 +1,7 @@
 import { initTRPC } from '@trpc/server';
 import { ZodError } from 'zod';
 import { Request, Response } from 'express';
+import superjson from 'superjson';
 import {
   createAuthInnerContext,
   createCommentInnerContext,
@@ -24,6 +25,7 @@ type Context = {
 };
 
 const t = initTRPC.context<Context>().create({
+  transformer: superjson,
   errorFormatter({ shape, error }) {
     return {
       ...shape,

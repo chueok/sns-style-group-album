@@ -21,7 +21,10 @@ import { Form } from '@repo/ui/form';
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
 import { useCreateGroup } from '@/trpc/hooks/group/use-create-group';
-import { useGroupList } from '@/trpc/hooks/group/use-group-list';
+import {
+  useGroupDetail,
+  useGroupList,
+} from '@/trpc/hooks/group/use-group-list';
 import { useGroupStore } from '@/store/group-store';
 import { useEffect, useState } from 'react';
 import { Label } from '@repo/ui/label';
@@ -151,10 +154,38 @@ const GroupCreationFlowDialog = () => {
   );
 };
 
+const GroupItem = ({ groupId }: { groupId: string }) => {
+  const { group } = useGroupDetail(groupId);
+  const setSelectedGroupId = useGroupStore((state) => state.setSelectedGroupId);
+  const selectedGroupId = useGroupStore((state) => state.selectedGroupId);
+
+  if (!group) {
+    return null;
+  }
+
+  const isSelected = selectedGroupId === group.id;
+
+  return (
+    <Button
+      key={group.id}
+      variant="ghost"
+      className="tw-w-full !tw-justify-start tw-gap-2"
+      onClick={() => setSelectedGroupId(group.id)}
+    >
+      {isSelected ? (
+        <Check className="tw-h-3 tw-w-3 tw-text-green-600" />
+      ) : (
+        <Check className="tw-h-3 tw-w-3 tw-opacity-0" />
+      )}
+      <span className={`tw-text-sm ${isSelected ? 'tw-font-medium' : ''}`}>
+        {group?.name || ''}
+      </span>
+    </Button>
+  );
+};
+
 export const GroupList = () => {
   const { groups } = useGroupList();
-
-  const { selectedGroupId, setSelectedGroupId } = useGroupStore();
 
   return (
     <>
@@ -167,26 +198,7 @@ export const GroupList = () => {
       </div>
       <div className="tw-ml-2">
         {groups.map((group) => {
-          const isSelected = selectedGroupId === group.id;
-          return (
-            <Button
-              key={group.id}
-              variant="ghost"
-              className="tw-w-full !tw-justify-start tw-gap-2"
-              onClick={() => setSelectedGroupId(group.id)}
-            >
-              {isSelected ? (
-                <Check className="tw-h-3 tw-w-3 tw-text-green-600" />
-              ) : (
-                <Plus className="tw-h-3 tw-w-3 tw-opacity-0" />
-              )}
-              <span
-                className={`tw-text-sm ${isSelected ? 'tw-font-medium' : ''}`}
-              >
-                {group?.name || ''}
-              </span>
-            </Button>
-          );
+          return <GroupItem key={group.id} groupId={group.id} />;
         })}
       </div>
     </>

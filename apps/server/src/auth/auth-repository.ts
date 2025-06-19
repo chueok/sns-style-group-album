@@ -75,11 +75,6 @@ export class AuthRepository implements IAuthRepository {
   }
 
   async saveRefreshToken(userId: string, refreshToken: string): Promise<void> {
-    // 기존 refresh token 삭제
-    await this.typeormRefreshTokenRepository.delete({
-      userId: userId as UserId,
-    });
-
     // 새로운 refresh token 저장
     const createdDateTime = new Date();
 

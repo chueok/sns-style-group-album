@@ -65,9 +65,6 @@ export class AuthService {
     // access token과 refresh token 생성
     const { accessToken, refreshToken } = await this.generateTokens(user);
 
-    // refresh token 저장
-    await this.authRepository.saveRefreshToken(user.id, refreshToken);
-
     return { accessToken, refreshToken };
   }
 
@@ -112,7 +109,7 @@ export class AuthService {
     setSecureCookie({
       res,
       name: AuthModuleConfig.AccessTokenCookieName,
-      val: accessToken,
+      val: newAccessToken,
       cookieOptions: {
         maxAge: AuthModuleConfig.AccessTokenMaxAgeInCookie,
       },
@@ -121,7 +118,7 @@ export class AuthService {
     setSecureCookie({
       res,
       name: AuthModuleConfig.RefreshTokenCookieName,
-      val: refreshToken,
+      val: newRefreshToken,
       cookieOptions: {
         maxAge: AuthModuleConfig.RefreshTokenMaxAgeInCookie,
       },
@@ -183,9 +180,6 @@ export class AuthService {
       const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
         await this.generateTokens(user);
 
-      // 새로운 refresh token 저장
-      await this.authRepository.saveRefreshToken(user.id, newRefreshToken);
-
       return {
         user,
         accessToken: newAccessToken,
@@ -198,6 +192,10 @@ export class AuthService {
     }
   }
 
+  /**
+   * 1. access token 및 refresh token 발급.
+   * 2. db에 refresh token 저장.
+   */
   private async generateTokens(user: TJwtUser): Promise<TAuthTokens> {
     const accessToken = this.jwtService.sign(
       { id: user.id } satisfies TJwtUser,
@@ -207,6 +205,8 @@ export class AuthService {
       { userId: user.id, type: 'refresh' } satisfies TRefreshJwtPayload,
       { expiresIn: AuthModuleConfig.RefreshTokenValidTime }
     );
+
+    await this.authRepository.saveRefreshToken(user.id, refreshToken);
 
     return { accessToken, refreshToken };
   }
