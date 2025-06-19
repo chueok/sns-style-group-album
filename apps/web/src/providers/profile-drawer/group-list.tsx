@@ -44,7 +44,7 @@ export const GroupList = () => {
 
   return (
     <>
-      <div className="tw-flex tw-items-center tw-gap-2 tw-mb-3">
+      <div className="tw-flex tw-items-center tw-gap-2">
         <Users className="tw-h-4 tw-w-4 tw-text-muted-foreground" />
         <span className="tw-text-sm tw-font-medium tw-text-muted-foreground">
           그룹 목록

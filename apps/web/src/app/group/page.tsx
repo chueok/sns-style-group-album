@@ -8,6 +8,7 @@ import { useFloatingFunction } from '@/providers/floating-provider/context';
 import AlbumPage from '@/widgets/album/page';
 import { useGroupStore } from '@/store/group-store';
 import { useProfileDrawer } from '@/providers/profile-drawer/provider';
+import { FeedPage } from '@/widgets/feed/page';
 
 export default function GroupPage() {
   const selectedGroupId = useGroupStore((state) => state.selectedGroupId);
@@ -41,8 +42,11 @@ export default function GroupPage() {
       className="tw-h-screen"
     >
       <Tabs defaultValue="home" className="tw-w-full tw-h-full">
-        <TabsContent value="home" className="tw-h-[calc(100%-36px)]">
-          <div>홈</div>
+        <TabsContent
+          value="home"
+          className="tw-h-[calc(100%-36px)] tw-mx-2 tw-mt-2"
+        >
+          <FeedPage />
         </TabsContent>
         <TabsContent value="album" className="tw-h-[calc(100%-36px)]">
           <AlbumPage></AlbumPage>

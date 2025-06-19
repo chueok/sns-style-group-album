@@ -13,10 +13,6 @@ import { SettingDrawer } from '@/widgets/setting/setting-drawer';
 export const ProfileDrawer = () => {
   const { user, logout } = useAuth();
 
-  const handleSettings = () => {
-    console.log('settings');
-  };
-
   const handleActivityHistory = () => {
     console.log('activity history');
   };
@@ -36,7 +32,7 @@ export const ProfileDrawer = () => {
       {/* Navigation Content */}
       <div className="tw-flex-1 tw-overflow-y-auto">
         {/* My Groups Section */}
-        <div className="tw-p-4">
+        <div className="tw-py-2 tw-px-4">
           <GroupList />
         </div>
 
