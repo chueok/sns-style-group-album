@@ -183,4 +183,15 @@ export const groupRouter = router({
       });
       return memberList;
     }),
+
+  leaveGroup: authProcedure
+    .input(z.object({ groupId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { groupId } = input;
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      await groupService.leaveGroup({ requesterId: user.id, groupId });
+    }),
 });

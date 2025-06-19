@@ -15,19 +15,11 @@ import {
 } from '@repo/ui/drawer';
 import { Separator } from '@repo/ui/separator';
 import { Switch } from '@repo/ui/switch';
-import {
-  Bell,
-  Cake,
-  ChevronLeft,
-  Info,
-  LogOut,
-  Pen,
-  UserRoundPlus,
-  Users,
-} from 'lucide-react';
+import { Bell, Cake, ChevronLeft, Info, Users } from 'lucide-react';
 import { useState } from 'react';
 import { GroupNameEditDialog } from './group-name-edit-dialog';
 import { GroupInvitationDialog } from './group-invitation-dialog';
+import { GroupLeaveConfirmDialog } from './group-leave-confirm-dialog';
 
 const ErrorComponent = () => {
   return <div>Error</div>;
@@ -164,13 +156,7 @@ export const EditGroupDrawer = () => {
               </Card>
             </div>
 
-            <Button
-              variant="ghost"
-              className="tw-w-full !tw-justify-start tw-gap-2 tw-text-destructive"
-            >
-              <LogOut className="tw-h-4 tw-w-4" />
-              <span className="tw-text-sm tw-font-medium">그룹 나가기</span>
-            </Button>
+            <GroupLeaveConfirmDialog isOwner={isOwner} groupId={group.id} />
           </>
         ) : (
           <ErrorComponent />

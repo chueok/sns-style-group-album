@@ -242,6 +242,39 @@ export class GroupService {
     }
   }
 
+  async leaveGroup(payload: {
+    requesterId: string;
+    groupId: string;
+  }): Promise<void> {
+    const { requesterId, groupId } = payload;
+
+    const [isOwner, isMember] = await Promise.all([
+      this.groupRepository.isOwner(groupId, requesterId),
+      this.groupRepository.isMember(groupId, requesterId),
+    ]);
+    if (isOwner) {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: 'requester is owner',
+      });
+    }
+    if (!isMember) {
+      throw Exception.new({
+        code: Code.UNAUTHORIZED_ERROR,
+        overrideMessage: 'requester not member',
+      });
+    }
+
+    const result = await this.groupRepository.deleteMembers(groupId, [
+      requesterId,
+    ]);
+    if (!result) {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+      });
+    }
+  }
+
   async getMemberList(payload: {
     requesterId: string;
     groupId: string;

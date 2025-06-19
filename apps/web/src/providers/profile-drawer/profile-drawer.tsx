@@ -1,13 +1,6 @@
 import { Button } from '@repo/ui/button';
 import { Separator } from '@repo/ui/separator';
-import {
-  UserPlus,
-  History,
-  Settings,
-  LogOut,
-  ChevronRight,
-  Info,
-} from 'lucide-react';
+import { History, Settings, LogOut, ChevronRight } from 'lucide-react';
 import { ProfileHeader } from './profile-header';
 import { GroupList } from './group-list';
 import { useAuth } from '@/trpc/hooks/auth/use-auth';
@@ -50,20 +43,6 @@ export const ProfileDrawer = () => {
 
         {/* Selected Group Detail */}
         <EditGroupDrawer />
-        <Separator />
-
-        {/* Invite to Selected Group */}
-        <Button
-          variant="ghost"
-          className="tw-w-full !tw-justify-start tw-gap-2"
-          onClick={handleActivityHistory}
-        >
-          <UserPlus className="tw-h-4 tw-w-4 tw-text-muted-foreground" />
-          <span className="tw-text-sm tw-font-medium tw-text-muted-foreground">
-            선택된 그룹에 초대
-          </span>
-        </Button>
-
         <Separator />
 
         {/* Activity History */}
