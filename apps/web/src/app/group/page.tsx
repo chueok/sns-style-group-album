@@ -44,7 +44,7 @@ export default function GroupPage() {
       <Tabs defaultValue="home" className="tw-w-full tw-h-full">
         <TabsContent
           value="home"
-          className="tw-h-[calc(100%-36px)] tw-mx-2 tw-mt-2"
+          className="tw-h-[calc(100%-36px)] tw-px-2 tw-pt-2"
         >
           <FeedPage />
         </TabsContent>

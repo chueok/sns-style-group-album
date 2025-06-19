@@ -7,23 +7,29 @@ import {
   TGroupsPaginationParams,
   TGroupsPaginatedResult,
   TGroupMember,
+  TGroupJoinRequestUser,
 } from '@repo/be-core';
 import { DataSource, Repository } from 'typeorm';
 import { TypeormGroup } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
 import { Logger, LoggerService, Optional } from '@nestjs/common';
-import { MemberMapper } from './mapper/member-mapper';
+import { JoinRequestUserMapper, MemberMapper } from './mapper/member-mapper';
 import { TypeormUser } from '../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
 import { v4, v6 } from 'uuid';
 import { GroupMapper } from './mapper/group-mapper';
+import { TypeormJoinRequestUser } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group-join-user.entity';
 
 export class TypeormGroupRepository implements IGroupRepository {
   private typeormGroupRepository: Repository<TypeormGroup>;
   private typeormUserRepository: Repository<TypeormUser>;
+  private typeormJoinRequestUserRepository: Repository<TypeormJoinRequestUser>;
   private readonly logger: LoggerService;
 
   constructor(dataSource: DataSource, @Optional() logger?: LoggerService) {
     this.typeormGroupRepository = dataSource.getRepository(TypeormGroup);
     this.typeormUserRepository = dataSource.getRepository(TypeormUser);
+    this.typeormJoinRequestUserRepository = dataSource.getRepository(
+      TypeormJoinRequestUser
+    );
     this.logger = logger || new Logger(TypeormGroupRepository.name);
   }
 
@@ -184,15 +190,26 @@ export class TypeormGroupRepository implements IGroupRepository {
     }
   }
 
-  async findJoinRequestUserList(groupId: string): Promise<TGroupMember[]> {
+  async findJoinRequestUsers(
+    groupId: string
+  ): Promise<TGroupJoinRequestUser[]> {
     const members = await this.typeormUserRepository
       .createQueryBuilder('user')
       .leftJoin('user.joinRequestGroups', 'joinRequestGroups')
-      .where('joinRequestGroups.id = :groupId', { groupId })
-      .select(['user.id', 'user.username', 'user.profileImageUrl'])
+      .where('joinRequestGroups.groupId = :groupId', { groupId })
+      .select([
+        'user.id',
+        'user.username',
+        'user.profileImageUrl',
+        'joinRequestGroups.createdDateTime',
+      ])
       .getMany();
 
-    return MemberMapper.toDomainEntityList(groupId, members);
+    const domainJoinRequestUsers = JoinRequestUserMapper.toDomainEntityList(
+      groupId,
+      members
+    );
+    return domainJoinRequestUsers;
   }
 
   async isJoinRequestUser(groupId: string, userId: string): Promise<boolean> {
@@ -218,17 +235,17 @@ export class TypeormGroupRepository implements IGroupRepository {
       throw new Error('Group not found');
     }
 
-    const queryBuilder = this.typeormGroupRepository
-      .createQueryBuilder('group')
-      .relation('joinRequestUsers')
-      .of(group.id);
+    const joinRequestUsers = userIdList.map((userId) => {
+      return this.typeormJoinRequestUserRepository.create({
+        groupId: group.id,
+        userId,
+        createdDateTime: new Date(),
+      });
+    });
 
-    try {
-      await queryBuilder.add(userIdList);
-      return true;
-    } catch (error) {
-      return false;
-    }
+    await this.typeormJoinRequestUserRepository.save(joinRequestUsers);
+
+    return true;
   }
 
   async createGroup(payload: {

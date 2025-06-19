@@ -1,4 +1,9 @@
-import { GroupId, SGroupMember, TGroupMember } from '@repo/be-core';
+import {
+  GroupId,
+  SGroupMember,
+  TGroupJoinRequestUser,
+  TGroupMember,
+} from '@repo/be-core';
 import { TypeormUser } from '../../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
 
 const getGroupProfile = (
@@ -58,6 +63,43 @@ export class MemberMapper {
       'id' | 'username' | 'profileImageUrl' | '__userGroupProfiles__'
     >[]
   ): TGroupMember[] {
+    return payload.map((member) => this.toDomainEntity(groupId, member));
+  }
+}
+
+export class JoinRequestUserMapper {
+  public static toDomainEntity(
+    groupId: string,
+    payload: Pick<
+      TypeormUser,
+      'id' | 'username' | 'profileImageUrl' | '__joinRequestGroups__'
+    >
+  ): TGroupJoinRequestUser {
+    if (!payload.__joinRequestGroups__) {
+      throw new Error('sql error : __joinRequestGroups__ is null');
+    }
+
+    const requestUser = payload.__joinRequestGroups__?.at(0);
+    if (!requestUser) {
+      throw new Error('sql error : requestUser is null');
+    }
+    const requestDateTime = requestUser.createdDateTime;
+
+    return {
+      userId: payload.id,
+      username: payload.username || '',
+      profileImageUrl: payload.profileImageUrl || null,
+      createdDateTime: requestDateTime,
+    };
+  }
+
+  public static toDomainEntityList(
+    groupId: string,
+    payload: Pick<
+      TypeormUser,
+      'id' | 'username' | 'profileImageUrl' | '__joinRequestGroups__'
+    >[]
+  ): TGroupJoinRequestUser[] {
     return payload.map((member) => this.toDomainEntity(groupId, member));
   }
 }

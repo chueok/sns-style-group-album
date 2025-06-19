@@ -1,5 +1,5 @@
 import { Nullable } from '../../common/type/common-types';
-import { TGroup, TGroupMember } from './entity/group';
+import { TGroup, TGroupJoinRequestUser, TGroupMember } from './entity/group';
 import { z } from 'zod';
 
 export const SGroupsPaginationParams = z.object({
@@ -71,7 +71,7 @@ export interface IGroupRepository {
 
   deleteInvitationCode(groupId: string): Promise<boolean>;
 
-  findJoinRequestUserList(groupId: string): Promise<TGroupMember[]>;
+  findJoinRequestUsers(groupId: string): Promise<TGroupJoinRequestUser[]>;
 
   isJoinRequestUser(groupId: string, userId: string): Promise<boolean>;
 

@@ -19,10 +19,11 @@ export const SGroupMember = z.object({
 
 export type TGroupMember = z.infer<typeof SGroupMember>;
 
-export const SGroupInvitedUser = z.object({
+export const SGroupJoinRequestUser = z.object({
   userId: z.string(),
   username: z.string(),
   profileImageUrl: z.string().nullable(),
+  createdDateTime: z.date(),
 });
 
-export type TGroupInvitedUser = z.infer<typeof SGroupInvitedUser>;
+export type TGroupJoinRequestUser = z.infer<typeof SGroupJoinRequestUser>;

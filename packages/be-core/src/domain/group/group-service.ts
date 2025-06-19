@@ -1,6 +1,6 @@
 import { Code } from '../../common/exception/code';
 import { Exception } from '../../common/exception/exception';
-import { TGroup, TGroupMember } from './entity/group';
+import { TGroup, TGroupJoinRequestUser, TGroupMember } from './entity/group';
 import {
   IGroupRepository,
   TGroupsPaginatedResult,
@@ -190,6 +190,24 @@ export class GroupService {
         code: Code.INTERNAL_ERROR,
       });
     }
+  }
+
+  async getJoinRequestUsers(payload: {
+    requesterId: string;
+    groupId: string;
+  }): Promise<TGroupJoinRequestUser[]> {
+    const { requesterId, groupId } = payload;
+    const isOwner = await this.groupRepository.isOwner(groupId, requesterId);
+    if (!isOwner) {
+      throw Exception.new({
+        code: Code.UNAUTHORIZED_ERROR,
+        overrideMessage: 'requester not owner',
+      });
+    }
+
+    const joinRequestUserList =
+      await this.groupRepository.findJoinRequestUsers(groupId);
+    return joinRequestUserList;
   }
 
   async approveJoinRequest(payload: {

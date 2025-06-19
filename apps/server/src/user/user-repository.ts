@@ -12,10 +12,7 @@ import {
   UserId,
 } from '@repo/be-core';
 import { DataSource, IsNull, Repository } from 'typeorm';
-import {
-  isTypeormUserWith,
-  TypeormUser,
-} from '../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
+import { TypeormUser } from '../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
 import { UserMapper } from './mapper/user-mapper';
 import { Inject, Logger, LoggerService, Optional } from '@nestjs/common';
 import { TypeormUserGroupProfile } from '../infrastructure/persistence/typeorm/entity/user-group-profile/typeorm-user-group-profile.entity';
@@ -211,22 +208,10 @@ export class TypeormUserRepository implements IUserRepository {
       .leftJoinAndSelect('user.groups', 'groups')
       .leftJoinAndSelect('user.ownGroups', 'ownGroup')
       .leftJoinAndSelect('user.userGroupProfiles', 'userGroupProfiles')
-      .leftJoinAndSelect('user.invitedGroups', 'invitedGroups')
-      .leftJoinAndSelect('invitedGroups.memberProfiles', 'memberProfiles')
-      .leftJoinAndSelect('invitedGroups.owner', 'owner')
       .where('user.id = :id', { id })
       .andWhere('user.deletedDateTime is null')
       .getOne();
     if (!ormUser) {
-      return null;
-    }
-
-    if (
-      !isTypeormUserWith(ormUser, 'groups') ||
-      !isTypeormUserWith(ormUser, 'ownGroups') ||
-      !isTypeormUserWith(ormUser, 'userGroupProfiles') ||
-      !isTypeormUserWith(ormUser, 'invitedGroups')
-    ) {
       return null;
     }
 
@@ -243,9 +228,6 @@ export class TypeormUserRepository implements IUserRepository {
       .innerJoinAndSelect('user.groups', 'groups')
       .leftJoinAndSelect('user.ownGroups', 'ownGroup')
       .leftJoinAndSelect('user.userGroupProfiles', 'userGroupProfiles')
-      .leftJoinAndSelect('user.invitedGroups', 'invitedGroups')
-      .leftJoinAndSelect('invitedGroups.memberProfiles', 'memberProfiles')
-      .leftJoinAndSelect('invitedGroups.owner', 'owner')
       .where('groups.id = :groupId', { groupId })
       .andWhere('user.deletedDateTime is null')
       .getMany();

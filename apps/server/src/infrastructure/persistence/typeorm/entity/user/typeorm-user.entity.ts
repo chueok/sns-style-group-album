@@ -1,16 +1,10 @@
-import {
-  PrimaryColumn,
-  Column,
-  ManyToMany,
-  Entity,
-  OneToMany,
-  JoinTable,
-} from 'typeorm';
+import { PrimaryColumn, Column, ManyToMany, Entity, OneToMany } from 'typeorm';
 import { TypeormGroup } from '../group/typeorm-group.entity';
 import { Nullable, Optional, UserId } from '@repo/be-core';
 import { TableAlias } from '../table-alias';
 import { TypeormOauth } from '../oauth/typeorm-oauth.entity';
 import { TypeormUserGroupProfile } from '../user-group-profile/typeorm-user-group-profile.entity';
+import { TypeormJoinRequestUser } from '../group/typeorm-group-join-user.entity';
 
 @Entity(TableAlias.USER)
 export class TypeormUser {
@@ -55,62 +49,7 @@ export class TypeormUser {
   userGroupProfiles!: Promise<TypeormUserGroupProfile[]>;
   __userGroupProfiles__: Optional<TypeormUserGroupProfile[]>;
 
-  @ManyToMany(() => TypeormGroup, (group) => group.invitedUsers, {
-    cascade: false,
-  })
-  @JoinTable({ name: 'GroupInvitedUsersRelation' })
-  invitedGroups!: Promise<TypeormGroup[]>;
-  __invitedGroups__: Optional<TypeormGroup[]>;
-
-  @ManyToMany(() => TypeormGroup, (group) => group.joinRequestUsers)
-  joinRequestGroups!: Promise<TypeormGroup[]>;
-  __joinRequestGroups__: Optional<TypeormGroup[]>;
-}
-
-type TypeormUserWithOauths = TypeormUser & {
-  __oauths__: NonNullable<TypeormUser['__oauths__']>;
-};
-
-type TypeormUserWithGroups = TypeormUser & {
-  __groups__: NonNullable<TypeormUser['__groups__']>;
-};
-
-type TypeormUserWithOwnGroups = TypeormUser & {
-  __ownGroups__: NonNullable<TypeormUser['__ownGroups__']>;
-};
-
-type TypeormUserWithUserGroupProfiles = TypeormUser & {
-  __userGroupProfiles__: NonNullable<TypeormUser['__userGroupProfiles__']>;
-};
-
-type TypeormUserWithInvitedGroups = TypeormUser & {
-  __invitedGroups__: NonNullable<TypeormUser['__invitedGroups__']>;
-};
-
-export type TypeormUserWith = {
-  oauths: TypeormUserWithOauths;
-  groups: TypeormUserWithGroups;
-  ownGroups: TypeormUserWithOwnGroups;
-  userGroupProfiles: TypeormUserWithUserGroupProfiles;
-  invitedGroups: TypeormUserWithInvitedGroups;
-};
-
-export function isTypeormUserWith<T extends keyof TypeormUserWith>(
-  user: TypeormUser,
-  key: T
-): user is TypeormUserWith[T] {
-  switch (key) {
-    case 'oauths':
-      return !!user.__oauths__;
-    case 'groups':
-      return !!user.__groups__;
-    case 'ownGroups':
-      return !!user.__ownGroups__;
-    case 'userGroupProfiles':
-      return !!user.__userGroupProfiles__;
-    case 'invitedGroups':
-      return !!user.__invitedGroups__;
-    default:
-      return false;
-  }
+  @OneToMany(() => TypeormJoinRequestUser, (group) => group.user)
+  joinRequestGroups!: Promise<TypeormJoinRequestUser[]>;
+  __joinRequestGroups__: Optional<TypeormJoinRequestUser[]>;
 }

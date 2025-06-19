@@ -8,8 +8,18 @@ import {
   CardTitle,
 } from '@repo/ui/card';
 import { formatDate } from '../utils/format-date';
+import { useJoinRequestUsers } from '@/trpc/hooks/group/use-join-request-users';
+import { useGroupStore } from '@/store/group-store';
 
-const InvitationCard = () => {
+const InvitationCard = ({
+  username,
+  profileImageUrl,
+  createdDateTime,
+}: {
+  username: string;
+  profileImageUrl?: string;
+  createdDateTime: Date;
+}) => {
   return (
     <Card className="tw-rounded-none">
       <CardHeader>
@@ -17,12 +27,12 @@ const InvitationCard = () => {
           <CardTitle>Invitation</CardTitle>
         </VisuallyHidden>
       </CardHeader>
-      <CardContent className="tw-flex tw-flex-row tw-justify-between tw-gap-2">
+      <CardContent className="tw-flex tw-flex-row tw-justify-between tw-gap-4">
         <div className="tw-shrink">
-          🔔김OO님을 그룹1에 초대하시겠습니까?초대하시겠습니까?초대하시겠습니까?
+          🔔{username}님을 그룹1에 초대하시겠습니까?
         </div>
         <div className="tw-shrink-0 tw-text-foreground">
-          {formatDate(new Date())}
+          {formatDate(createdDateTime)}
         </div>
       </CardContent>
       <CardFooter className="!tw-flex !tw-flex-row-reverse tw-gap-2">
@@ -35,10 +45,28 @@ const InvitationCard = () => {
   );
 };
 
-export const FeedPage = () => {
+const InnerFeedPage = ({ groupId }: { groupId: string }) => {
+  const { joinRequestUsers, isLoading } = useJoinRequestUsers(groupId);
   return (
     <div>
-      <InvitationCard />
+      {joinRequestUsers?.map((requestingUser) => (
+        <InvitationCard
+          key={requestingUser.userId}
+          username={requestingUser.username}
+          profileImageUrl={requestingUser.profileImageUrl ?? undefined}
+          createdDateTime={requestingUser.createdDateTime}
+        />
+      ))}
     </div>
   );
+};
+
+export const FeedPage = () => {
+  const selectedGroupId = useGroupStore((state) => state.selectedGroupId);
+
+  if (!selectedGroupId) {
+    return null;
+  }
+
+  return <InnerFeedPage groupId={selectedGroupId} />;
 };

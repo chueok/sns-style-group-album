@@ -11,6 +11,7 @@ import { GroupId, Nullable, Optional } from '@repo/be-core';
 import { TypeormUser } from '../user/typeorm-user.entity';
 import { TableAlias } from '../table-alias';
 import { TypeormUserGroupProfile } from '../user-group-profile/typeorm-user-group-profile.entity';
+import { TypeormJoinRequestUser } from './typeorm-group-join-user.entity';
 
 @Entity(TableAlias.GROUP)
 export class TypeormGroup {
@@ -52,53 +53,7 @@ export class TypeormGroup {
   @Column()
   ownerId!: TypeormUser['id'];
 
-  @ManyToMany(() => TypeormUser, (user) => user.invitedGroups)
-  invitedUsers!: Promise<TypeormUser[]>;
-  __invitedUsers__: Optional<TypeormUser[]>;
-
-  @ManyToMany(() => TypeormUser, (user) => user.joinRequestGroups)
-  @JoinTable({ name: 'JoinRequestUsersRelation' })
-  joinRequestUsers!: Promise<TypeormUser[]>;
-  __joinRequestUsers__: Optional<TypeormUser[]>;
-}
-
-type TypeormGroupWithMembers = TypeormGroup & {
-  __members__: NonNullable<TypeormGroup['__members__']>;
-};
-
-type TypeormGroupWithMemberProfiles = TypeormGroup & {
-  __memberProfiles__: NonNullable<TypeormGroup['__memberProfiles__']>;
-};
-
-type TypeormGroupWithOwner = TypeormGroup & {
-  __owner__: NonNullable<TypeormGroup['__owner__']>;
-};
-
-type TypeormGroupWithInvitedUsers = TypeormGroup & {
-  __invitedUsers__: NonNullable<TypeormGroup['__invitedUsers__']>;
-};
-
-export type TypeormGroupWith = {
-  members: TypeormGroupWithMembers;
-  memberProfiles: TypeormGroupWithMemberProfiles;
-  owner: TypeormGroupWithOwner;
-  invitedUsers: TypeormGroupWithInvitedUsers;
-};
-
-export function isTypeormGroupWith<T extends keyof TypeormGroupWith>(
-  group: TypeormGroup,
-  key: T
-): group is TypeormGroupWith[T] {
-  switch (key) {
-    case 'members':
-      return !!group.__members__;
-    case 'memberProfiles':
-      return !!group.__memberProfiles__;
-    case 'owner':
-      return !!group.__owner__;
-    case 'invitedUsers':
-      return !!group.__invitedUsers__;
-    default:
-      return false;
-  }
+  @OneToMany(() => TypeormJoinRequestUser, (user) => user.group)
+  joinRequestUsers!: Promise<TypeormJoinRequestUser[]>;
+  __joinRequestUsers__: Optional<TypeormJoinRequestUser[]>;
 }

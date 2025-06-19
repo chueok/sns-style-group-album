@@ -1,6 +1,10 @@
 import z from 'zod';
 import { authProcedure, router } from '../trpc';
-import { SGroup, SGroupsPaginationParams } from '@repo/be-core';
+import {
+  SGroup,
+  SGroupJoinRequestUser,
+  SGroupsPaginationParams,
+} from '@repo/be-core';
 
 export const groupRouter = router({
   createGroup: authProcedure
@@ -132,6 +136,23 @@ export const groupRouter = router({
         requesterId: user.id,
         invitationCode,
       });
+    }),
+
+  getJoinRequestUsers: authProcedure
+    .input(z.object({ groupId: z.string() }))
+    .output(z.array(SGroupJoinRequestUser))
+    .query(async ({ input, ctx }) => {
+      const { groupId } = input;
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      const joinRequestUserList = await groupService.getJoinRequestUsers({
+        requesterId: user.id,
+        groupId,
+      });
+
+      return joinRequestUserList;
     }),
 
   approveJoinRequest: authProcedure
