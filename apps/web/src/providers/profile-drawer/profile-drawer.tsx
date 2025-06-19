@@ -8,6 +8,7 @@ import { DrawerTitle, DrawerDescription } from '@repo/ui/drawer';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { InitialUsernameEditDialog } from '@/widgets/username/initial-username-edit-dialog';
 import { EditGroupDrawer } from '../../widgets/group/group-edit-drawer';
+import { SettingDrawer } from '@/widgets/setting/setting-drawer';
 
 export const ProfileDrawer = () => {
   const { user, logout } = useAuth();
@@ -61,17 +62,7 @@ export const ProfileDrawer = () => {
         <Separator />
 
         {/* Settings */}
-
-        <Button
-          variant="ghost"
-          className="tw-w-full !tw-justify-start tw-gap-2"
-          onClick={handleSettings}
-        >
-          <Settings className="tw-h-4 tw-w-4 tw-text-muted-foreground" />
-          <span className="tw-text-sm tw-font-medium tw-text-muted-foreground">
-            설정
-          </span>
-        </Button>
+        <SettingDrawer />
       </div>
 
       {/* Footer Actions */}
