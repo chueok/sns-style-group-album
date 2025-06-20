@@ -21,6 +21,9 @@ export class TypeormJoinRequestUser {
   @Column()
   userId!: TypeormUser['id'];
 
+  @Column({ type: 'text', nullable: true, default: 'pending' })
+  status!: 'pending' | 'approved' | 'rejected';
+
   @Column({ type: 'datetime', nullable: false })
-  createdDateTime!: Date;
+  requestedDateTime!: Date;
 }

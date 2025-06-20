@@ -12,18 +12,15 @@ export const SGroup = z.object({
 export type TGroup = z.infer<typeof SGroup>;
 
 export const SGroupMember = z.object({
-  userId: z.string(),
+  id: z.string(),
   username: z.string(),
   profileImageUrl: z.string().nullable(),
 });
 
 export type TGroupMember = z.infer<typeof SGroupMember>;
 
-export const SGroupJoinRequestUser = z.object({
-  userId: z.string(),
-  username: z.string(),
-  profileImageUrl: z.string().nullable(),
-  createdDateTime: z.date(),
+export const SGroupJoinRequestUser = SGroupMember.extend({
+  requestedDateTime: z.date(),
 });
 
 export type TGroupJoinRequestUser = z.infer<typeof SGroupJoinRequestUser>;

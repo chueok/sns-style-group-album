@@ -4,7 +4,7 @@ import { Nullable, Optional, UserId } from '@repo/be-core';
 import { TableAlias } from '../table-alias';
 import { TypeormOauth } from '../oauth/typeorm-oauth.entity';
 import { TypeormUserGroupProfile } from '../user-group-profile/typeorm-user-group-profile.entity';
-import { TypeormJoinRequestUser } from '../group/typeorm-group-join-user.entity';
+import { TypeormJoinRequestUser } from '../group/typeorm-join-request-user.entity';
 
 @Entity(TableAlias.USER)
 export class TypeormUser {

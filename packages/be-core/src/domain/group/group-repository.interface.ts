@@ -64,11 +64,9 @@ export interface IGroupRepository {
   /****************************************************
    * 멤버 초대를 위한 함수 모음
    ****************************************************/
-  generateInvitationCode(groupId: string): Promise<string>;
-
   // invitation code가 없을 경우 생성하고 반환
   getInvitationCode(groupId: string): Promise<string>;
-
+  refreshInvitationCode(groupId: string): Promise<string>;
   deleteInvitationCode(groupId: string): Promise<boolean>;
 
   findJoinRequestUsers(groupId: string): Promise<TGroupJoinRequestUser[]>;
@@ -79,8 +77,8 @@ export interface IGroupRepository {
 
   addJoinRequestUsers(groupId: string, userIdList: string[]): Promise<boolean>;
 
-  deleteJoinRequestUsers(
-    groupId: string,
-    userIdList: string[]
-  ): Promise<boolean>;
+  // 두가지 입력을 처리하다 보니, 함수 이름은 도메인을 반영하여 작성함
+  // 유저 여러명을 동시에 처리하기에는, transactional 처리가 복잡해져서, 단일 유저에 대한 인터페이스 구현
+  approveJoinRequestUser(groupId: string, userId: string): Promise<boolean>;
+  rejectJoinRequestUser(groupId: string, userId: string): Promise<boolean>;
 }

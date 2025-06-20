@@ -11,7 +11,7 @@ import { GroupId, Nullable, Optional } from '@repo/be-core';
 import { TypeormUser } from '../user/typeorm-user.entity';
 import { TableAlias } from '../table-alias';
 import { TypeormUserGroupProfile } from '../user-group-profile/typeorm-user-group-profile.entity';
-import { TypeormJoinRequestUser } from './typeorm-group-join-user.entity';
+import { TypeormJoinRequestUser } from './typeorm-join-request-user.entity';
 
 @Entity(TableAlias.GROUP)
 export class TypeormGroup {

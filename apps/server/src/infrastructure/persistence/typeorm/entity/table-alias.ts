@@ -9,5 +9,5 @@ export enum TableAlias {
   TEMPORARY_CONTENT = 'TemporaryContent',
   COMMENT_USER_TAG = 'CommentUserTag',
   REFRESH_TOKEN = 'RefreshToken',
-  JOIN_REQUEST_USER = 'GroupJoinRequestUser',
+  JOIN_REQUEST_USER = 'JoinRequestUser',
 }

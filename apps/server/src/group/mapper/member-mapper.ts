@@ -46,7 +46,7 @@ export class MemberMapper {
     }
 
     const obj: TGroupMember = {
-      userId: payload.id,
+      id: payload.id,
       username,
       profileImageUrl,
     };
@@ -83,13 +83,13 @@ export class JoinRequestUserMapper {
     if (!requestUser) {
       throw new Error('sql error : requestUser is null');
     }
-    const requestDateTime = requestUser.createdDateTime;
+    const requestedDateTime = requestUser.requestedDateTime;
 
     return {
-      userId: payload.id,
+      id: payload.id,
       username: payload.username || '',
       profileImageUrl: payload.profileImageUrl || null,
-      createdDateTime: requestDateTime,
+      requestedDateTime,
     };
   }
 

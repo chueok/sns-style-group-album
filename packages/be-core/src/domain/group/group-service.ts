@@ -146,8 +146,8 @@ export class GroupService {
     groupId: string;
   }): Promise<string> {
     const { requesterId, groupId } = payload;
-    const isOwner = await this.groupRepository.isOwner(groupId, requesterId);
-    if (!isOwner) {
+    const isMember = await this.groupRepository.isMember(groupId, requesterId);
+    if (!isMember) {
       throw Exception.new({
         code: Code.UNAUTHORIZED_ERROR,
         overrideMessage: 'requester not owner',
@@ -155,7 +155,7 @@ export class GroupService {
     }
 
     const invitationCode =
-      await this.groupRepository.generateInvitationCode(groupId);
+      await this.groupRepository.getInvitationCode(groupId);
     return invitationCode;
   }
 
@@ -230,24 +230,45 @@ export class GroupService {
     if (!isJoinRequestUser) {
       throw Exception.new({
         code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: 'the user is not requested join group',
       });
     }
 
-    const deleteResult = await this.groupRepository.deleteJoinRequestUsers(
+    const result = await this.groupRepository.approveJoinRequestUser(
       groupId,
-      [memberId]
+      memberId
     );
-    if (!deleteResult) {
-      throw Exception.new({
-        code: Code.BAD_REQUEST_ERROR,
-      });
-    }
-
-    const result = await this.groupRepository.addMembers(groupId, [memberId]);
     if (!result) {
       throw Exception.new({
         code: Code.BAD_REQUEST_ERROR,
-        overrideMessage: 'Failed to add member',
+        overrideMessage: 'Failed to move join request to member',
+      });
+    }
+  }
+
+  async rejectJoinRequest(payload: {
+    requesterId: string;
+    groupId: string;
+    memberId: string;
+  }): Promise<void> {
+    const { requesterId, groupId, memberId } = payload;
+
+    const isOwner = await this.groupRepository.isOwner(groupId, requesterId);
+    if (!isOwner) {
+      throw Exception.new({
+        code: Code.UNAUTHORIZED_ERROR,
+        overrideMessage: 'requester not owner',
+      });
+    }
+
+    const result = await this.groupRepository.rejectJoinRequestUser(
+      groupId,
+      memberId
+    );
+
+    if (!result) {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
       });
     }
   }

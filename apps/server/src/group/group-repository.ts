@@ -8,6 +8,8 @@ import {
   TGroupsPaginatedResult,
   TGroupMember,
   TGroupJoinRequestUser,
+  Exception,
+  Code,
 } from '@repo/be-core';
 import { DataSource, Repository } from 'typeorm';
 import { TypeormGroup } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
@@ -16,7 +18,8 @@ import { JoinRequestUserMapper, MemberMapper } from './mapper/member-mapper';
 import { TypeormUser } from '../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
 import { v4, v6 } from 'uuid';
 import { GroupMapper } from './mapper/group-mapper';
-import { TypeormJoinRequestUser } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group-join-user.entity';
+import { TypeormJoinRequestUser } from '../infrastructure/persistence/typeorm/entity/group/typeorm-join-request-user.entity';
+import { Transactional } from 'typeorm-transactional';
 
 export class TypeormGroupRepository implements IGroupRepository {
   private typeormGroupRepository: Repository<TypeormGroup>;
@@ -31,6 +34,38 @@ export class TypeormGroupRepository implements IGroupRepository {
       TypeormJoinRequestUser
     );
     this.logger = logger || new Logger(TypeormGroupRepository.name);
+  }
+
+  @Transactional()
+  async approveJoinRequestUser(
+    groupId: string,
+    userId: string
+  ): Promise<boolean> {
+    const result = await this.typeormJoinRequestUserRepository
+      .createQueryBuilder('joinRequestUser')
+      .update()
+      .set({
+        status: 'approved',
+      })
+      .where('joinRequestUser.groupId = :groupId', { groupId })
+      .andWhere('joinRequestUser.userId = :userId', { userId })
+      .andWhere('joinRequestUser.status = :status', { status: 'pending' })
+      .execute();
+
+    if (result.affected === 0) {
+      throw Exception.new({
+        code: Code.INTERNAL_ERROR,
+        overrideMessage: 'Failed to approve join request user',
+      });
+    }
+
+    await this.typeormGroupRepository
+      .createQueryBuilder('group')
+      .relation('members')
+      .of(groupId)
+      .add(userId);
+
+    return true;
   }
 
   async findGroupByInvitationCode(code: string): Promise<Nullable<TGroup>> {
@@ -140,7 +175,7 @@ export class TypeormGroupRepository implements IGroupRepository {
     return result > 0;
   }
 
-  async generateInvitationCode(groupId: string): Promise<string> {
+  async refreshInvitationCode(groupId: string): Promise<string> {
     // UUID v4를 생성하고 하이픈을 제거한 후 앞 8자리만 사용
     const randomCode = v4().replace(/-/g, '').slice(0, 8);
 
@@ -161,7 +196,7 @@ export class TypeormGroupRepository implements IGroupRepository {
     if (ormGroup?.invitationCode) {
       return ormGroup.invitationCode;
     } else {
-      return this.generateInvitationCode(groupId);
+      return this.refreshInvitationCode(groupId);
     }
   }
 
@@ -173,21 +208,22 @@ export class TypeormGroupRepository implements IGroupRepository {
     return result.affected === 1;
   }
 
-  async deleteJoinRequestUsers(
+  async rejectJoinRequestUser(
     groupId: string,
-    userIdList: string[]
+    userId: string
   ): Promise<boolean> {
-    const queryBuilder = this.typeormGroupRepository
-      .createQueryBuilder('group')
-      .relation('joinRequestUsers')
-      .of(groupId);
+    const result = await this.typeormJoinRequestUserRepository
+      .createQueryBuilder('joinRequestUser')
+      .update()
+      .set({
+        status: 'rejected',
+      })
+      .where('joinRequestUser.groupId = :groupId', { groupId })
+      .andWhere('joinRequestUser.userId = :userId', { userId })
+      .andWhere('joinRequestUser.status = :status', { status: 'pending' })
+      .execute();
 
-    try {
-      await queryBuilder.remove(userIdList);
-      return true;
-    } catch (error) {
-      return false;
-    }
+    return !!result.affected && result.affected > 0;
   }
 
   async findJoinRequestUsers(
@@ -197,11 +233,12 @@ export class TypeormGroupRepository implements IGroupRepository {
       .createQueryBuilder('user')
       .leftJoin('user.joinRequestGroups', 'joinRequestGroups')
       .where('joinRequestGroups.groupId = :groupId', { groupId })
+      .andWhere('joinRequestGroups.status = :status', { status: 'pending' })
       .select([
         'user.id',
         'user.username',
         'user.profileImageUrl',
-        'joinRequestGroups.createdDateTime',
+        'joinRequestGroups.requestedDateTime',
       ])
       .getMany();
 
@@ -217,7 +254,8 @@ export class TypeormGroupRepository implements IGroupRepository {
       .createQueryBuilder('group')
       .leftJoin('group.joinRequestUsers', 'joinRequestUsers')
       .where('group.id = :groupId', { groupId })
-      .andWhere('joinRequestUsers.id = :userId', { userId });
+      .andWhere('joinRequestUsers.userId = :userId', { userId })
+      .andWhere('joinRequestUsers.status = :status', { status: 'pending' });
 
     const result = await queryBuilder.getCount();
     return result > 0;
@@ -227,19 +265,30 @@ export class TypeormGroupRepository implements IGroupRepository {
     groupId: string,
     userIdList: string[]
   ): Promise<boolean> {
-    const group = await this.typeormGroupRepository.findOne({
-      where: { id: groupId as GroupId },
-      select: ['id'],
-    });
-    if (!group) {
-      throw new Error('Group not found');
-    }
+    // 이미 초대된 유저는 초대하지 않음
+    const filteredUserIdList: string[] = [];
+    const promiseList = userIdList.map(async (userId) => {
+      const count = await this.typeormJoinRequestUserRepository.count({
+        where: {
+          groupId: groupId as GroupId,
+          userId: userId as UserId,
+          status: 'pending',
+        },
+      });
 
-    const joinRequestUsers = userIdList.map((userId) => {
+      if (count === 0) {
+        filteredUserIdList.push(userId);
+      }
+    });
+    await Promise.allSettled(promiseList);
+
+    // filter 된 유저에 대해서만 초대
+    const joinRequestUsers = filteredUserIdList.map((userId) => {
       return this.typeormJoinRequestUserRepository.create({
-        groupId: group.id,
+        groupId,
         userId,
-        createdDateTime: new Date(),
+        status: 'pending',
+        requestedDateTime: new Date(),
       });
     });
 

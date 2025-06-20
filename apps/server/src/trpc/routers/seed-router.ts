@@ -351,7 +351,7 @@ export const seedRouter = router({
         pageSize: 100,
       });
       return group.items.map((member) => ({
-        id: member.userId,
+        id: member.id,
         username: member.username,
         profileImageUrl: member.profileImageUrl,
       }));

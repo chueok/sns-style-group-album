@@ -170,6 +170,21 @@ export const groupRouter = router({
       });
     }),
 
+  rejectJoinRequest: authProcedure
+    .input(z.object({ groupId: z.string(), memberId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { groupId, memberId } = input;
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      await groupService.rejectJoinRequest({
+        requesterId: user.id,
+        groupId,
+        memberId,
+      });
+    }),
+
   dropOutMember: authProcedure
     .input(z.object({ groupId: z.string(), memberId: z.string() }))
     .mutation(async ({ input, ctx }) => {
