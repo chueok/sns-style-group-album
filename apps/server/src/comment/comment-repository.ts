@@ -46,7 +46,8 @@ export class TypeormCommentRepository implements ICommentRepository {
       .leftJoin('content.group', 'group')
       .leftJoin('group.members', 'member')
       .where('content.id = :contentId', { contentId: payload.contentId })
-      .andWhere('member.id = :userId', { userId: payload.userId })
+      .andWhere('member.userId = :userId', { userId: payload.userId })
+      .andWhere('member.status = :status', { status: 'approved' })
       .andWhere('content.deletedDateTime IS NULL');
     const count = await qb.getCount();
     return count > 0;
@@ -128,52 +129,4 @@ export class TypeormCommentRepository implements ICommentRepository {
       nextCursor,
     };
   }
-
-  // async findCommentListForFeed(payload: {
-  //   groupId: string;
-  //   pagination: CommentPagenationType;
-  // }): Promise<Comment[]> {
-  //   const query = this.commentRepository
-  //     .createQueryBuilder('comment')
-  //     .innerJoinAndSelect('comment.content', 'content')
-  //     .leftJoinAndSelect('comment.tags', 'tags')
-  //     .where('content.groupId = :groupId', { groupId: payload.groupId })
-  //     .orderBy(
-  //       `comment.${payload.pagination.by}`,
-  //       payload.pagination.direction === 'desc' ? 'DESC' : 'ASC'
-  //     )
-  //     .take(payload.pagination.limit);
-
-  //   if (payload.pagination.cursor) {
-  //     if (payload.pagination.direction === 'desc') {
-  //       query.andWhere(`comment.${payload.pagination.by} < :cursor`, {
-  //         cursor: payload.pagination.cursor,
-  //       });
-  //     } else {
-  //       query.andWhere(`comment.${payload.pagination.by} > :cursor`, {
-  //         cursor: payload.pagination.cursor,
-  //       });
-  //     }
-  //   }
-  //   const ormCommentList = await query.getMany();
-
-  //   const elements = await Promise.all(
-  //     ormCommentList.map(async (ormComment) => {
-  //       return {
-  //         comment: ormComment,
-  //         tags: await ormComment.tags,
-  //       };
-  //     })
-  //   );
-
-  //   const { results, errors } = await CommentMapper.toDomainEntity({
-  //     elements,
-  //   });
-
-  //   errors.forEach((error) => {
-  //     this.logger.error(error);
-  //   });
-
-  //   return results;
-  // }
 }

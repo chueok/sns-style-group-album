@@ -4,7 +4,7 @@ import { setSecureCookie } from '../../auth/utils';
 import { AuthModuleConfig } from '../../auth/config';
 import { createSeedInnerContext } from '../inner-context';
 import { TypeormUser } from '../../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
-import { IsNull } from 'typeorm';
+import { In, IsNull } from 'typeorm';
 import { TypeormOauth } from '../../infrastructure/persistence/typeorm/entity/oauth/typeorm-oauth.entity';
 import { EContentCategory, GroupId, UserId } from '@repo/be-core';
 import { TypeormGroup } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
@@ -13,6 +13,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { ServerConfig } from '../../config/server-config';
 import { TypeormMedia } from '../../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
+import { TypeormMember } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-group-member.entity';
 
 const getSeedContext = (ctx): ReturnType<typeof createSeedInnerContext> => {
   return ctx.seed;
@@ -322,12 +323,27 @@ export const seedRouter = router({
       // domain 로직에서는 직접적으로 멤버를 추가하지 않고,
       // 조인 요청을 보낸 멤버에 대해 승인하는 방식으로 되어있음.
       // 따라서 seed 에서는 직접 db에 접근하여 추가하도록 구현하였음.
-      const groupRepository = dataSource.getRepository(TypeormGroup);
-      await groupRepository
-        .createQueryBuilder('group')
-        .relation('members')
-        .of(groupId)
-        .add(memberIdList);
+      const users = await dataSource.getRepository(TypeormUser).find({
+        where: {
+          id: In(memberIdList),
+        },
+      });
+
+      const memberRepository = dataSource.getRepository(TypeormMember);
+      const newMembers = users.map((user) => {
+        return memberRepository.create({
+          groupId: groupId as GroupId,
+          userId: user.id,
+          username: user.username || '',
+          profileImageUrl: user.profileImageUrl,
+          role: 'member',
+          joinRequestDateTime: new Date(),
+          joinDateTime: new Date(),
+          status: 'approved',
+        });
+      });
+
+      await memberRepository.save(newMembers);
     }),
 
   getGroupMembers: publicProcedure
@@ -337,7 +353,7 @@ export const seedRouter = router({
         .object({
           id: z.string(),
           username: z.string(),
-          profileImageUrl: z.string().nullable(),
+          profileImageUrl: z.string().optional(),
         })
         .array()
     )
@@ -346,10 +362,15 @@ export const seedRouter = router({
         group: { groupRepository },
       } = ctx;
 
-      const group = await groupRepository.findMembers(input.groupId, {
-        page: 1,
-        pageSize: 100,
-      });
+      const group = await groupRepository.findMembersBy(
+        {
+          groupId: input.groupId,
+        },
+        {
+          page: 1,
+          pageSize: 100,
+        }
+      );
       return group.items.map((member) => ({
         id: member.id,
         username: member.username,
@@ -369,6 +390,8 @@ export const seedRouter = router({
       const { groupId, ownerId } = input;
       const { dataSource, objectStorage } = getSeedContext(ctx);
       const mediaRepository = dataSource.getRepository(TypeormMedia);
+
+      console.log({ groupId, ownerId });
 
       const filePaths = fs
         .readdirSync(path.join(process.cwd(), 'seed-data/random-img-1000'))

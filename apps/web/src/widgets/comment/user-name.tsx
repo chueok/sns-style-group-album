@@ -1,5 +1,5 @@
 import { useGroupStore } from '@/store/group-store';
-import { useMemberProfile } from '@/trpc/hooks/user/use-member-profile';
+import { useMember } from '@/trpc/hooks/group/use-member';
 
 const InnerUserName = ({
   groupId,
@@ -8,7 +8,7 @@ const InnerUserName = ({
   groupId: string;
   userId: string;
 }) => {
-  const { profile, isLoading, isError } = useMemberProfile({
+  const { profile, isLoading, isError } = useMember({
     groupId,
     userId,
   });

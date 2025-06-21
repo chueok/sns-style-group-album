@@ -24,6 +24,10 @@ export interface ICommentRepository {
     userId: string;
   }): Promise<boolean>;
 
+  /**
+   * 해당 컨텐츠가 속한 그룹의
+   * 승인된 멤버는 컨텐츠에 접근 가능하다.
+   */
   hasAccessToContent(payload: {
     contentId: string;
     userId: string;
@@ -41,17 +45,8 @@ export interface ICommentRepository {
     text: string;
   }): Promise<TComment>;
 
-  // findCommentById(commentId: string): Promise<Nullable<Comment>>;
-
   findCommentsOfContent(payload: {
     contentId: string;
     pagination: TCommentPaginationParams;
   }): Promise<TCommentPaginationResult<TComment>>;
-
-  // findCommentListForFeed(payload: {
-  //   groupId: string;
-  //   pagination: CommentPagenationType;
-  // }): Promise<Comment[]>;
-
-  // delete is not supported
 }

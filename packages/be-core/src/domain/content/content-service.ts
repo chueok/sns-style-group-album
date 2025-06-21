@@ -25,7 +25,7 @@ export class ContentService {
   }): Promise<string[]> {
     const { requesterId, groupId, media } = payload;
 
-    const isMember = await this.contentRepository.isGroupMember({
+    const isMember = await this.contentRepository.isMember({
       userId: requesterId,
       groupId,
     });
@@ -51,7 +51,7 @@ export class ContentService {
   }): Promise<TMediaPaginationResult<TMedia>> {
     const { groupId, requesterId, pagination } = payload;
 
-    const isMember = await this.contentRepository.isGroupMember({
+    const isMember = await this.contentRepository.isMember({
       userId: requesterId,
       groupId,
     });

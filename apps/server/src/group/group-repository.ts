@@ -6,318 +6,197 @@ import {
   UserId,
   TGroupsPaginationParams,
   TGroupsPaginatedResult,
-  TGroupMember,
-  TGroupJoinRequestUser,
+  TMember,
   Exception,
   Code,
+  TMemberRole,
+  TMemberStatus,
+  TMemberProfile,
 } from '@repo/be-core';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, IsNull, Repository } from 'typeorm';
 import { TypeormGroup } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
 import { Logger, LoggerService, Optional } from '@nestjs/common';
-import { JoinRequestUserMapper, MemberMapper } from './mapper/member-mapper';
+import { MemberMapper } from './mapper/member-mapper';
 import { TypeormUser } from '../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
 import { v4, v6 } from 'uuid';
 import { GroupMapper } from './mapper/group-mapper';
-import { TypeormJoinRequestUser } from '../infrastructure/persistence/typeorm/entity/group/typeorm-join-request-user.entity';
 import { Transactional } from 'typeorm-transactional';
+import { TypeormMember } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group-member.entity';
 
 export class TypeormGroupRepository implements IGroupRepository {
   private typeormGroupRepository: Repository<TypeormGroup>;
   private typeormUserRepository: Repository<TypeormUser>;
-  private typeormJoinRequestUserRepository: Repository<TypeormJoinRequestUser>;
+  private typeormGroupMemberRepository: Repository<TypeormMember>;
   private readonly logger: LoggerService;
 
   constructor(dataSource: DataSource, @Optional() logger?: LoggerService) {
     this.typeormGroupRepository = dataSource.getRepository(TypeormGroup);
     this.typeormUserRepository = dataSource.getRepository(TypeormUser);
-    this.typeormJoinRequestUserRepository = dataSource.getRepository(
-      TypeormJoinRequestUser
-    );
+    this.typeormGroupMemberRepository = dataSource.getRepository(TypeormMember);
     this.logger = logger || new Logger(TypeormGroupRepository.name);
   }
 
-  @Transactional()
-  async approveJoinRequestUser(
-    groupId: string,
-    userId: string
-  ): Promise<boolean> {
-    const result = await this.typeormJoinRequestUserRepository
-      .createQueryBuilder('joinRequestUser')
-      .update()
-      .set({
-        status: 'approved',
-      })
-      .where('joinRequestUser.groupId = :groupId', { groupId })
-      .andWhere('joinRequestUser.userId = :userId', { userId })
-      .andWhere('joinRequestUser.status = :status', { status: 'pending' })
-      .execute();
+  async findUserProfile(userId: string): Promise<TMemberProfile> {
+    const ormEntity = await this.typeormUserRepository.findOne({
+      where: { id: userId as UserId, deletedDateTime: IsNull() },
+      select: ['id', 'username', 'profileImageUrl'],
+    });
 
-    if (result.affected === 0) {
+    if (!ormEntity || !ormEntity.username) {
       throw Exception.new({
-        code: Code.INTERNAL_ERROR,
-        overrideMessage: 'Failed to approve join request user',
+        code: Code.ENTITY_NOT_FOUND_ERROR,
+        overrideMessage: 'User not found',
       });
     }
 
-    await this.typeormGroupRepository
-      .createQueryBuilder('group')
-      .relation('members')
-      .of(groupId)
-      .add(userId);
-
-    return true;
+    return {
+      id: ormEntity.id,
+      username: ormEntity.username,
+      profileImageUrl: ormEntity.profileImageUrl || undefined,
+    };
   }
 
-  async findGroupByInvitationCode(code: string): Promise<Nullable<TGroup>> {
-    const ormGroup = await this.typeormGroupRepository.findOne({
-      where: { invitationCode: code },
+  async isOwner(groupId: string, userId: string): Promise<boolean> {
+    const queryBuilder = this.typeormGroupMemberRepository
+      .createQueryBuilder('member')
+      .where('member.groupId = :groupId', { groupId })
+      .andWhere('member.userId = :userId', { userId })
+      .andWhere('member.role = :role', { role: 'owner' })
+      .andWhere('member.status = :status', { status: 'approved' });
+
+    const result = await queryBuilder.getCount();
+
+    return result > 0;
+  }
+
+  async isApprovedMember(groupId: string, userId: string): Promise<boolean> {
+    const queryBuilder = this.typeormGroupMemberRepository
+      .createQueryBuilder('member')
+      .where('member.groupId = :groupId', { groupId })
+      .andWhere('member.userId = :userId', { userId })
+      .andWhere('member.status = :status', { status: 'approved' });
+
+    const result = await queryBuilder.getCount();
+
+    return result > 0;
+  }
+
+  @Transactional()
+  async createGroup(payload: {
+    groupName: string;
+    ownerId: string;
+    ownerUsername: string;
+    ownerProfileImageUrl?: string;
+  }): Promise<TGroup> {
+    const newGroupId = v6() as GroupId;
+    const newGroup = this.typeormGroupRepository.create({
+      id: newGroupId,
+      ownerId: payload.ownerId as UserId,
+      name: payload.groupName,
+      createdDateTime: new Date(),
+      updatedDateTime: null,
+      deletedDateTime: null,
     });
+
+    const newGroupMember = this.typeormGroupMemberRepository.create({
+      groupId: newGroupId,
+      userId: payload.ownerId as UserId,
+      username: payload.ownerUsername,
+      role: 'owner',
+      status: 'approved',
+      profileImageUrl: payload.ownerProfileImageUrl,
+      joinRequestDateTime: new Date(),
+      joinDateTime: new Date(),
+    });
+
+    const result = await this.typeormGroupRepository.save(newGroup);
+    await this.typeormGroupMemberRepository.save(newGroupMember);
+
+    const domainEntity = GroupMapper.toDomainEntity(result);
+    return domainEntity;
+  }
+
+  async findGroupBy(payload: {
+    groupId?: string;
+    invitationCode?: string;
+  }): Promise<Nullable<TGroup>> {
+    if (Object.keys(payload).length === 0) {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: 'At least one of groupId or invitationCode',
+      });
+    }
+
+    const queryBuilder = this.typeormGroupRepository
+      .createQueryBuilder('group')
+      .where('group.deletedDateTime is null');
+
+    if (payload.groupId) {
+      queryBuilder.andWhere('group.id = :groupId', {
+        groupId: payload.groupId,
+      });
+    }
+
+    if (payload.invitationCode) {
+      queryBuilder.andWhere('group.invitationCode = :invitationCode', {
+        invitationCode: payload.invitationCode,
+      });
+    }
+
+    const ormGroup = await queryBuilder.getOne();
 
     if (!ormGroup) {
       return null;
     }
 
-    const domainGroup = GroupMapper.toDomainEntity(ormGroup);
-    return domainGroup;
+    return GroupMapper.toDomainEntity(ormGroup);
   }
 
-  async findMembers(
-    groupId: string,
+  async findGroupListBy(
+    payload: { ownerId?: string; memberId?: string },
     pagination: TGroupsPaginationParams
-  ): Promise<TGroupsPaginatedResult<TGroupMember>> {
+  ): Promise<TGroupsPaginatedResult<TGroup>> {
+    if (Object.keys(payload).length === 0) {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: 'At least one of ownerId or memberId',
+      });
+    }
+
+    const { ownerId, memberId } = payload;
     const page = pagination.page ?? 1;
 
-    const queryBuilder = this.typeormUserRepository
-      .createQueryBuilder('user')
-      .innerJoin('user.groups', 'groups', 'groups.id = :groupId', { groupId })
-      .leftJoinAndSelect('user.userGroupProfiles', 'userGroupProfiles')
-      .select(['user.id', 'user.username', 'user.profileImageUrl']);
+    const queryBuilder = this.typeormGroupRepository
+      .createQueryBuilder('group')
+      .where('group.deletedDateTime is null')
+      .orderBy('group.createdDateTime', 'ASC');
+
+    if (ownerId) {
+      queryBuilder.andWhere('group.ownerId = :ownerId', { ownerId });
+    }
+
+    if (memberId) {
+      queryBuilder.leftJoin('group.members', 'members');
+      queryBuilder.andWhere('members.userId = :memberId', { memberId });
+    }
 
     const total = await queryBuilder.getCount();
 
-    if (pagination) {
-      queryBuilder
-        .skip((page - 1) * pagination.pageSize)
-        .take(pagination.pageSize);
-    }
+    queryBuilder
+      .skip((page - 1) * pagination.pageSize)
+      .take(pagination.pageSize);
 
-    const ormMembers = await queryBuilder.getMany();
+    const ormGroups = await queryBuilder.getMany();
 
-    const domainMembers = MemberMapper.toDomainEntityList(groupId, ormMembers);
+    const domainGroups = GroupMapper.toDomainEntityList(ormGroups);
 
     return {
-      items: domainMembers,
+      items: domainGroups,
       total,
       page,
       pageSize: pagination.pageSize,
       totalPages: Math.ceil(total / pagination.pageSize),
     };
-  }
-
-  async addMembers(groupId: string, memberIdList: string[]): Promise<boolean> {
-    const queryBuilder = this.typeormGroupRepository
-      .createQueryBuilder('group')
-      .relation('members')
-      .of(groupId);
-
-    try {
-      await queryBuilder.add(memberIdList);
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  async deleteMembers(
-    groupId: string,
-    memberIdList: string[]
-  ): Promise<boolean> {
-    const queryBuilder = this.typeormGroupRepository
-      .createQueryBuilder('group')
-      .relation('members')
-      .of(groupId);
-
-    try {
-      await queryBuilder.remove(memberIdList);
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  async deleteGroup(groupId: string): Promise<boolean> {
-    const result = await this.typeormGroupRepository.update(groupId, {
-      deletedDateTime: new Date(),
-    });
-
-    return result.affected === 1;
-  }
-
-  async isOwner(groupId: string, userId: string): Promise<boolean> {
-    const queryBuilder = this.typeormGroupRepository
-      .createQueryBuilder('group')
-      .where('group.id = :groupId', { groupId })
-      .andWhere('group.ownerId = :userId', { userId });
-
-    const result = await queryBuilder.getCount();
-
-    return result > 0;
-  }
-  async isMember(groupId: string, userId: string): Promise<boolean> {
-    const queryBuilder = this.typeormGroupRepository
-      .createQueryBuilder('group')
-      .leftJoin('group.members', 'members')
-      .where('group.id = :groupId', { groupId })
-      .andWhere('members.id = :userId', { userId });
-
-    const result = await queryBuilder.getCount();
-
-    return result > 0;
-  }
-
-  async refreshInvitationCode(groupId: string): Promise<string> {
-    // UUID v4를 생성하고 하이픈을 제거한 후 앞 8자리만 사용
-    const randomCode = v4().replace(/-/g, '').slice(0, 8);
-
-    // 그룹 엔티티에 초대 코드 저장
-    await this.typeormGroupRepository.update(groupId, {
-      invitationCode: randomCode,
-    });
-
-    return randomCode;
-  }
-
-  async getInvitationCode(groupId: string): Promise<string> {
-    const ormGroup = await this.typeormGroupRepository.findOne({
-      where: { id: groupId as GroupId },
-      select: ['invitationCode'],
-    });
-
-    if (ormGroup?.invitationCode) {
-      return ormGroup.invitationCode;
-    } else {
-      return this.refreshInvitationCode(groupId);
-    }
-  }
-
-  async deleteInvitationCode(groupId: string): Promise<boolean> {
-    const result = await this.typeormGroupRepository.update(groupId, {
-      invitationCode: null,
-    });
-
-    return result.affected === 1;
-  }
-
-  async rejectJoinRequestUser(
-    groupId: string,
-    userId: string
-  ): Promise<boolean> {
-    const result = await this.typeormJoinRequestUserRepository
-      .createQueryBuilder('joinRequestUser')
-      .update()
-      .set({
-        status: 'rejected',
-      })
-      .where('joinRequestUser.groupId = :groupId', { groupId })
-      .andWhere('joinRequestUser.userId = :userId', { userId })
-      .andWhere('joinRequestUser.status = :status', { status: 'pending' })
-      .execute();
-
-    return !!result.affected && result.affected > 0;
-  }
-
-  async findJoinRequestUsers(
-    groupId: string
-  ): Promise<TGroupJoinRequestUser[]> {
-    const members = await this.typeormUserRepository
-      .createQueryBuilder('user')
-      .leftJoin('user.joinRequestGroups', 'joinRequestGroups')
-      .where('joinRequestGroups.groupId = :groupId', { groupId })
-      .andWhere('joinRequestGroups.status = :status', { status: 'pending' })
-      .select([
-        'user.id',
-        'user.username',
-        'user.profileImageUrl',
-        'joinRequestGroups.requestedDateTime',
-      ])
-      .getMany();
-
-    const domainJoinRequestUsers = JoinRequestUserMapper.toDomainEntityList(
-      groupId,
-      members
-    );
-    return domainJoinRequestUsers;
-  }
-
-  async isJoinRequestUser(groupId: string, userId: string): Promise<boolean> {
-    const queryBuilder = this.typeormGroupRepository
-      .createQueryBuilder('group')
-      .leftJoin('group.joinRequestUsers', 'joinRequestUsers')
-      .where('group.id = :groupId', { groupId })
-      .andWhere('joinRequestUsers.userId = :userId', { userId })
-      .andWhere('joinRequestUsers.status = :status', { status: 'pending' });
-
-    const result = await queryBuilder.getCount();
-    return result > 0;
-  }
-
-  async addJoinRequestUsers(
-    groupId: string,
-    userIdList: string[]
-  ): Promise<boolean> {
-    // 이미 초대된 유저는 초대하지 않음
-    const filteredUserIdList: string[] = [];
-    const promiseList = userIdList.map(async (userId) => {
-      const count = await this.typeormJoinRequestUserRepository.count({
-        where: {
-          groupId: groupId as GroupId,
-          userId: userId as UserId,
-          status: 'pending',
-        },
-      });
-
-      if (count === 0) {
-        filteredUserIdList.push(userId);
-      }
-    });
-    await Promise.allSettled(promiseList);
-
-    // filter 된 유저에 대해서만 초대
-    const joinRequestUsers = filteredUserIdList.map((userId) => {
-      return this.typeormJoinRequestUserRepository.create({
-        groupId,
-        userId,
-        status: 'pending',
-        requestedDateTime: new Date(),
-      });
-    });
-
-    await this.typeormJoinRequestUserRepository.save(joinRequestUsers);
-
-    return true;
-  }
-
-  async createGroup(payload: {
-    ownerId: string;
-    name: string;
-  }): Promise<TGroup> {
-    const ormEntity = this.typeormGroupRepository.create();
-    ormEntity.id = v6() as GroupId;
-    ormEntity.ownerId = payload.ownerId as UserId;
-    ormEntity.name = payload.name;
-
-    ormEntity.members = Promise.resolve([
-      { id: payload.ownerId } as TypeormUser,
-    ]);
-
-    ormEntity.createdDateTime = new Date();
-    ormEntity.updatedDateTime = null;
-    ormEntity.deletedDateTime = null;
-
-    const result = await this.typeormGroupRepository.save(ormEntity);
-
-    const domainEntity = GroupMapper.toDomainEntity(result);
-    return domainEntity;
   }
 
   async updateGroup(
@@ -353,68 +232,77 @@ export class TypeormGroupRepository implements IGroupRepository {
     return GroupMapper.toDomainEntity(ormEntity);
   }
 
-  async findGroupById(groupId: GroupId): Promise<Nullable<TGroup>> {
-    const ormGroup = await this.typeormGroupRepository
-      .createQueryBuilder('group')
-      .where('group.id = :groupId', { groupId })
-      .andWhere('group.deletedDateTime is null')
-      .getOne();
+  async deleteGroup(groupId: string): Promise<boolean> {
+    const result = await this.typeormGroupRepository.update(groupId, {
+      deletedDateTime: new Date(),
+    });
 
-    if (!ormGroup) {
-      this.logger.error(`Group not found. id: ${groupId}`);
-      return null;
-    }
-    const domainGroup = GroupMapper.toDomainEntity(ormGroup);
-
-    return domainGroup;
+    return result.affected === 1;
   }
 
-  async findGroupsByOwnerId(payload: {
-    ownerId: UserId;
-    pagination: TGroupsPaginationParams;
-  }): Promise<TGroupsPaginatedResult<TGroup>> {
-    const { ownerId, pagination } = payload;
-    const page = pagination.page ?? 1;
-
-    const queryBuilder = this.typeormGroupRepository
-      .createQueryBuilder('group')
-      .where('group.ownerId = :ownerId', { ownerId })
-      .andWhere('group.deletedDateTime is null');
-
-    const total = await queryBuilder.getCount();
-
-    if (pagination) {
-      queryBuilder
-        .skip((page - 1) * pagination.pageSize)
-        .take(pagination.pageSize);
-    }
-
-    const ormGroups = await queryBuilder.getMany();
-
-    const domainGroups = GroupMapper.toDomainEntityList(ormGroups);
-
-    return {
-      items: domainGroups,
-      total,
-      page,
-      pageSize: pagination.pageSize,
-      totalPages: Math.ceil(total / pagination.pageSize),
-    };
+  async isPendingMember(groupId: string, userId: string): Promise<boolean> {
+    const queryBuilder = this.typeormGroupMemberRepository
+      .createQueryBuilder('member')
+      .where('member.groupId = :groupId', { groupId })
+      .andWhere('member.userId = :userId', { userId })
+      .andWhere('member.status = :status', { status: 'pending' });
+    const result = await queryBuilder.getCount();
+    return result > 0;
   }
 
-  async findGroupsByMemberId(payload: {
-    userId: UserId;
-    pagination: TGroupsPaginationParams;
-  }): Promise<TGroupsPaginatedResult<TGroup>> {
-    const { userId, pagination } = payload;
+  async addMember({
+    groupId,
+    userId,
+    role,
+    status,
+    profileImageUrl,
+    username,
+  }: {
+    groupId: string;
+    userId: string;
+    role: TMemberRole;
+    status: TMemberStatus;
+    profileImageUrl?: string;
+    username: string;
+  }): Promise<TMember> {
+    const newMember = this.typeormGroupMemberRepository.create({
+      groupId,
+      userId,
+      role,
+      status,
+      profileImageUrl,
+      username,
+      joinRequestDateTime: new Date(),
+    });
+
+    const result = await this.typeormGroupMemberRepository.save(newMember);
+
+    const domainMember = MemberMapper.toDomainEntity(result);
+
+    return domainMember;
+  }
+
+  async findMembersBy(
+    by: { groupId: string; userIdList?: string[]; status?: TMemberStatus },
+    pagination: TGroupsPaginationParams
+  ): Promise<TGroupsPaginatedResult<TMember>> {
+    const { groupId, userIdList, status } = by;
+
     const page = pagination.page ?? 1;
 
-    const queryBuilder = this.typeormGroupRepository
-      .createQueryBuilder('group')
-      .leftJoin('group.members', 'members')
-      .where('members.id = :userId', { userId })
-      .andWhere('group.deletedDateTime is null')
-      .orderBy('group.createdDateTime', 'ASC');
+    const queryBuilder = this.typeormGroupMemberRepository
+      .createQueryBuilder('member')
+      .where('member.groupId = :groupId', { groupId });
+
+    if (status) {
+      queryBuilder.andWhere('member.status = :status', { status });
+    }
+
+    if (userIdList) {
+      queryBuilder.andWhere('member.userId IN (:...userIdList)', {
+        userIdList,
+      });
+    }
 
     const total = await queryBuilder.getCount();
 
@@ -422,16 +310,104 @@ export class TypeormGroupRepository implements IGroupRepository {
       .skip((page - 1) * pagination.pageSize)
       .take(pagination.pageSize);
 
-    const ormGroups = await queryBuilder.getMany();
+    const ormMembers = await queryBuilder.getMany();
 
-    const domainGroups = GroupMapper.toDomainEntityList(ormGroups);
+    const domainMembers = MemberMapper.toDomainEntityList(ormMembers);
 
     return {
-      items: domainGroups,
+      items: domainMembers,
       total,
       page,
       pageSize: pagination.pageSize,
       totalPages: Math.ceil(total / pagination.pageSize),
     };
+  }
+
+  async updateMember({
+    groupId,
+    userId,
+    payload,
+  }: {
+    groupId: string;
+    userId: string;
+    payload: {
+      username?: string;
+      role?: 'owner' | 'member';
+      status?: 'pending' | 'approved' | 'rejected' | 'droppedOut' | 'left';
+      profileImageUrl?: string;
+    };
+  }): Promise<boolean> {
+    if (Object.keys(payload).length === 0) {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage:
+          'At least one of username, role, status, profileImageUrl',
+      });
+    }
+
+    const updateObject: Partial<TypeormMember> = {
+      updatedDateTime: new Date(),
+    };
+    if (payload.username) {
+      updateObject.username = payload.username;
+    }
+    if (payload.role) {
+      updateObject.role = payload.role;
+    }
+    if (payload.status) {
+      updateObject.status = payload.status;
+      if (payload.status === 'approved') {
+        updateObject.joinDateTime = new Date();
+      } else if (payload.status === 'droppedOut' || payload.status === 'left') {
+        updateObject.leaveDateTime = new Date();
+      }
+    }
+    if (payload.profileImageUrl) {
+      updateObject.profileImageUrl = payload.profileImageUrl;
+    }
+
+    const queryBuilder = this.typeormGroupMemberRepository
+      .createQueryBuilder('member')
+      .update()
+      .where('member.groupId = :groupId', { groupId })
+      .andWhere('member.userId = :userId', { userId })
+      .set(updateObject);
+
+    const result = await queryBuilder.execute();
+
+    return result.affected !== undefined && result.affected > 0;
+  }
+
+  async refreshInvitationCode(groupId: string): Promise<string> {
+    // UUID v4를 생성하고 하이픈을 제거한 후 앞 8자리만 사용
+    const randomCode = v4().replace(/-/g, '').slice(0, 8);
+
+    // 그룹 엔티티에 초대 코드 저장
+    await this.typeormGroupRepository.update(groupId, {
+      invitationCode: randomCode,
+    });
+
+    return randomCode;
+  }
+
+  async getInvitationCode(groupId: string): Promise<string> {
+    const ormGroup = await this.typeormGroupRepository.findOne({
+      where: { id: groupId as GroupId },
+      select: ['invitationCode'],
+    });
+
+    if (ormGroup?.invitationCode) {
+      return ormGroup.invitationCode;
+    } else {
+      return this.refreshInvitationCode(groupId);
+    }
+  }
+
+  async deleteInvitationCode(groupId: string): Promise<boolean> {
+    const result = await this.typeormGroupRepository.update(groupId, {
+      invitationCode: null,
+    });
+
+    return result.affected === 1;
   }
 }

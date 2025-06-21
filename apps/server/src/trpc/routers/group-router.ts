@@ -1,14 +1,18 @@
 import z from 'zod';
 import { authProcedure, router } from '../trpc';
 import {
+  Code,
+  Exception,
   SGroup,
-  SGroupJoinRequestUser,
+  SPendingMember,
   SGroupsPaginationParams,
+  SAcceptedMember,
 } from '@repo/be-core';
 
 export const groupRouter = router({
   createGroup: authProcedure
     .input(z.object({ name: z.string() }))
+    .output(SGroup)
     .mutation(async ({ input, ctx }) => {
       const { name } = input;
       const {
@@ -21,6 +25,7 @@ export const groupRouter = router({
 
   changeGroupOwner: authProcedure
     .input(z.object({ groupId: z.string(), toBeOwnerId: z.string() }))
+    .output(SGroup)
     .mutation(async ({ input, ctx }) => {
       const { groupId, toBeOwnerId } = input;
       const {
@@ -37,6 +42,7 @@ export const groupRouter = router({
 
   changeGroupName: authProcedure
     .input(z.object({ groupId: z.string(), name: z.string() }))
+    .output(SGroup)
     .mutation(async ({ input, ctx }) => {
       const { groupId, name } = input;
       const {
@@ -53,6 +59,7 @@ export const groupRouter = router({
 
   deleteGroup: authProcedure
     .input(z.object({ groupId: z.string() }))
+    .output(z.void())
     .mutation(async ({ input, ctx }) => {
       const { groupId } = input;
       const {
@@ -126,21 +133,23 @@ export const groupRouter = router({
 
   requestJoinGroup: authProcedure
     .input(z.object({ invitationCode: z.string() }))
+    .output(SPendingMember)
     .mutation(async ({ input, ctx }) => {
       const { invitationCode } = input;
       const {
         user,
         group: { groupService },
       } = ctx;
-      await groupService.requestJoinGroup({
+      const pendingMember = await groupService.requestJoinGroup({
         requesterId: user.id,
         invitationCode,
       });
+      return pendingMember;
     }),
 
   getJoinRequestUsers: authProcedure
     .input(z.object({ groupId: z.string() }))
-    .output(z.array(SGroupJoinRequestUser))
+    .output(z.array(SPendingMember))
     .query(async ({ input, ctx }) => {
       const { groupId } = input;
       const {
@@ -157,21 +166,24 @@ export const groupRouter = router({
 
   approveJoinRequest: authProcedure
     .input(z.object({ groupId: z.string(), memberId: z.string() }))
+    .output(SAcceptedMember)
     .mutation(async ({ input, ctx }) => {
       const { groupId, memberId } = input;
       const {
         user,
         group: { groupService },
       } = ctx;
-      await groupService.approveJoinRequest({
+      const acceptedMember = await groupService.approveJoinRequest({
         requesterId: user.id,
         groupId,
         memberId,
       });
+      return acceptedMember;
     }),
 
   rejectJoinRequest: authProcedure
     .input(z.object({ groupId: z.string(), memberId: z.string() }))
+    .output(z.void())
     .mutation(async ({ input, ctx }) => {
       const { groupId, memberId } = input;
       const {
@@ -187,6 +199,7 @@ export const groupRouter = router({
 
   dropOutMember: authProcedure
     .input(z.object({ groupId: z.string(), memberId: z.string() }))
+    .output(z.void())
     .mutation(async ({ input, ctx }) => {
       const { groupId, memberId } = input;
       const {
@@ -200,7 +213,7 @@ export const groupRouter = router({
       });
     }),
 
-  getMemberList: authProcedure
+  getMembersByGroupId: authProcedure
     .input(
       SGroupsPaginationParams.extend({
         groupId: z.string(),
@@ -212,7 +225,7 @@ export const groupRouter = router({
         user,
         group: { groupService },
       } = ctx;
-      const memberList = await groupService.getMemberList({
+      const memberList = await groupService.getMembersByGroupId({
         requesterId: user.id,
         groupId,
         pagination,
@@ -220,8 +233,52 @@ export const groupRouter = router({
       return memberList;
     }),
 
+  getMemberById: authProcedure
+    .input(z.object({ groupId: z.string(), userId: z.string() }))
+    .output(SAcceptedMember)
+    .query(async ({ input, ctx }) => {
+      const { groupId, userId } = input;
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      const members = await groupService.getMembersByUserIds({
+        requesterId: user.id,
+        groupId,
+        userIds: [userId],
+      });
+      const member = members.at(0);
+
+      if (!member) {
+        throw Exception.new({
+          code: Code.ENTITY_NOT_FOUND_ERROR,
+          overrideMessage: 'Member not found',
+        });
+      }
+
+      return member;
+    }),
+
+  getMembersByIds: authProcedure
+    .input(z.object({ groupId: z.string(), userIds: z.array(z.string()) }))
+    .output(z.array(SAcceptedMember))
+    .query(async ({ input, ctx }) => {
+      const { groupId, userIds } = input;
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      const members = await groupService.getMembersByUserIds({
+        requesterId: user.id,
+        groupId,
+        userIds,
+      });
+      return members;
+    }),
+
   leaveGroup: authProcedure
     .input(z.object({ groupId: z.string() }))
+    .output(z.void())
     .mutation(async ({ input, ctx }) => {
       const { groupId } = input;
       const {

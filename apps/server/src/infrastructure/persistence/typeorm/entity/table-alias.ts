@@ -5,9 +5,7 @@ export enum TableAlias {
   COMMENT = 'Comment',
   LIKE = 'Like',
   OAUTH = 'Oauth',
-  USER_GROUP_PROFILE = 'UserGroupProfile',
-  TEMPORARY_CONTENT = 'TemporaryContent',
+  MEMBER = 'Member',
   COMMENT_USER_TAG = 'CommentUserTag',
   REFRESH_TOKEN = 'RefreshToken',
-  JOIN_REQUEST_USER = 'JoinRequestUser',
 }

@@ -47,6 +47,7 @@ export class TypeormComment {
   @Column()
   contentId!: TypeormContent['id'];
 
+  // TODO: userId를 연결할게 아니라, member를 직접 연결 할지 생각해보자.
   // for user comment
   @ManyToOne(() => TypeormUser, {
     nullable: true,

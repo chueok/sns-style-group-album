@@ -7,6 +7,7 @@ export const useApproveJoinRequest = () => {
     trpc.group.approveJoinRequest.useMutation({
       onSuccess: (_, { groupId }) => {
         utils.group.getJoinRequestUsers.invalidate({ groupId });
+        utils.group.getMembersByGroupId.invalidate({ groupId });
       },
     });
 

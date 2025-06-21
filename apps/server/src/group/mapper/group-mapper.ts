@@ -17,8 +17,8 @@ export class GroupMapper {
       ownerId,
       name,
       createdDateTime,
-      updatedDateTime,
-      deletedDateTime,
+      updatedDateTime: updatedDateTime || undefined,
+      deletedDateTime: deletedDateTime || undefined,
     };
 
     return group;

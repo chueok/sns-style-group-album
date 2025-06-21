@@ -1,7 +1,7 @@
 import { useGroupStore } from '@/store/group-store';
 import { useAuth } from '@/trpc/hooks/auth/use-auth';
 import { useGroupDetail } from '@/trpc/hooks/group/use-group-list';
-import { useMemberProfiles } from '@/trpc/hooks/user/use-member-profile';
+import { useMemberList } from '@/trpc/hooks/group/use-member';
 import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui/avatar';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent } from '@repo/ui/card';
@@ -55,7 +55,7 @@ export const EditGroupDrawer = () => {
   // groupId 가 undefined인 경우는 버튼이 비활성화 되어 이 페이지가 열리지 않음
   const selectedGroupId = useGroupStore((state) => state.selectedGroupId);
   const { group } = useGroupDetail(selectedGroupId || '');
-  const { memberProfiles } = useMemberProfiles({
+  const { memberProfiles } = useMemberList({
     groupId: selectedGroupId || '',
   }); // TODO: infinite scroll 구현 필요 (page 기반)
 

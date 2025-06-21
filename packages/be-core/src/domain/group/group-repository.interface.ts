@@ -1,6 +1,22 @@
 import { Nullable } from '../../common/type/common-types';
-import { TGroup, TGroupJoinRequestUser, TGroupMember } from './entity/group';
+import { TGroup, TMember, TMemberProfile } from './entity/group';
 import { z } from 'zod';
+
+/**
+ * 멤버 요구사항
+ * 1. 멤버는 다섯가지 상태(status)를 가지며 각각 아래와 같다.
+ * 1.1. pending - 멤버 초대 요청 상태
+ * 1.2. approved - 멤버 초대 승인 상태
+ * 1.3. rejected - 멤버 초대 거절 상태
+ * 1.4. droppedOut - 멤버 탈퇴 상태
+ * 1.5. left - 멤버 외부 상태
+ *
+ * 2. 멤버 롤(role)은 두가지가 있으며 각각 아래와 같다.
+ * 2.1. owner - 그룹의 소유자로, 한 그룹에 한 명만 존재 가능하다.
+ * 2.2. member - 그룹의 일반 멤버로, 그룹에 속해있으며 그룹의 소유자는 멤버의 상태를 변경할 수 있다.
+ *
+ * 3. 상태가 approved인 멤버만 유효한 멤버이다.
+ */
 
 export const SGroupsPaginationParams = z.object({
   page: z.number().nullish(),
@@ -17,8 +33,49 @@ export type TGroupsPaginatedResult<T> = {
   totalPages: number;
 };
 
+export type TMemberRole = 'owner' | 'member';
+export type TMemberStatus =
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'droppedOut'
+  | 'left';
+
 export interface IGroupRepository {
-  createGroup(payload: { ownerId: string; name: string }): Promise<TGroup>;
+  /**
+   * 유저 기본 프로필 조회
+   */
+  findUserProfile(userId: string): Promise<TMemberProfile>;
+
+  /****************************************************
+   * 권한 확인을 위한 함수
+   ****************************************************/
+  isOwner(groupId: string, userId: string): Promise<boolean>;
+
+  isApprovedMember(groupId: string, userId: string): Promise<boolean>;
+
+  /**
+   * Group CRUD
+   */
+  createGroup(payload: {
+    groupName: string;
+    ownerId: string;
+    ownerUsername: string;
+    ownerProfileImageUrl?: string;
+  }): Promise<TGroup>;
+
+  findGroupBy(payload: {
+    groupId?: string;
+    invitationCode?: string;
+  }): Promise<Nullable<TGroup>>;
+
+  findGroupListBy(
+    payload: {
+      ownerId?: string;
+      memberId?: string;
+    },
+    pagination: TGroupsPaginationParams
+  ): Promise<TGroupsPaginatedResult<TGroup>>;
 
   updateGroup(
     groupId: string,
@@ -30,36 +87,35 @@ export interface IGroupRepository {
 
   deleteGroup(groupId: string): Promise<boolean>;
 
-  findGroupById(groupId: string): Promise<Nullable<TGroup>>;
-
-  findGroupsByOwnerId(payload: {
-    ownerId: string;
-    pagination: TGroupsPaginationParams;
-  }): Promise<TGroupsPaginatedResult<TGroup>>;
-
-  findGroupsByMemberId(payload: {
-    userId: string;
-    pagination: TGroupsPaginationParams;
-  }): Promise<TGroupsPaginatedResult<TGroup>>;
-
   /****************************************************
    * 멤버 관리를 위한 함수 모음
    ****************************************************/
-  addMembers(groupId: string, memberIdList: string[]): Promise<boolean>;
+  isPendingMember(groupId: string, userId: string): Promise<boolean>;
 
-  deleteMembers(groupId: string, memberIdList: string[]): Promise<boolean>;
+  addMember(payload: {
+    groupId: string;
+    userId: string;
+    role: TMemberRole;
+    status: TMemberStatus;
+    username: string;
+    profileImageUrl?: string;
+  }): Promise<TMember>;
 
-  findMembers(
-    groupId: string,
+  findMembersBy(
+    by: { groupId: string; userIdList?: string[]; status?: TMemberStatus },
     pagination: TGroupsPaginationParams
-  ): Promise<TGroupsPaginatedResult<TGroupMember>>;
+  ): Promise<TGroupsPaginatedResult<TMember>>;
 
-  /****************************************************
-   * 권한 확인을 위한 함수 모음
-   ****************************************************/
-  isOwner(groupId: string, userId: string): Promise<boolean>;
-
-  isMember(groupId: string, userId: string): Promise<boolean>;
+  updateMember(payload: {
+    groupId: string;
+    userId: string;
+    payload: {
+      username?: string;
+      role?: TMemberRole;
+      status?: TMemberStatus;
+      profileImageUrl?: string;
+    };
+  }): Promise<boolean>;
 
   /****************************************************
    * 멤버 초대를 위한 함수 모음
@@ -68,17 +124,4 @@ export interface IGroupRepository {
   getInvitationCode(groupId: string): Promise<string>;
   refreshInvitationCode(groupId: string): Promise<string>;
   deleteInvitationCode(groupId: string): Promise<boolean>;
-
-  findJoinRequestUsers(groupId: string): Promise<TGroupJoinRequestUser[]>;
-
-  isJoinRequestUser(groupId: string, userId: string): Promise<boolean>;
-
-  findGroupByInvitationCode(code: string): Promise<Nullable<TGroup>>;
-
-  addJoinRequestUsers(groupId: string, userIdList: string[]): Promise<boolean>;
-
-  // 두가지 입력을 처리하다 보니, 함수 이름은 도메인을 반영하여 작성함
-  // 유저 여러명을 동시에 처리하기에는, transactional 처리가 복잡해져서, 단일 유저에 대한 인터페이스 구현
-  approveJoinRequestUser(groupId: string, userId: string): Promise<boolean>;
-  rejectJoinRequestUser(groupId: string, userId: string): Promise<boolean>;
 }

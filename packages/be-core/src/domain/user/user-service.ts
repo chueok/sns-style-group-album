@@ -1,12 +1,7 @@
 import { Code } from '../../common/exception/code';
 import { Exception } from '../../common/exception/exception';
-import { TMemberProfile } from './entity/member-profile';
 import { TUser } from './entity/user';
-import {
-  IUserRepository,
-  TMemberPaginatedResult,
-  TMemberPaginationParams,
-} from './user-repository.interface';
+import { IUserRepository } from './user-repository.interface';
 
 export class UserService {
   constructor(private readonly userRepository: IUserRepository) {}
@@ -36,62 +31,6 @@ export class UserService {
     }
   }
 
-  async getMemberProfiles(payload: {
-    requesterId: string;
-    groupId: string;
-    userIds: string[];
-  }): Promise<TMemberProfile[]> {
-    const { requesterId, userIds, groupId } = payload;
-
-    const isUserInGroup = await this.userRepository.isUserInGroup(
-      requesterId,
-      groupId
-    );
-    if (!isUserInGroup) {
-      throw Exception.new({
-        code: Code.UNAUTHORIZED_ERROR,
-        overrideMessage: 'User is not in group',
-      });
-    }
-
-    const users = await this.userRepository.findMemberProfiles({
-      groupId,
-      userIds,
-    });
-
-    return users.map((user) => ({
-      id: user.id,
-      username: user.username,
-      profileImageUrl: user.profileImageUrl,
-    }));
-  }
-
-  async getMemberProfilesByPagination(payload: {
-    requesterId: string;
-    groupId: string;
-    pagination: TMemberPaginationParams;
-  }): Promise<TMemberPaginatedResult<TMemberProfile>> {
-    const { requesterId, groupId, pagination } = payload;
-
-    const isUserInGroup = await this.userRepository.isUserInGroup(
-      requesterId,
-      groupId
-    );
-    if (!isUserInGroup) {
-      throw Exception.new({
-        code: Code.UNAUTHORIZED_ERROR,
-        overrideMessage: 'User is not in group',
-      });
-    }
-
-    const result = await this.userRepository.findMemberProfilesByPagination({
-      groupId,
-      pagination,
-    });
-
-    return result;
-  }
-
   async deleteUser(id: string): Promise<void> {
     const user = await this.userRepository.findUserById(id);
     if (!user) {
@@ -102,35 +41,6 @@ export class UserService {
     }
 
     await this.userRepository.deleteUser(id);
-  }
-
-  async editGroupProfile(payload: {
-    userId: string;
-    groupId: string;
-    username?: string;
-    profileImageUrl?: string;
-  }): Promise<TUser> {
-    const { userId, groupId, username, profileImageUrl } = payload;
-
-    const isUserInGroup = await this.userRepository.isUserInGroup(
-      userId,
-      groupId
-    );
-    if (!isUserInGroup) {
-      throw Exception.new({
-        code: Code.UNAUTHORIZED_ERROR,
-        overrideMessage: 'User is not in group',
-      });
-    }
-
-    const result = await this.userRepository.updateGroupProfile({
-      userId,
-      groupId,
-      username,
-      profileImageUrl,
-    });
-
-    return result;
   }
 
   async editDefaultProfile(payload: {

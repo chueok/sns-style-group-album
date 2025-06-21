@@ -13,7 +13,6 @@ import {
 import { DataSource, Repository } from 'typeorm';
 import { MediaMapper } from './mapper/media-mapper';
 import { Inject, Logger, LoggerService, Optional } from '@nestjs/common';
-import { TypeormGroup } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
 import { v4, v6 } from 'uuid';
 import { DiTokens } from '../di/di-tokens';
 import { ServerConfig } from '../config/server-config';
@@ -21,6 +20,7 @@ import {
   TypeormContent,
   TypeormMedia,
 } from '../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
+import { TypeormMember } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group-member.entity';
 
 const generateKey = (payload: {
   groupId: string;
@@ -34,7 +34,7 @@ export class TypeormContentRepository implements IContentRepository {
   public static commentLimit = 5;
   public static likeLimit = 5;
 
-  private readonly typeormGroupRepository: Repository<TypeormGroup>;
+  private readonly typeormGroupMemberRepository: Repository<TypeormMember>;
   private readonly typeormContentRepository: Repository<TypeormContent>;
   private readonly typeormMediaContentRepository: Repository<TypeormMedia>;
 
@@ -48,7 +48,7 @@ export class TypeormContentRepository implements IContentRepository {
     private readonly mediaObjectStorage: IObjectStoragePort,
     @Optional() logger?: LoggerService
   ) {
-    this.typeormGroupRepository = dataSource.getRepository(TypeormGroup);
+    this.typeormGroupMemberRepository = dataSource.getRepository(TypeormMember);
     this.typeormMediaContentRepository = dataSource.getRepository(TypeormMedia);
     this.typeormContentRepository = dataSource.getRepository(TypeormContent);
 
@@ -95,7 +95,7 @@ export class TypeormContentRepository implements IContentRepository {
       where: {
         id: payload.contentId as ContentId,
         group: {
-          members: { id: payload.userId as UserId },
+          members: { userId: payload.userId as UserId, status: 'approved' },
         },
       },
     });
@@ -244,16 +244,15 @@ export class TypeormContentRepository implements IContentRepository {
     };
   }
 
-  async isGroupMember(payload: {
+  async isMember(payload: {
     userId: string;
     groupId: string;
   }): Promise<boolean> {
-    const { groupId, userId } = payload;
-    const queryBuilder = this.typeormGroupRepository
-      .createQueryBuilder('group')
-      .leftJoin('group.members', 'members')
-      .where('group.id = :groupId', { groupId })
-      .andWhere('members.id = :userId', { userId });
+    const queryBuilder = this.typeormGroupMemberRepository
+      .createQueryBuilder('member')
+      .where('member.groupId = :groupId', { groupId: payload.groupId })
+      .andWhere('member.userId = :userId', { userId: payload.userId })
+      .andWhere('member.status = :status', { status: 'approved' });
 
     const result = await queryBuilder.getCount();
 

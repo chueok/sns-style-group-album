@@ -84,7 +84,7 @@ const InnerFeedPage = ({ groupId }: { groupId: string }) => {
           key={requestingUser.id}
           username={requestingUser.username}
           profileImageUrl={requestingUser.profileImageUrl ?? undefined}
-          requestedDateTime={requestingUser.requestedDateTime}
+          requestedDateTime={requestingUser.joinRequestDateTime}
           groupId={groupId}
           memberId={requestingUser.id}
         />

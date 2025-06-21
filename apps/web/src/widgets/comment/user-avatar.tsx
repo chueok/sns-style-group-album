@@ -1,5 +1,5 @@
 import { useGroupStore } from '@/store/group-store';
-import { useMemberProfile } from '@/trpc/hooks/user/use-member-profile';
+import { useMember } from '@/trpc/hooks/group/use-member';
 import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui/avatar';
 import { User } from 'lucide-react';
 
@@ -10,7 +10,7 @@ const InnerUserAvatar = ({
   groupId: string;
   userId: string;
 }) => {
-  const { profile, isLoading, isError } = useMemberProfile({
+  const { profile, isLoading, isError } = useMember({
     groupId,
     userId,
   });

@@ -18,11 +18,6 @@ export type TMediaPaginationResult<T> = {
 };
 
 export interface IContentRepository {
-  // createContent(content: Content): Promise<boolean>;
-  // updateContent(content: Content): Promise<boolean>;
-
-  // findContentById(contentId: string): Promise<Nullable<Content>>;
-
   findMediaById(id: string): Promise<TMedia>;
 
   findMediaInGroupOrderByCreated(payload: {
@@ -30,18 +25,7 @@ export interface IContentRepository {
     pagination: TMediaPaginationParams;
   }): Promise<TMediaPaginationResult<TMedia>>;
 
-  // findContentsByGroupIdAndType<T extends EContentCategory>(payload: {
-  //   groupId: string;
-  //   contentTypeList: T[];
-  //   pagination: ContentPaginationOptions;
-  // }): Promise<ContentByContentCategory<T>[]>;
-
-  // findContentsByGroupMember(payload: {
-  //   userId: string;
-  //   groupId: string;
-  // }): Promise<Content[]>;
-
-  isGroupMember(payload: { userId: string; groupId: string }): Promise<boolean>;
+  isMember(payload: { userId: string; groupId: string }): Promise<boolean>;
 
   isContentOwner(payload: {
     userId: string;
@@ -62,6 +46,4 @@ export interface IContentRepository {
       mimeType: string;
     }[];
   }): Promise<string[]>;
-
-  // delete is not supported
 }
