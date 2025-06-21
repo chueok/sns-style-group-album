@@ -40,13 +40,16 @@ export interface IContentRepository {
     contentId: string;
   }): Promise<boolean>;
 
-  createMediaUploadUrls(payload: {
+  createMedia(payload: {
     groupId: string;
     ownerId: string;
     media: {
+      thumbnailPath: string;
+      originalPath: string;
+      largePath?: string;
       size: number;
       ext: string;
       mimeType: string;
     }[];
-  }): Promise<string[]>;
+  }): Promise<void>;
 }

@@ -1,10 +1,21 @@
 import { Code } from '../../common/exception/code';
 import { Exception } from '../../common/exception/exception';
+import { IObjectStoragePort } from '../../common/port/object-storage-port.interface';
 import { TUser } from './entity/user';
 import { IUserRepository } from './user-repository.interface';
 
+const generateObjectStorageKey = (userId: string): string => {
+  return `profile-image/${userId}`;
+};
+
 export class UserService {
-  constructor(private readonly userRepository: IUserRepository) {}
+  private readonly bucketName: string = 'medias';
+  private readonly uploadUrlExpiryTime: number = 3 * 60; // 3 minutes
+
+  constructor(
+    private readonly userRepository: IUserRepository,
+    private readonly objectStorage: IObjectStoragePort
+  ) {}
 
   /**
    * 유저 정보를 가져오는 두가지 방법에 대해 고민하였음
@@ -24,7 +35,8 @@ export class UserService {
           overrideMessage: 'User not found',
         });
       }
-      return user;
+      const resolvedUser = await this.resolveSignedUrl(user);
+      return resolvedUser;
     } catch (error) {
       console.error(error);
       throw error;
@@ -79,20 +91,91 @@ export class UserService {
       });
     }
 
-    return user;
+    const resolvedUser = await this.resolveSignedUrl(user);
+    return resolvedUser;
   }
 
   async generateProfileImageUploadUrl(payload: {
     requesterId: string;
   }): Promise<string> {
     const { requesterId } = payload;
-    const url =
-      await this.userRepository.createProfileImageUploadUrl(requesterId);
+
+    const objectStorageKey = generateObjectStorageKey(requesterId);
+    const result = await this.userRepository.updateUser(requesterId, {
+      profileImageUrl: objectStorageKey,
+    });
+    if (!result) {
+      throw Exception.new({
+        code: Code.INTERNAL_ERROR,
+        overrideMessage: 'Failed to update user',
+      });
+    }
+
+    const url = await this.objectStorage.getPresignedUrlForUpload(
+      this.bucketName,
+      objectStorageKey,
+      this.uploadUrlExpiryTime
+    );
+
     return url;
   }
 
   async deleteProfileImage(payload: { requesterId: string }): Promise<void> {
     const { requesterId } = payload;
-    await this.userRepository.deleteProfileImage(requesterId);
+
+    const user = await this.userRepository.findUserById(requesterId);
+    if (!user) {
+      throw Exception.new({
+        code: Code.ENTITY_NOT_FOUND_ERROR,
+        overrideMessage: 'User not found',
+      });
+    }
+    if (!user.profileImageUrl) {
+      return;
+    }
+
+    const result = await this.userRepository.updateUser(requesterId, {
+      profileImageUrl: null,
+    });
+    if (!result) {
+      throw Exception.new({
+        code: Code.INTERNAL_ERROR,
+        overrideMessage: 'Failed to update user',
+      });
+    }
+
+    const objectStorageKey = user.profileImageUrl;
+    await this.objectStorage.deleteObject(this.bucketName, objectStorageKey);
+  }
+
+  private async resolveSignedUrl(entity: TUser): Promise<TUser> {
+    if (entity.profileImageUrl) {
+      entity.profileImageUrl =
+        await this.objectStorage.getPresignedUrlForDownload(
+          this.bucketName,
+          entity.profileImageUrl
+        );
+    }
+    return entity;
+  }
+
+  private async resolveSignedUrlList(users: TUser[]): Promise<TUser[]> {
+    const resolvedUserList: TUser[] = [];
+
+    await Promise.all(
+      users.map(async (user) => {
+        const resolvedUser = await this.resolveSignedUrl(user);
+        resolvedUserList.push(resolvedUser);
+      })
+    );
+
+    if (resolvedUserList.length !== users.length) {
+      throw Exception.new({
+        code: Code.INTERNAL_ERROR,
+        overrideMessage: 'Failed to resolve signed url list',
+      });
+    }
+
+    return resolvedUserList;
   }
 }

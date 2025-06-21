@@ -1,7 +1,12 @@
 import { Module, Provider } from '@nestjs/common';
 import { DiTokens } from './di-tokens';
 import { TypeormUserRepository } from './user-repository';
-import { IUserRepository, UserService } from '@repo/be-core';
+import {
+  IObjectStoragePort,
+  IUserRepository,
+  UserService,
+} from '@repo/be-core';
+import { DiTokens as CommonDiTokens } from '../di/di-tokens';
 
 const providers: Provider[] = [
   {
@@ -10,10 +15,13 @@ const providers: Provider[] = [
   },
   {
     provide: UserService,
-    useFactory: (userRepository: IUserRepository) => {
-      return new UserService(userRepository);
+    useFactory: (
+      userRepository: IUserRepository,
+      objectStorage: IObjectStoragePort
+    ) => {
+      return new UserService(userRepository, objectStorage);
     },
-    inject: [DiTokens.UserRepository],
+    inject: [DiTokens.UserRepository, CommonDiTokens.ObjectStorage],
   },
 ];
 

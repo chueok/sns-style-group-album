@@ -17,11 +17,4 @@ export interface IUserRepository {
   updateUser(userId: string, user: Partial<TEditableUser>): Promise<boolean>;
 
   deleteUser(userId: string): Promise<void>;
-
-  /**
-   * 프로필 이미지 업로드 url 생성
-   */
-  createProfileImageUploadUrl(userId: string): Promise<string>;
-
-  deleteProfileImage(userId: string): Promise<void>;
 }

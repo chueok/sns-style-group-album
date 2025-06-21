@@ -4,7 +4,6 @@ import {
   EContentCategory,
   Exception,
   IContentRepository,
-  IObjectStoragePort,
   Nullable,
   TMedia,
   TMediaPaginationParams,
@@ -13,23 +12,13 @@ import {
 } from '@repo/be-core';
 import { DataSource, Repository } from 'typeorm';
 import { MediaMapper } from './mapper/media-mapper';
-import { Inject, Logger, LoggerService, Optional } from '@nestjs/common';
-import { v4, v6 } from 'uuid';
-import { DiTokens } from '../di/di-tokens';
-import { ServerConfig } from '../config/server-config';
+import { Logger, LoggerService, Optional } from '@nestjs/common';
+import { v6 } from 'uuid';
 import {
   TypeormContent,
   TypeormMedia,
 } from '../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
 import { TypeormMember } from '../infrastructure/persistence/typeorm/entity/group/typeorm-member.entity';
-
-const generateKey = (payload: {
-  groupId: string;
-  ownerId: string;
-  fileName: string;
-}): string => {
-  return `${payload.groupId}/${payload.ownerId}/${payload.fileName}`;
-};
 
 export class TypeormContentRepository implements IContentRepository {
   public static commentLimit = 5;
@@ -39,21 +28,12 @@ export class TypeormContentRepository implements IContentRepository {
   private readonly typeormContentRepository: Repository<TypeormContent>;
   private readonly typeormMediaContentRepository: Repository<TypeormMedia>;
 
-  private readonly bucketName: string;
-
   private readonly logger: LoggerService;
 
-  constructor(
-    dataSource: DataSource,
-    @Inject(DiTokens.ObjectStorage)
-    private readonly mediaObjectStorage: IObjectStoragePort,
-    @Optional() logger?: LoggerService
-  ) {
+  constructor(dataSource: DataSource, @Optional() logger?: LoggerService) {
     this.typeormGroupMemberRepository = dataSource.getRepository(TypeormMember);
     this.typeormMediaContentRepository = dataSource.getRepository(TypeormMedia);
     this.typeormContentRepository = dataSource.getRepository(TypeormContent);
-
-    this.bucketName = ServerConfig.OBJECT_STORAGE_MEDIA_BUCKET;
 
     this.logger = logger || new Logger(TypeormContentRepository.name);
   }
@@ -71,9 +51,7 @@ export class TypeormContentRepository implements IContentRepository {
       });
     }
 
-    const resolved = await this.resolveSignedUrl(result);
-
-    return MediaMapper.toDomainEntity(resolved);
+    return MediaMapper.toDomainEntity(result);
   }
 
   async isContentOwner(payload: {
@@ -107,72 +85,22 @@ export class TypeormContentRepository implements IContentRepository {
     return result > 0;
   }
 
-  /**
-   * Typeorm Media entity의 url을 signed url로 변경
-   */
-  private async resolveSignedUrl(entity: TypeormMedia): Promise<TypeormMedia> {
-    if (entity.originalRelativePath) {
-      entity.originalRelativePath =
-        await this.mediaObjectStorage.getPresignedUrlForDownload(
-          this.bucketName,
-          entity.originalRelativePath
-        );
-    }
-    if (entity.thumbnailRelativePath) {
-      entity.thumbnailRelativePath =
-        await this.mediaObjectStorage.getPresignedUrlForDownload(
-          this.bucketName,
-          entity.thumbnailRelativePath
-        );
-    }
-    if (entity.largeRelativePath) {
-      entity.largeRelativePath =
-        await this.mediaObjectStorage.getPresignedUrlForDownload(
-          this.bucketName,
-          entity.largeRelativePath
-        );
-    }
-    return entity;
-  }
-
-  private async resolveSignedUrlList(
-    entityList: TypeormMedia[]
-  ): Promise<TypeormMedia[]> {
-    const result = await Promise.allSettled(
-      entityList.map((entity) => this.resolveSignedUrl(entity))
-    );
-
-    result.map((result) => {
-      if (result.status === 'rejected') {
-        console.error({ result: result.reason });
-      }
-    });
-    return result
-      .map((result) => (result.status === 'fulfilled' ? result.value : null))
-      .filter((result) => result !== null);
-  }
-
-  async createMediaUploadUrls(payload: {
+  async createMedia(payload: {
     groupId: string;
     ownerId: string;
     media: {
+      thumbnailPath: string;
+      originalPath: string;
+      largePath?: string;
       size: number;
       ext: string;
       mimeType: string;
     }[];
-  }): Promise<string[]> {
+  }): Promise<void> {
     const { groupId, ownerId, media } = payload;
 
-    const result = await Promise.all(
-      media.map(async ({ size, ext, mimeType }) => {
-        const fileName = v4();
-
-        const key = generateKey({
-          groupId,
-          ownerId,
-          fileName,
-        });
-
+    const newMediaList = media.map(
+      ({ size, ext, mimeType, thumbnailPath, originalPath, largePath }) => {
         let category: EContentCategory;
         if (mimeType.startsWith('image/')) {
           category = EContentCategory.IMAGE;
@@ -188,8 +116,9 @@ export class TypeormContentRepository implements IContentRepository {
         const newMedia = this.typeormMediaContentRepository.create({
           id: v6(),
           category,
-          thumbnailRelativePath: key, // TODO: 썸네일 생성 필요.
-          originalRelativePath: key,
+          thumbnailRelativePath: thumbnailPath,
+          originalRelativePath: originalPath,
+          largeRelativePath: largePath,
           size,
           ext,
           mimeType,
@@ -198,18 +127,13 @@ export class TypeormContentRepository implements IContentRepository {
           createdDateTime: new Date(),
         });
 
-        await this.typeormMediaContentRepository.save(newMedia);
-
-        const url = await this.mediaObjectStorage.getPresignedUrlForUpload(
-          this.bucketName,
-          key // TODO: 몇 초 동안 유효하게 할지 결정 필요.
-        );
-
-        return url;
-      })
+        return newMedia;
+      }
     );
 
-    return result;
+    await this.typeormMediaContentRepository.save(newMediaList);
+
+    return;
   }
 
   async findMediaInGroupOrderByCreated(payload: {
@@ -239,9 +163,8 @@ export class TypeormContentRepository implements IContentRepository {
     }
 
     const ormContentList = await queryBuilder.getMany();
-    const resolvedList = await this.resolveSignedUrlList(ormContentList);
-    const nextCursor = resolvedList.at(-1)?.id || undefined;
-    const items = MediaMapper.toDomainEntityList(resolvedList);
+    const nextCursor = ormContentList.at(-1)?.id || undefined;
+    const items = MediaMapper.toDomainEntityList(ormContentList);
     return {
       items,
       sortOrder: pagination.sortOrder,
