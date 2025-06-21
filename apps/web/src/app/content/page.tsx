@@ -33,6 +33,8 @@ import { CreatedDate } from '@/widgets/comment/created-date';
 import { ScrollArea } from '@repo/ui/scroll-area';
 import { useSwipeGesture } from '@/widgets/common/use-swipe-gesture';
 import { useMyMemberInfo } from '@/trpc/hooks/group/use-my-member-info';
+import { formatDateToSlash } from '@/widgets/utils/format-date';
+import { useMember } from '@/trpc/hooks/group/use-member';
 
 const CommentList = (payload: { contentId: string }) => {
   const { contentId } = payload;
@@ -71,7 +73,7 @@ const AddComment = (payload: { contentId: string }) => {
   const { contentId } = payload;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const groupId = useGroupStore((state) => state.selectedGroupId);
-  const myMemberInfo = useMyMemberInfo(groupId || '');
+  const myMemberInfo = useMyMemberInfo(groupId);
   const [newComment, setNewComment] = useState('');
 
   const { addComment, isPending } = useAddComment();
@@ -169,6 +171,11 @@ export default function ContentPage() {
 
   const { data: media } = trpc.content.getMedia.useQuery({
     id: contentId || '',
+  });
+
+  const { profile } = useMember({
+    groupId: media?.groupId || '',
+    memberId: media?.ownerId || '',
   });
 
   if (contentId !== selectedContentId) {
@@ -325,7 +332,7 @@ export default function ContentPage() {
           </div>
         </div>
         <div className="tw-text-sm tw-text-gray-500">
-          @photographer • 2024/01/15
+          {`@${profile?.username} • ${formatDateToSlash(media?.createdDateTime)}`}
         </div>
       </div>
 

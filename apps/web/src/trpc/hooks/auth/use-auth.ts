@@ -1,5 +1,6 @@
 import { trpc } from '@/trpc/trpc';
 
+// TODO: 기능 별로 구분 필요 (isPending 사용 목적)
 export const useAuth = () => {
   const utils = trpc.useUtils();
 

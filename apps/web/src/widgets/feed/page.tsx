@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/ui/card';
-import { formatDate } from '../utils/format-date';
+import { formatRelativeTime } from '../utils/format-date';
 import { useJoinRequestUsers } from '@/trpc/hooks/group/use-join-request-users';
 import { useGroupStore } from '@/store/group-store';
 import { useApproveJoinRequest } from '@/trpc/hooks/group/use-approve-join-request';
@@ -51,7 +51,7 @@ const InvitationCard = ({
           🔔{username}님을 그룹1에 초대하시겠습니까?
         </div>
         <div className="tw-shrink-0 tw-text-foreground">
-          {formatDate(requestedDateTime)}
+          {formatRelativeTime(requestedDateTime)}
         </div>
       </CardContent>
       <CardFooter className="!tw-flex !tw-flex-row-reverse tw-gap-2">
