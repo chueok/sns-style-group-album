@@ -23,7 +23,12 @@ export const useAddGroupMember = () => {
         invalidate();
       },
     });
-  return { addGroupMember, isPending };
+  return {
+    addGroupMember: (payload: { groupId: string; userIdList: string[] }) => {
+      return addGroupMember(payload);
+    },
+    isPending,
+  };
 };
 
 export const useChangeGroupName = () => {

@@ -11,5 +11,10 @@ export const useApproveJoinRequest = () => {
       },
     });
 
-  return { approveJoinRequest, isPending };
+  return {
+    approveJoinRequest: (payload: { groupId: string; memberId: string }) => {
+      return approveJoinRequest(payload);
+    },
+    isPending,
+  };
 };

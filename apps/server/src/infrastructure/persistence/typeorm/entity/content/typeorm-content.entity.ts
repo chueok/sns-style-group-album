@@ -18,9 +18,9 @@ import {
 } from '@repo/be-core';
 import { TypeormComment } from '../comment/typeorm-comment.entity';
 import { TypeormGroup } from '../group/typeorm-group.entity';
-import { TypeormUser } from '../user/typeorm-user.entity';
 import { TypeormLike } from '../like/typeorm-like.entity';
 import { TableAlias } from '../table-alias';
+import { TypeormMember } from '../group/typeorm-member.entity';
 
 @Entity(TableAlias.CONTENT)
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
@@ -53,13 +53,13 @@ export class TypeormContent {
   @Column()
   groupId!: TypeormGroup['id'];
 
-  @ManyToOne(() => TypeormUser, {
+  @ManyToOne(() => TypeormMember, {
     nullable: false,
   })
-  owner!: Promise<TypeormUser>;
-  __owner__: Optional<TypeormUser>;
+  owner!: Promise<TypeormMember>;
+  __owner__: Optional<TypeormMember>;
   @Column()
-  ownerId!: TypeormUser['id'];
+  ownerId!: TypeormMember['id'];
 
   @ManyToMany(() => TypeormContent)
   @JoinTable({

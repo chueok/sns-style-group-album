@@ -1,6 +1,8 @@
 import { TComment } from './entity/comment';
 import { z } from 'zod';
 import { ECommentCategory } from './enum/comment-category';
+import { Nullable } from '../../common/type/common-types';
+import { TCommentMember } from './entity/comment-member';
 
 export const SCommentSortOrder = z.enum(['asc', 'desc']);
 export type TCommentSortOrder = z.infer<typeof SCommentSortOrder>;
@@ -19,10 +21,10 @@ export type TCommentPaginationResult<T> = {
 };
 
 export interface ICommentRepository {
-  isCommentOwner(payload: {
+  findCommentOwner(payload: {
     commentId: string;
     userId: string;
-  }): Promise<boolean>;
+  }): Promise<Nullable<TCommentMember>>;
 
   /**
    * 해당 컨텐츠가 속한 그룹의
@@ -31,7 +33,7 @@ export interface ICommentRepository {
   hasAccessToContent(payload: {
     contentId: string;
     userId: string;
-  }): Promise<boolean>;
+  }): Promise<Nullable<TCommentMember>>;
 
   createComment(comment: {
     ownerId: string;

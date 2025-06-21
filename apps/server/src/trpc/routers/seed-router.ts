@@ -13,7 +13,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { ServerConfig } from '../../config/server-config';
 import { TypeormMedia } from '../../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
-import { TypeormMember } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-group-member.entity';
+import { TypeormMember } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-member.entity';
 
 const getSeedContext = (ctx): ReturnType<typeof createSeedInnerContext> => {
   return ctx.seed;
@@ -235,12 +235,22 @@ export const seedRouter = router({
         },
       });
 
+      const groupOwner = await dataSource.getRepository(TypeormMember).findOne({
+        where: {
+          groupId: groupId as GroupId,
+          role: 'owner',
+        },
+      });
+
       if (!rawGroup) {
         throw new Error('Group not found');
       }
+      if (!groupOwner) {
+        throw new Error('Group owner not found');
+      }
 
       await groupService.changeGroupName({
-        requesterId: rawGroup.ownerId,
+        requesterId: groupOwner.userId,
         groupId,
         name: name || generateRandomString(),
       });
@@ -261,12 +271,23 @@ export const seedRouter = router({
         },
       });
 
+      const groupOwner = await dataSource.getRepository(TypeormMember).findOne({
+        where: {
+          groupId: groupId as GroupId,
+          role: 'owner',
+        },
+      });
+
       if (!rawGroup) {
         throw new Error('Group not found');
       }
 
+      if (!groupOwner) {
+        throw new Error('Group owner not found');
+      }
+
       await groupService.deleteGroup({
-        requesterId: rawGroup.ownerId,
+        requesterId: groupOwner.userId,
         groupId,
       });
     }),
@@ -287,51 +308,62 @@ export const seedRouter = router({
       const groups = await groupRepository.find({
         where: {
           deletedDateTime: IsNull(),
+          members: {
+            role: 'owner',
+          },
         },
         select: {
           id: true,
           name: true,
-          owner: {
+          members: {
             id: true,
+            userId: true,
             username: true,
             profileImageUrl: true,
           },
         },
         relations: {
-          owner: true,
+          members: true,
         },
       });
 
-      return groups.map((group) => ({
-        id: group.id,
-        name: group.name,
-        ownerName: group.__owner__?.username || '',
-      }));
+      return groups.flatMap((group) => {
+        const owner = group.__members__?.at(0);
+        if (!owner) {
+          return [];
+        }
+        return {
+          id: group.id,
+          name: group.name,
+          ownerName: owner.username,
+        };
+      });
     }),
 
   addGroupMember: publicProcedure
     .input(
       z.object({
         groupId: z.string(),
-        memberIdList: z.string().array(),
+        userIdList: z.string().array(),
       })
     )
     .mutation(async ({ input, ctx }) => {
       const { dataSource } = getSeedContext(ctx);
-      const { groupId, memberIdList } = input;
+      const { groupId, userIdList } = input;
 
       // domain 로직에서는 직접적으로 멤버를 추가하지 않고,
       // 조인 요청을 보낸 멤버에 대해 승인하는 방식으로 되어있음.
       // 따라서 seed 에서는 직접 db에 접근하여 추가하도록 구현하였음.
       const users = await dataSource.getRepository(TypeormUser).find({
         where: {
-          id: In(memberIdList),
+          id: In(userIdList),
         },
       });
 
       const memberRepository = dataSource.getRepository(TypeormMember);
       const newMembers = users.map((user) => {
         return memberRepository.create({
+          id: v6(),
           groupId: groupId as GroupId,
           userId: user.id,
           username: user.username || '',
@@ -351,30 +383,27 @@ export const seedRouter = router({
     .output(
       z
         .object({
-          id: z.string(),
+          userId: z.string(),
+          memberId: z.string(),
           username: z.string(),
           profileImageUrl: z.string().optional(),
         })
         .array()
     )
     .query(async ({ input, ctx }) => {
-      const {
-        group: { groupRepository },
-      } = ctx;
-
-      const group = await groupRepository.findMembersBy(
-        {
-          groupId: input.groupId,
+      const { dataSource } = getSeedContext(ctx);
+      const memberRepository = dataSource.getRepository(TypeormMember);
+      const members = await memberRepository.find({
+        where: {
+          groupId: input.groupId as GroupId,
         },
-        {
-          page: 1,
-          pageSize: 100,
-        }
-      );
-      return group.items.map((member) => ({
-        id: member.id,
+      });
+
+      return members.map((member) => ({
+        userId: member.userId,
+        memberId: member.id,
         username: member.username,
-        profileImageUrl: member.profileImageUrl,
+        profileImageUrl: member.profileImageUrl || undefined,
       }));
     }),
 
@@ -383,15 +412,24 @@ export const seedRouter = router({
     .input(
       z.object({
         groupId: z.string(),
-        ownerId: z.string(),
+        userId: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { groupId, ownerId } = input;
+      const { groupId, userId } = input;
+      const {
+        content: { contentRepository },
+      } = ctx;
       const { dataSource, objectStorage } = getSeedContext(ctx);
       const mediaRepository = dataSource.getRepository(TypeormMedia);
 
-      console.log({ groupId, ownerId });
+      const memberId = await contentRepository.findMemberId({
+        groupId,
+        userId,
+      });
+      if (!memberId) {
+        throw new Error('Member not found');
+      }
 
       const filePaths = fs
         .readdirSync(path.join(process.cwd(), 'seed-data/random-img-1000'))
@@ -427,7 +465,7 @@ export const seedRouter = router({
           size: stats.size,
           ext,
           mimeType,
-          ownerId,
+          ownerId: memberId,
           groupId,
           createdDateTime: dateList[i],
         });

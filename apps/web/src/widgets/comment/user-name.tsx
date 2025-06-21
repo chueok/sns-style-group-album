@@ -3,14 +3,14 @@ import { useMember } from '@/trpc/hooks/group/use-member';
 
 const InnerUserName = ({
   groupId,
-  userId,
+  memberId,
 }: {
   groupId: string;
-  userId: string;
+  memberId: string;
 }) => {
   const { profile, isLoading, isError } = useMember({
     groupId,
-    userId,
+    memberId,
   });
 
   return (
@@ -20,11 +20,11 @@ const InnerUserName = ({
   );
 };
 
-export const UserName = ({ userId }: { userId: string }) => {
+export const UserName = ({ memberId }: { memberId: string }) => {
   const groupId = useGroupStore((state) => state.selectedGroupId);
   if (!groupId) {
     return <span className="tw-font-bold tw-text-sm">Unknown</span>;
   }
 
-  return <InnerUserName groupId={groupId} userId={userId} />;
+  return <InnerUserName groupId={groupId} memberId={memberId} />;
 };

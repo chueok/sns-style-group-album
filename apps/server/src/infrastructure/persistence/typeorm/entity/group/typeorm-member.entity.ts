@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 import { TableAlias } from '../table-alias';
 import { Nullable, Optional } from '@repo/be-core';
 import { TypeormGroup } from './typeorm-group.entity';
@@ -6,8 +6,8 @@ import { TypeormUser } from '../user/typeorm-user.entity';
 
 @Entity(TableAlias.MEMBER)
 export class TypeormMember {
-  @PrimaryGeneratedColumn()
-  relationId!: string;
+  @PrimaryColumn({ type: 'text' })
+  id!: string;
 
   @ManyToOne(() => TypeormGroup, (group) => group.members)
   group!: Promise<TypeormGroup>;

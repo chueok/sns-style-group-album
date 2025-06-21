@@ -1,13 +1,9 @@
 import { formatDate } from '../utils/format-date';
 
-export const CreatedDate = ({
-  createdDateTime,
-}: {
-  createdDateTime: string;
-}) => {
-  const date = new Date(createdDateTime);
-
+export const CreatedDate = ({ createdDateTime }: { createdDateTime: Date }) => {
   return (
-    <span className="tw-text-xs tw-text-foreground">{formatDate(date)}</span>
+    <span className="tw-text-xs tw-text-foreground">
+      {formatDate(createdDateTime)}
+    </span>
   );
 };

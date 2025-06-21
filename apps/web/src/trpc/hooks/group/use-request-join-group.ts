@@ -4,5 +4,10 @@ export const useRequestJoinGroup = () => {
   const { mutate: requestJoinGroup, isPending } =
     trpc.group.requestJoinGroup.useMutation();
 
-  return { requestJoinGroup, isPending };
+  return {
+    requestJoinGroup: (payload: { invitationCode: string }) => {
+      return requestJoinGroup(payload);
+    },
+    isPending,
+  };
 };

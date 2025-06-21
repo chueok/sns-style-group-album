@@ -44,7 +44,7 @@ export const GroupCreationFlowDialog = () => {
   const { createGroup } = useCreateGroup();
 
   const onSubmit = async (values: z.infer<typeof createGroupFormSchema>) => {
-    const newGroup = await createGroup(values.name);
+    const newGroup = await createGroup({ name: values.name });
     setNewGroup(newGroup);
   };
 

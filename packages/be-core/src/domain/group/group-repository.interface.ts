@@ -1,5 +1,5 @@
 import { Nullable } from '../../common/type/common-types';
-import { TGroup, TMember, TMemberProfile } from './entity/group';
+import { TGroup, TMember, TUserProfile } from './entity/group';
 import { z } from 'zod';
 
 /**
@@ -45,7 +45,7 @@ export interface IGroupRepository {
   /**
    * 유저 기본 프로필 조회
    */
-  findUserProfile(userId: string): Promise<TMemberProfile>;
+  findUserProfile(userId: string): Promise<TUserProfile>;
 
   /****************************************************
    * 권한 확인을 위한 함수
@@ -71,8 +71,8 @@ export interface IGroupRepository {
 
   findGroupListBy(
     payload: {
-      ownerId?: string;
-      memberId?: string;
+      userId: string;
+      role?: TMemberRole;
     },
     pagination: TGroupsPaginationParams
   ): Promise<TGroupsPaginatedResult<TGroup>>;
@@ -80,7 +80,6 @@ export interface IGroupRepository {
   updateGroup(
     groupId: string,
     group: {
-      ownerId?: string;
       name?: string;
     }
   ): Promise<TGroup>;
@@ -90,7 +89,7 @@ export interface IGroupRepository {
   /****************************************************
    * 멤버 관리를 위한 함수 모음
    ****************************************************/
-  isPendingMember(groupId: string, userId: string): Promise<boolean>;
+  isPendingMember(groupId: string, memberId: string): Promise<boolean>;
 
   addMember(payload: {
     groupId: string;
@@ -101,14 +100,24 @@ export interface IGroupRepository {
     profileImageUrl?: string;
   }): Promise<TMember>;
 
-  findMembersBy(
-    by: { groupId: string; userIdList?: string[]; status?: TMemberStatus },
+  findMemberListBy(
+    by: { groupId: string; memberIds?: string[]; status?: TMemberStatus },
     pagination: TGroupsPaginationParams
   ): Promise<TGroupsPaginatedResult<TMember>>;
 
+  findMemberBy(
+    by:
+      | {
+          memberId?: string;
+        }
+      | { groupId: string; userId: string }
+  ): Promise<Nullable<TMember>>;
+
+  findOwner(groupId: string): Promise<TMember>;
+
   updateMember(payload: {
     groupId: string;
-    userId: string;
+    memberId: string;
     payload: {
       username?: string;
       role?: TMemberRole;

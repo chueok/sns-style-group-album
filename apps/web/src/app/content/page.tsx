@@ -32,6 +32,7 @@ import { useGroupStore } from '@/store/group-store';
 import { CreatedDate } from '@/widgets/comment/created-date';
 import { ScrollArea } from '@repo/ui/scroll-area';
 import { useSwipeGesture } from '@/widgets/common/use-swipe-gesture';
+import { useMyMemberInfo } from '@/trpc/hooks/group/use-my-member-info';
 
 const CommentList = (payload: { contentId: string }) => {
   const { contentId } = payload;
@@ -46,11 +47,11 @@ const CommentList = (payload: { contentId: string }) => {
               key={comment.id}
               className="tw-flex tw-gap-4 tw-border tw-border-border tw-p-4 tw-align-top"
             >
-              <UserAvatar userId={comment.ownerId} />
+              <UserAvatar memberId={comment.ownerId} />
               <div className="tw-flex-1">
                 <div className="tw-bg-background tw-rounded-lg">
                   <div className="tw-flex tw-items-center tw-justify-between tw-gap-2 tw-mb-1">
-                    <UserName userId={comment.ownerId} />
+                    <UserName memberId={comment.ownerId} />
                     <CreatedDate createdDateTime={comment.createdDateTime} />
                   </div>
                   <p className="tw-text-sm tw-text-foreground">
@@ -69,8 +70,8 @@ const CommentList = (payload: { contentId: string }) => {
 const AddComment = (payload: { contentId: string }) => {
   const { contentId } = payload;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const { user } = useAuth();
+  const groupId = useGroupStore((state) => state.selectedGroupId);
+  const myMemberInfo = useMyMemberInfo(groupId || '');
   const [newComment, setNewComment] = useState('');
 
   const { addComment, isPending } = useAddComment();
@@ -96,13 +97,13 @@ const AddComment = (payload: { contentId: string }) => {
     }
   };
 
-  if (!user) {
+  if (!myMemberInfo) {
     return null;
   }
 
   return (
     <div className="tw-flex tw-gap-3">
-      <UserAvatar userId={user.id} />
+      <UserAvatar memberId={myMemberInfo.id} />
       <div className="tw-flex-1 tw-flex tw-gap-2">
         <Textarea
           ref={textareaRef}

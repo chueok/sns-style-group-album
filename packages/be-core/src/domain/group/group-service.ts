@@ -22,8 +22,18 @@ export class GroupService {
         groupName: name,
         ownerId,
         ownerUsername: ownerDefaultProfile.username,
-        ownerProfileImageUrl: ownerDefaultProfile.profileImageUrl ?? undefined,
+        ownerProfileImageUrl: ownerDefaultProfile.profileImageUrl,
       });
+
+      const _newOwner = await this.groupRepository.addMember({
+        groupId: group.id,
+        userId: ownerId,
+        role: 'owner',
+        status: 'approved',
+        profileImageUrl: ownerDefaultProfile.profileImageUrl,
+        username: ownerDefaultProfile.username,
+      });
+
       return group;
     } catch (error) {
       throw Exception.new({
@@ -37,7 +47,7 @@ export class GroupService {
     requesterId: string;
     groupId: string;
     toBeOwnerId: string;
-  }): Promise<TGroup> {
+  }): Promise<void> {
     const { requesterId, groupId, toBeOwnerId } = payload;
     const [isOwner, isMember] = await Promise.all([
       this.groupRepository.isOwner(groupId, requesterId),
@@ -58,10 +68,25 @@ export class GroupService {
       });
     }
 
-    const group = await this.groupRepository.updateGroup(groupId, {
-      ownerId: toBeOwnerId,
+    const owner = await this.groupRepository.findOwner(groupId);
+
+    await this.groupRepository.updateMember({
+      groupId,
+      memberId: owner.id,
+      payload: {
+        role: 'member',
+      },
     });
-    return group;
+
+    await this.groupRepository.updateMember({
+      groupId,
+      memberId: toBeOwnerId,
+      payload: {
+        role: 'owner',
+      },
+    });
+
+    return;
   }
 
   async changeGroupName(payload: {
@@ -112,7 +137,7 @@ export class GroupService {
 
     const groupList = await this.groupRepository.findGroupListBy(
       {
-        memberId: requesterId,
+        userId: requesterId,
       },
       pagination
     );
@@ -127,7 +152,8 @@ export class GroupService {
 
     const ownGroupList = await this.groupRepository.findGroupListBy(
       {
-        ownerId: requesterId,
+        userId: requesterId,
+        role: 'owner',
       },
       pagination
     );
@@ -143,6 +169,7 @@ export class GroupService {
       groupId,
       requesterId
     );
+    console.log({ groupId, requesterId });
     if (!isMember) {
       throw Exception.new({
         code: Code.UNAUTHORIZED_ERROR,
@@ -251,7 +278,7 @@ export class GroupService {
       });
     }
 
-    const members = await this.groupRepository.findMembersBy(
+    const members = await this.groupRepository.findMemberListBy(
       { groupId, status: 'pending' },
       {
         pageSize: 5,
@@ -299,7 +326,7 @@ export class GroupService {
 
     const result = await this.groupRepository.updateMember({
       groupId,
-      userId: memberId,
+      memberId,
       payload: {
         status: 'approved',
       },
@@ -312,12 +339,20 @@ export class GroupService {
       });
     }
 
-    const member = await this.findAnAcceptedMember({
-      groupId,
-      userId: memberId,
+    const member = await this.groupRepository.findMemberBy({
+      memberId,
     });
+    if (!member || !member.joinDateTime) {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: 'Failed to approve join request',
+      });
+    }
 
-    return member;
+    return {
+      ...member,
+      joinDateTime: member.joinDateTime,
+    };
   }
 
   async rejectJoinRequest(payload: {
@@ -337,7 +372,7 @@ export class GroupService {
 
     await this.groupRepository.updateMember({
       groupId,
-      userId: memberId,
+      memberId: memberId,
       payload: {
         status: 'rejected',
       },
@@ -362,7 +397,7 @@ export class GroupService {
 
     await this.groupRepository.updateMember({
       groupId,
-      userId: memberId,
+      memberId: memberId,
       payload: {
         status: 'droppedOut',
       },
@@ -394,7 +429,7 @@ export class GroupService {
 
     await this.groupRepository.updateMember({
       groupId,
-      userId: requesterId,
+      memberId: requesterId,
       payload: {
         status: 'left',
       },
@@ -418,7 +453,7 @@ export class GroupService {
       });
     }
 
-    const findMembersResult = await this.groupRepository.findMembersBy(
+    const findMembersResult = await this.groupRepository.findMemberListBy(
       { groupId, status: 'approved' },
       pagination
     );
@@ -450,12 +485,12 @@ export class GroupService {
     };
   }
 
-  async getMembersByUserIds(payload: {
+  async getMembersByMemberIds(payload: {
     requesterId: string;
     groupId: string;
-    userIds: string[];
+    memberIds: string[];
   }): Promise<TAcceptedMember[]> {
-    const { requesterId, userIds, groupId } = payload;
+    const { requesterId, memberIds, groupId } = payload;
 
     const isMember = await this.groupRepository.isApprovedMember(
       groupId,
@@ -468,10 +503,10 @@ export class GroupService {
       });
     }
 
-    const members = await this.groupRepository.findMembersBy(
+    const members = await this.groupRepository.findMemberListBy(
       {
         groupId,
-        userIdList: userIds,
+        memberIds,
         status: 'approved',
       },
       {
@@ -498,24 +533,23 @@ export class GroupService {
     return acceptedMembers;
   }
 
-  private async findAnAcceptedMember(payload: {
+  async getMyMemberInfo(payload: {
+    requesterId: string;
     groupId: string;
-    userId: string;
   }): Promise<TAcceptedMember> {
-    const { groupId, userId } = payload;
-    const members = await this.groupRepository.findMembersBy(
-      { groupId, userIdList: [userId], status: 'approved' },
-      {
-        pageSize: 1,
-      }
-    );
-    const member = members.items.at(0);
+    const { requesterId, groupId } = payload;
+
+    const member = await this.groupRepository.findMemberBy({
+      groupId,
+      userId: requesterId,
+    });
     if (!member || !member.joinDateTime) {
       throw Exception.new({
         code: Code.ENTITY_NOT_FOUND_ERROR,
         overrideMessage: 'Member not found',
       });
     }
+
     return {
       ...member,
       joinDateTime: member.joinDateTime,

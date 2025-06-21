@@ -25,19 +25,18 @@ export const groupRouter = router({
 
   changeGroupOwner: authProcedure
     .input(z.object({ groupId: z.string(), toBeOwnerId: z.string() }))
-    .output(SGroup)
+    .output(z.void())
     .mutation(async ({ input, ctx }) => {
       const { groupId, toBeOwnerId } = input;
       const {
         user,
         group: { groupService },
       } = ctx;
-      const group = await groupService.changeGroupOwner({
+      await groupService.changeGroupOwner({
         requesterId: user.id,
         groupId,
         toBeOwnerId,
       });
-      return group;
     }),
 
   changeGroupName: authProcedure
@@ -234,18 +233,18 @@ export const groupRouter = router({
     }),
 
   getMemberById: authProcedure
-    .input(z.object({ groupId: z.string(), userId: z.string() }))
+    .input(z.object({ groupId: z.string(), memberId: z.string() }))
     .output(SAcceptedMember)
     .query(async ({ input, ctx }) => {
-      const { groupId, userId } = input;
+      const { groupId, memberId } = input;
       const {
         user,
         group: { groupService },
       } = ctx;
-      const members = await groupService.getMembersByUserIds({
+      const members = await groupService.getMembersByMemberIds({
         requesterId: user.id,
         groupId,
-        userIds: [userId],
+        memberIds: [memberId],
       });
       const member = members.at(0);
 
@@ -260,20 +259,36 @@ export const groupRouter = router({
     }),
 
   getMembersByIds: authProcedure
-    .input(z.object({ groupId: z.string(), userIds: z.array(z.string()) }))
+    .input(z.object({ groupId: z.string(), memberIds: z.array(z.string()) }))
     .output(z.array(SAcceptedMember))
     .query(async ({ input, ctx }) => {
-      const { groupId, userIds } = input;
+      const { groupId, memberIds: memberIds } = input;
       const {
         user,
         group: { groupService },
       } = ctx;
-      const members = await groupService.getMembersByUserIds({
+      const members = await groupService.getMembersByMemberIds({
         requesterId: user.id,
         groupId,
-        userIds,
+        memberIds,
       });
       return members;
+    }),
+
+  getMyMemberInfo: authProcedure
+    .input(z.object({ groupId: z.string() }))
+    .output(SAcceptedMember)
+    .query(async ({ input, ctx }) => {
+      const { groupId } = input;
+      const {
+        user,
+        group: { groupService },
+      } = ctx;
+      const member = await groupService.getMyMemberInfo({
+        requesterId: user.id,
+        groupId,
+      });
+      return member;
     }),
 
   leaveGroup: authProcedure

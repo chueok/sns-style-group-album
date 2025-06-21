@@ -1,8 +1,7 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
 import { GroupId, Nullable, Optional } from '@repo/be-core';
-import { TypeormUser } from '../user/typeorm-user.entity';
 import { TableAlias } from '../table-alias';
-import { TypeormMember } from './typeorm-group-member.entity';
+import { TypeormMember } from './typeorm-member.entity';
 
 @Entity(TableAlias.GROUP)
 export class TypeormGroup {
@@ -30,12 +29,4 @@ export class TypeormGroup {
   @OneToMany(() => TypeormMember, (member) => member.group)
   members!: Promise<TypeormMember[]>;
   __members__: Optional<TypeormMember[]>;
-
-  @ManyToOne(() => TypeormUser, {
-    nullable: false,
-  })
-  owner!: Promise<TypeormUser>;
-  __owner__: Optional<TypeormUser>;
-  @Column()
-  ownerId!: TypeormUser['id'];
 }

@@ -10,5 +10,10 @@ export const useRejectJoinRequest = () => {
       },
     });
 
-  return { rejectJoinRequest, isPending };
+  return {
+    rejectJoinRequest: (payload: { groupId: string; memberId: string }) => {
+      return rejectJoinRequest(payload);
+    },
+    isPending,
+  };
 };

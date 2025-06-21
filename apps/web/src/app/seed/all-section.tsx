@@ -51,14 +51,14 @@ export const AllSection = () => {
         return;
       } else if (step === 3 && user && !isExecuting.current[step]) {
         isExecuting.current[step] = true;
-        const { id: groupId } = await createGroup('test group');
+        const { id: groupId } = await createGroup({ name: 'test group' });
         setGroup(groupId);
         setStep(4);
       } else if (step === 4 && user && groupId && !isExecuting.current[step]) {
         isExecuting.current[step] = true;
         await generateSeedMedia({
           groupId,
-          ownerId: user.id,
+          userId: user.id,
         });
         setStep(5);
       } else if (step === 5) {

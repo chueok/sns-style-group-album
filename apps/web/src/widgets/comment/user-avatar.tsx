@@ -5,14 +5,14 @@ import { User } from 'lucide-react';
 
 const InnerUserAvatar = ({
   groupId,
-  userId,
+  memberId,
 }: {
   groupId: string;
-  userId: string;
+  memberId: string;
 }) => {
   const { profile, isLoading, isError } = useMember({
     groupId,
-    userId,
+    memberId,
   });
 
   return (
@@ -32,7 +32,7 @@ const InnerUserAvatar = ({
 };
 
 // groupId가 없을 때 서버 호출을 막기 위해 InnerUserAvatar를 따로 구현.
-export const UserAvatar = ({ userId }: { userId: string }) => {
+export const UserAvatar = ({ memberId }: { memberId: string }) => {
   const groupId = useGroupStore((state) => state.selectedGroupId);
 
   if (!groupId) {
@@ -45,5 +45,5 @@ export const UserAvatar = ({ userId }: { userId: string }) => {
     );
   }
 
-  return <InnerUserAvatar groupId={groupId} userId={userId} />;
+  return <InnerUserAvatar groupId={groupId} memberId={memberId} />;
 };

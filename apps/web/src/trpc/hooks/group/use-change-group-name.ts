@@ -10,5 +10,10 @@ export const useChangeGroupName = () => {
       },
     });
 
-  return { changeGroupName, isPending };
+  return {
+    changeGroupName: (payload: { groupId: string; name: string }) => {
+      return changeGroupName(payload);
+    },
+    isPending,
+  };
 };

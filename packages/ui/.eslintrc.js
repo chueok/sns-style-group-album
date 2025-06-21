@@ -5,6 +5,7 @@ module.exports = {
     '@repo/eslint-config/react-internal.js',
     'plugin:storybook/recommended',
   ],
+  ignorePatterns: ['postcss.config.mjs'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     project: './tsconfig.lint.json',

@@ -11,7 +11,7 @@ import {
   Code,
   TMemberRole,
   TMemberStatus,
-  TMemberProfile,
+  TUserProfile,
 } from '@repo/be-core';
 import { DataSource, IsNull, Repository } from 'typeorm';
 import { TypeormGroup } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
@@ -21,7 +21,7 @@ import { TypeormUser } from '../infrastructure/persistence/typeorm/entity/user/t
 import { v4, v6 } from 'uuid';
 import { GroupMapper } from './mapper/group-mapper';
 import { Transactional } from 'typeorm-transactional';
-import { TypeormMember } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group-member.entity';
+import { TypeormMember } from '../infrastructure/persistence/typeorm/entity/group/typeorm-member.entity';
 
 export class TypeormGroupRepository implements IGroupRepository {
   private typeormGroupRepository: Repository<TypeormGroup>;
@@ -36,7 +36,7 @@ export class TypeormGroupRepository implements IGroupRepository {
     this.logger = logger || new Logger(TypeormGroupRepository.name);
   }
 
-  async findUserProfile(userId: string): Promise<TMemberProfile> {
+  async findUserProfile(userId: string): Promise<TUserProfile> {
     const ormEntity = await this.typeormUserRepository.findOne({
       where: { id: userId as UserId, deletedDateTime: IsNull() },
       select: ['id', 'username', 'profileImageUrl'],
@@ -50,7 +50,7 @@ export class TypeormGroupRepository implements IGroupRepository {
     }
 
     return {
-      id: ormEntity.id,
+      userId: ormEntity.id,
       username: ormEntity.username,
       profileImageUrl: ormEntity.profileImageUrl || undefined,
     };
@@ -82,37 +82,19 @@ export class TypeormGroupRepository implements IGroupRepository {
   }
 
   @Transactional()
-  async createGroup(payload: {
-    groupName: string;
-    ownerId: string;
-    ownerUsername: string;
-    ownerProfileImageUrl?: string;
-  }): Promise<TGroup> {
+  async createGroup(payload: { groupName: string }): Promise<TGroup> {
     const newGroupId = v6() as GroupId;
     const newGroup = this.typeormGroupRepository.create({
       id: newGroupId,
-      ownerId: payload.ownerId as UserId,
       name: payload.groupName,
       createdDateTime: new Date(),
       updatedDateTime: null,
       deletedDateTime: null,
     });
 
-    const newGroupMember = this.typeormGroupMemberRepository.create({
-      groupId: newGroupId,
-      userId: payload.ownerId as UserId,
-      username: payload.ownerUsername,
-      role: 'owner',
-      status: 'approved',
-      profileImageUrl: payload.ownerProfileImageUrl,
-      joinRequestDateTime: new Date(),
-      joinDateTime: new Date(),
-    });
+    const newGroupEntity = await this.typeormGroupRepository.save(newGroup);
 
-    const result = await this.typeormGroupRepository.save(newGroup);
-    await this.typeormGroupMemberRepository.save(newGroupMember);
-
-    const domainEntity = GroupMapper.toDomainEntity(result);
+    const domainEntity = GroupMapper.toDomainEntity(newGroupEntity);
     return domainEntity;
   }
 
@@ -153,31 +135,28 @@ export class TypeormGroupRepository implements IGroupRepository {
   }
 
   async findGroupListBy(
-    payload: { ownerId?: string; memberId?: string },
+    payload: { role?: TMemberRole; userId: string },
     pagination: TGroupsPaginationParams
   ): Promise<TGroupsPaginatedResult<TGroup>> {
     if (Object.keys(payload).length === 0) {
       throw Exception.new({
         code: Code.BAD_REQUEST_ERROR,
-        overrideMessage: 'At least one of ownerId or memberId',
+        overrideMessage: 'At least one of role or userId',
       });
     }
 
-    const { ownerId, memberId } = payload;
+    const { role, userId } = payload;
     const page = pagination.page ?? 1;
 
     const queryBuilder = this.typeormGroupRepository
       .createQueryBuilder('group')
       .where('group.deletedDateTime is null')
-      .orderBy('group.createdDateTime', 'ASC');
+      .orderBy('group.createdDateTime', 'ASC')
+      .leftJoin('group.members', 'members')
+      .andWhere('members.userId = :userId', { userId: userId });
 
-    if (ownerId) {
-      queryBuilder.andWhere('group.ownerId = :ownerId', { ownerId });
-    }
-
-    if (memberId) {
-      queryBuilder.leftJoin('group.members', 'members');
-      queryBuilder.andWhere('members.userId = :memberId', { memberId });
+    if (role) {
+      queryBuilder.andWhere('members.role = :role', { role });
     }
 
     const total = await queryBuilder.getCount();
@@ -202,14 +181,10 @@ export class TypeormGroupRepository implements IGroupRepository {
   async updateGroup(
     groupId: string,
     payload: {
-      ownerId?: string;
       name?: string;
     }
   ): Promise<TGroup> {
     const updateObject: Partial<TypeormGroup> = {};
-    if (payload.ownerId) {
-      updateObject.ownerId = payload.ownerId as UserId;
-    }
     if (payload.name) {
       updateObject.name = payload.name;
     }
@@ -240,11 +215,11 @@ export class TypeormGroupRepository implements IGroupRepository {
     return result.affected === 1;
   }
 
-  async isPendingMember(groupId: string, userId: string): Promise<boolean> {
+  async isPendingMember(groupId: string, memberId: string): Promise<boolean> {
     const queryBuilder = this.typeormGroupMemberRepository
       .createQueryBuilder('member')
       .where('member.groupId = :groupId', { groupId })
-      .andWhere('member.userId = :userId', { userId })
+      .andWhere('member.id = :memberId', { memberId })
       .andWhere('member.status = :status', { status: 'pending' });
     const result = await queryBuilder.getCount();
     return result > 0;
@@ -266,6 +241,7 @@ export class TypeormGroupRepository implements IGroupRepository {
     username: string;
   }): Promise<TMember> {
     const newMember = this.typeormGroupMemberRepository.create({
+      id: v6(),
       groupId,
       userId,
       role,
@@ -273,6 +249,7 @@ export class TypeormGroupRepository implements IGroupRepository {
       profileImageUrl,
       username,
       joinRequestDateTime: new Date(),
+      joinDateTime: new Date(),
     });
 
     const result = await this.typeormGroupMemberRepository.save(newMember);
@@ -282,11 +259,11 @@ export class TypeormGroupRepository implements IGroupRepository {
     return domainMember;
   }
 
-  async findMembersBy(
-    by: { groupId: string; userIdList?: string[]; status?: TMemberStatus },
+  async findMemberListBy(
+    by: { groupId: string; memberIds?: string[]; status?: TMemberStatus },
     pagination: TGroupsPaginationParams
   ): Promise<TGroupsPaginatedResult<TMember>> {
-    const { groupId, userIdList, status } = by;
+    const { groupId, memberIds, status } = by;
 
     const page = pagination.page ?? 1;
 
@@ -298,9 +275,9 @@ export class TypeormGroupRepository implements IGroupRepository {
       queryBuilder.andWhere('member.status = :status', { status });
     }
 
-    if (userIdList) {
-      queryBuilder.andWhere('member.userId IN (:...userIdList)', {
-        userIdList,
+    if (memberIds) {
+      queryBuilder.andWhere('member.id IN (:...memberIds)', {
+        memberIds,
       });
     }
 
@@ -323,13 +300,64 @@ export class TypeormGroupRepository implements IGroupRepository {
     };
   }
 
+  async findMemberBy(
+    by:
+      | {
+          memberId?: string;
+        }
+      | { groupId: string; userId: string }
+  ): Promise<Nullable<TMember>> {
+    if (Object.keys(by).length === 0) {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: 'At least one of memberId or userId',
+      });
+    }
+
+    const queryBuilder =
+      this.typeormGroupMemberRepository.createQueryBuilder('member');
+
+    if ('memberId' in by) {
+      const { memberId } = by;
+      queryBuilder.where('member.id = :memberId', { memberId });
+    } else if ('groupId' in by) {
+      const { groupId, userId } = by;
+      queryBuilder.andWhere('member.groupId = :groupId', { groupId });
+      queryBuilder
+        .where('member.status = :status', { status: 'approved' })
+        .andWhere('member.userId = :userId', { userId });
+    }
+
+    const result = await queryBuilder.getOne();
+
+    return result ? MemberMapper.toDomainEntity(result) : null;
+  }
+
+  async findOwner(groupId: string): Promise<TMember> {
+    const queryBuilder = this.typeormGroupMemberRepository
+      .createQueryBuilder('member')
+      .where('member.groupId = :groupId', { groupId })
+      .andWhere('member.role = :role', { role: 'owner' })
+      .andWhere('member.status = :status', { status: 'approved' });
+
+    const result = await queryBuilder.getOne();
+    if (!result) {
+      throw Exception.new({
+        code: Code.ENTITY_NOT_FOUND_ERROR,
+        overrideMessage: 'Owner not found',
+      });
+    }
+
+    return MemberMapper.toDomainEntity(result);
+  }
+
   async updateMember({
     groupId,
-    userId,
+    memberId,
     payload,
   }: {
     groupId: string;
-    userId: string;
+    memberId: string;
     payload: {
       username?: string;
       role?: 'owner' | 'member';
@@ -370,7 +398,7 @@ export class TypeormGroupRepository implements IGroupRepository {
       .createQueryBuilder('member')
       .update()
       .where('member.groupId = :groupId', { groupId })
-      .andWhere('member.userId = :userId', { userId })
+      .andWhere('member.userId = :userId', { userId: memberId })
       .set(updateObject);
 
     const result = await queryBuilder.execute();

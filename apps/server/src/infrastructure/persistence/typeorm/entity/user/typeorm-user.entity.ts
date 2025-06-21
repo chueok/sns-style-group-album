@@ -2,7 +2,7 @@ import { PrimaryColumn, Column, Entity, OneToMany } from 'typeorm';
 import { Nullable, Optional, UserId } from '@repo/be-core';
 import { TableAlias } from '../table-alias';
 import { TypeormOauth } from '../oauth/typeorm-oauth.entity';
-import { TypeormMember } from '../group/typeorm-group-member.entity';
+import { TypeormMember } from '../group/typeorm-member.entity';
 
 @Entity(TableAlias.USER)
 export class TypeormUser {

@@ -1,4 +1,4 @@
-import config from '@repo/eslint-config/next.js';
+const config = require('@repo/eslint-config/next.js');
 
 /** @type {import("eslint").Linter.Config} */
 module.exports = {

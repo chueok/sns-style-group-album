@@ -9,7 +9,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@repo/server/app-router-type": ["../server/src/trpc/app-router-type"]
+      "@repo/server/app-router-type": ["../server/src/trpc/app-router-type"],
+      "@/lib/*": ["../../packages/ui/lib/*"]
     }
   },
   "include": [

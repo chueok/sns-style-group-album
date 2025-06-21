@@ -4,7 +4,7 @@
   "private": true,
   "main": "tailwind.config.ts",
   "files": [
-    "postcss.config.js",
+    "postcss.config.mjs",
     "styles.css"
   ],
   "devDependencies": {

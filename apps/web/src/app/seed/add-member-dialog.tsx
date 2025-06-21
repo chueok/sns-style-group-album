@@ -43,7 +43,7 @@ export function AddMemberDialog({
 
   // 그룹에 속하지 않은 사용자만 필터링
   const availableUsers = users.filter(
-    (user) => !groupMembers.some((member) => member.id === user.id)
+    (user) => !groupMembers.some((member) => member.userId === user.id)
   );
 
   // 검색어로 필터링
@@ -56,7 +56,7 @@ export function AddMemberDialog({
   async function handleAddUser(formData: FormData) {
     const groupId = formData.get('groupId') as string;
     const userId = formData.get('userId') as string;
-    await addGroupMember({ groupId, memberIdList: [userId] });
+    await addGroupMember({ groupId, userIdList: [userId] });
   }
 
   return (

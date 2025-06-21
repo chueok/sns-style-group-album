@@ -1,11 +1,11 @@
 import { SMember, TMember } from '@repo/be-core';
-import { TypeormMember } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-group-member.entity';
+import { TypeormMember } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-member.entity';
 
 export class MemberMapper {
   public static toDomainEntity(
     payload: Pick<
       TypeormMember,
-      | 'userId'
+      | 'id'
       | 'username'
       | 'profileImageUrl'
       | 'role'
@@ -14,7 +14,7 @@ export class MemberMapper {
     >
   ): TMember {
     const obj: TMember = {
-      id: payload.userId,
+      id: payload.id,
       username: payload.username,
       profileImageUrl: payload.profileImageUrl || undefined,
       role: payload.role,
@@ -30,7 +30,7 @@ export class MemberMapper {
   public static toDomainEntityList(
     payload: Pick<
       TypeormMember,
-      | 'userId'
+      | 'id'
       | 'username'
       | 'profileImageUrl'
       | 'role'

@@ -7,10 +7,10 @@ import {
   OneToMany,
 } from 'typeorm';
 import { CommentId, ECommentCategory, Nullable, Optional } from '@repo/be-core';
-import { TypeormUser } from '../user/typeorm-user.entity';
 import { TableAlias } from '../table-alias';
 import { TypeormCommentUserTag } from '../commet-user-tag/typeorm-comment-user-tag.entity';
 import { TypeormContent } from '../content/typeorm-content.entity';
+import { TypeormMember } from '../group/typeorm-member.entity';
 
 @Entity(TableAlias.COMMENT)
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
@@ -49,12 +49,13 @@ export class TypeormComment {
 
   // TODO: userId를 연결할게 아니라, member를 직접 연결 할지 생각해보자.
   // for user comment
-  @ManyToOne(() => TypeormUser, {
+  @ManyToOne(() => TypeormMember, {
     nullable: true,
   })
-  owner!: Promise<TypeormUser>;
+  owner!: Promise<TypeormMember>;
   @Column({ type: 'text', nullable: true })
-  ownerId!: Nullable<TypeormUser['id']>;
+  ownerId!: Nullable<TypeormMember['id']>;
+  __owner__: Optional<TypeormMember>;
 
   // for system comment
   @Column({ type: 'text', nullable: true })

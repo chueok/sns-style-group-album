@@ -10,8 +10,8 @@ export const useCreateGroup = () => {
       },
     });
 
-  const createGroup = async (name: string) => {
-    return createGroupMutation({ name });
+  const createGroup = async (payload: { name: string }) => {
+    return createGroupMutation(payload);
   };
 
   return { createGroup };

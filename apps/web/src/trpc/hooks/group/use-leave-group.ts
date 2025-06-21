@@ -4,5 +4,10 @@ export const useLeaveGroup = () => {
   const { mutateAsync: leaveGroup, isPending } =
     trpc.group.leaveGroup.useMutation();
 
-  return { leaveGroup, isPending };
+  return {
+    leaveGroup: (payload: { groupId: string }) => {
+      return leaveGroup(payload);
+    },
+    isPending,
+  };
 };

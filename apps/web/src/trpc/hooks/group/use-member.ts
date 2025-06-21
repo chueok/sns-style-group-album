@@ -20,7 +20,7 @@ export const useMemberList = (payload: { groupId: string }) => {
     if (data?.items && !updatedPages.current.has(currentPage)) {
       data.items.forEach((item) => {
         utils.group.getMemberById.setData(
-          { groupId: payload.groupId, userId: item.id },
+          { groupId: payload.groupId, memberId: item.id },
           item
         );
       });
@@ -65,7 +65,7 @@ export const useMemberList = (payload: { groupId: string }) => {
   };
 };
 
-export const useMember = (payload: { groupId: string; userId: string }) => {
+export const useMember = (payload: { groupId: string; memberId: string }) => {
   const {
     data: profile,
     isLoading,

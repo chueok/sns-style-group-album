@@ -16,16 +16,16 @@ export class CommentService {
   }): Promise<TComment> {
     const { requesterId, contentId, text } = payload;
 
-    const hasAccess = await this.commentRepository.hasAccessToContent({
+    const member = await this.commentRepository.hasAccessToContent({
       contentId,
       userId: requesterId,
     });
-    if (!hasAccess) {
+    if (!member) {
       throw new Error('You do not have access to this content');
     }
 
     const comment = await this.commentRepository.createComment({
-      ownerId: requesterId,
+      ownerId: member.id,
       category: ECommentCategory.USER_COMMENT,
       contentId,
       text,
@@ -41,7 +41,7 @@ export class CommentService {
   }): Promise<TComment> {
     const { requesterId, commentId, text } = payload;
 
-    const isOwner = await this.commentRepository.isCommentOwner({
+    const isOwner = await this.commentRepository.findCommentOwner({
       commentId,
       userId: requesterId,
     });

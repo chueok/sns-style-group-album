@@ -1,4 +1,4 @@
-import { TMedia } from '../..';
+import { Nullable, TMedia } from '../..';
 import { z } from 'zod';
 
 export const SMediaSortOrder = z.enum(['asc', 'desc']);
@@ -25,7 +25,10 @@ export interface IContentRepository {
     pagination: TMediaPaginationParams;
   }): Promise<TMediaPaginationResult<TMedia>>;
 
-  isMember(payload: { userId: string; groupId: string }): Promise<boolean>;
+  findMemberId(payload: {
+    userId: string;
+    groupId: string;
+  }): Promise<Nullable<string>>;
 
   isContentOwner(payload: {
     userId: string;

@@ -3,7 +3,9 @@ import {
   ContentId,
   ECommentCategory,
   ICommentRepository,
+  Nullable,
   TComment,
+  TCommentMember,
   TCommentPaginationParams,
   TCommentPaginationResult,
   UserId,
@@ -25,32 +27,66 @@ export class TypeormCommentRepository implements ICommentRepository {
     this.contentRepository = dataSource.getRepository(TypeormMedia);
     this.logger = logger || new Logger(TypeormCommentRepository.name);
   }
-  async isCommentOwner(payload: {
+  async findCommentOwner(payload: {
     commentId: string;
     userId: string;
-  }): Promise<boolean> {
-    const count = await this.commentRepository.count({
-      where: {
-        id: payload.commentId as CommentId,
-        ownerId: payload.userId as UserId,
-      },
-    });
-    return count > 0;
+  }): Promise<Nullable<TCommentMember>> {
+    const comment = await this.commentRepository
+      .createQueryBuilder('comment')
+      .leftJoin('comment.owner', 'owner')
+      .where('comment.id = :commentId', { commentId: payload.commentId })
+      .andWhere('owner.userId = :userId', { userId: payload.userId })
+      .andWhere('owner.status = :status', { status: 'approved' })
+      .select(['owner.id', 'owner.username', 'owner.profileImageUrl'])
+      .getOne();
+
+    if (!comment) {
+      return null;
+    }
+
+    if (!comment.__owner__) {
+      throw new Error('sql is wrong');
+    }
+
+    return {
+      id: comment.__owner__.id,
+      username: comment.__owner__.username,
+      profileImageUrl: comment.__owner__.profileImageUrl,
+    };
   }
+
   async hasAccessToContent(payload: {
     contentId: string;
     userId: string;
-  }): Promise<boolean> {
+  }): Promise<Nullable<TCommentMember>> {
     const qb = this.contentRepository
       .createQueryBuilder('content')
-      .leftJoin('content.group', 'group')
-      .leftJoin('group.members', 'member')
+      .leftJoinAndSelect('content.group', 'group')
+      .leftJoinAndSelect('group.members', 'member')
       .where('content.id = :contentId', { contentId: payload.contentId })
-      .andWhere('member.userId = :userId', { userId: payload.userId })
+      .andWhere('content.deletedDateTime IS NULL')
       .andWhere('member.status = :status', { status: 'approved' })
-      .andWhere('content.deletedDateTime IS NULL');
-    const count = await qb.getCount();
-    return count > 0;
+      .andWhere('member.userId = :userId', { userId: payload.userId });
+
+    const content = await qb.getOne();
+    if (!content) {
+      return null;
+    }
+
+    if (!content.__group__ || !content.__group__.__members__) {
+      throw new Error('sql is wrong');
+    }
+
+    const member = content.__group__.__members__.at(0);
+    if (!member) {
+      throw new Error('sql is wrong');
+    }
+
+    return {
+      id: member.id,
+      username: member.username,
+      profileImageUrl: member.profileImageUrl,
+    };
   }
 
   async createComment(comment: {
@@ -66,7 +102,7 @@ export class TypeormCommentRepository implements ICommentRepository {
       createdDateTime: new Date(),
 
       contentId: comment.contentId as ContentId,
-      ownerId: comment.ownerId as UserId,
+      ownerId: comment.ownerId,
     });
 
     const createdComment = await this.commentRepository.save(newComment);

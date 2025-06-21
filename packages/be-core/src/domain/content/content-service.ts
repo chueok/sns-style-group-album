@@ -25,11 +25,11 @@ export class ContentService {
   }): Promise<string[]> {
     const { requesterId, groupId, media } = payload;
 
-    const isMember = await this.contentRepository.isMember({
+    const memberId = await this.contentRepository.findMemberId({
       userId: requesterId,
       groupId,
     });
-    if (!isMember) {
+    if (!memberId) {
       throw Exception.new({
         code: Code.UNAUTHORIZED_ERROR,
         overrideMessage: 'User is not a member of the group',
@@ -38,7 +38,7 @@ export class ContentService {
 
     const urls = await this.contentRepository.createMediaUploadUrls({
       groupId,
-      ownerId: requesterId,
+      ownerId: memberId,
       media: media,
     });
     return urls;
@@ -51,11 +51,11 @@ export class ContentService {
   }): Promise<TMediaPaginationResult<TMedia>> {
     const { groupId, requesterId, pagination } = payload;
 
-    const isMember = await this.contentRepository.isMember({
+    const memberId = await this.contentRepository.findMemberId({
       userId: requesterId,
       groupId,
     });
-    if (!isMember) {
+    if (!memberId) {
       throw Exception.new({
         code: Code.UNAUTHORIZED_ERROR,
         overrideMessage: 'User is not a member of the group',
