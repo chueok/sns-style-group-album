@@ -10,7 +10,10 @@ export const formatDateToSlash = (date: Date | undefined) => {
   return `${year}/${month}/${day}`;
 };
 
-export const formatRelativeTime = (date: Date) => {
+export const formatRelativeTime = (date: Date | undefined) => {
+  if (!date) {
+    return '알수없음';
+  }
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
   const diffInMinutes = Math.floor(diffInSeconds / 60);

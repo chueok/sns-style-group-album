@@ -5,9 +5,9 @@ import z from 'zod';
 export const commentRouter = router({
   createComment: authProcedure
     .input(
-      SComment.pick({
-        contentId: true,
-        text: true,
+      z.object({
+        contentId: z.string(),
+        text: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -21,6 +21,28 @@ export const commentRouter = router({
         requesterId: user.id,
         contentId,
         text,
+      });
+
+      return comment;
+    }),
+
+  getComment: authProcedure
+    .input(
+      z.object({
+        commentId: z.string(),
+      })
+    )
+    .output(SComment)
+    .query(async ({ input, ctx }) => {
+      const {
+        user,
+        comment: { commentService },
+      } = ctx;
+      const { commentId } = input;
+
+      const comment = await commentService.getComment({
+        requesterId: user.id,
+        commentId,
       });
 
       return comment;
@@ -42,6 +64,28 @@ export const commentRouter = router({
       const comments = await commentService.getCommentsOfContent({
         requesterId: user.id,
         contentId,
+        pagination,
+      });
+
+      return comments;
+    }),
+
+  getCommentsOfGroup: authProcedure
+    .input(
+      SCommentPaginationParams.extend({
+        groupId: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const {
+        user,
+        comment: { commentService },
+      } = ctx;
+      const { groupId, ...pagination } = input;
+
+      const comments = await commentService.getCommentsOfGroup({
+        requesterId: user.id,
+        groupId,
         pagination,
       });
 

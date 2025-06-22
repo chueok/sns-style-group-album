@@ -30,4 +30,7 @@ export class DiTokens {
 
   // storage
   static readonly ObjectStorage = Symbol('ObjectStorage');
+  static readonly SystemContentCommentAdapter = Symbol(
+    'SystemContentCommentAdapter'
+  );
 }

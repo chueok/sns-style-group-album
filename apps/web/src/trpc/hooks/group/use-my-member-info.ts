@@ -1,11 +1,11 @@
 import { trpc } from '@/trpc/trpc';
 
-export const useMyMemberInfo = (groupId: string | null) => {
-  const { data } = trpc.group.getMyMemberInfo.useQuery(
+export const useMyMemberInfo = (groupId: string | undefined) => {
+  const { data, isLoading } = trpc.group.getMyMemberInfo.useQuery(
     { groupId: groupId || '' },
     {
       enabled: !!groupId,
     }
   );
-  return data;
+  return { memberInfo: data, isLoading };
 };

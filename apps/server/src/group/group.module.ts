@@ -1,7 +1,12 @@
 import { Module, Provider } from '@nestjs/common';
-import { GroupService, IGroupRepository } from '@repo/be-core';
+import {
+  GroupService,
+  IGroupRepository,
+  ISystemContentCommentPort,
+} from '@repo/be-core';
 import { DiTokens } from './di-tokens';
 import { TypeormGroupRepository } from './group-repository';
+import { DiTokens as AdapterDiTokens } from '../di/di-tokens';
 
 const providers: Provider[] = [
   {
@@ -10,10 +15,16 @@ const providers: Provider[] = [
   },
   {
     provide: GroupService,
-    useFactory: (groupRepository: IGroupRepository) => {
-      return new GroupService(groupRepository);
+    useFactory: (
+      groupRepository: IGroupRepository,
+      systemContentCommentAdapter: ISystemContentCommentPort
+    ) => {
+      return new GroupService(groupRepository, systemContentCommentAdapter);
     },
-    inject: [DiTokens.GroupRepository],
+    inject: [
+      DiTokens.GroupRepository,
+      AdapterDiTokens.SystemContentCommentAdapter,
+    ],
   },
 ];
 

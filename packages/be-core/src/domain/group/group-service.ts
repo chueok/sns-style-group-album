@@ -1,5 +1,9 @@
 import { Code } from '../../common/exception/code';
 import { Exception } from '../../common/exception/exception';
+import {
+  ESystemCommentCategory,
+  ISystemContentCommentPort,
+} from '../../common/port/system-comment-port.interface';
 import { TAcceptedMember, TGroup, TPendingMember } from './entity/group';
 import {
   IGroupRepository,
@@ -8,30 +12,42 @@ import {
 } from './group-repository.interface';
 
 export class GroupService {
-  constructor(private readonly groupRepository: IGroupRepository) {}
+  constructor(
+    private readonly groupRepository: IGroupRepository,
+    private readonly systemContentCommentPort: ISystemContentCommentPort
+  ) {}
 
   /****************************************************
    * Group CRUD 함수
    ****************************************************/
-  async createGroup(ownerId: string, name: string): Promise<TGroup> {
+  async createGroup(requesterId: string, name: string): Promise<TGroup> {
     const ownerDefaultProfile =
-      await this.groupRepository.findUserProfile(ownerId);
+      await this.groupRepository.findUserProfile(requesterId);
 
     try {
       const group = await this.groupRepository.createGroup({
         groupName: name,
-        ownerId,
-        ownerUsername: ownerDefaultProfile.username,
-        ownerProfileImageUrl: ownerDefaultProfile.profileImageUrl,
       });
 
-      const _newOwner = await this.groupRepository.addMember({
+      const groupOwner = await this.groupRepository.addMember({
         groupId: group.id,
-        userId: ownerId,
+        userId: requesterId,
         role: 'owner',
         status: 'approved',
         profileImageUrl: ownerDefaultProfile.profileImageUrl,
         username: ownerDefaultProfile.username,
+      });
+
+      void this.systemContentCommentPort.addComment({
+        groupId: group.id,
+        category: ESystemCommentCategory.GROUP_CREATED,
+        text: `님이 그룹을 생성했습니다.`,
+        tags: [
+          {
+            at: [0],
+            memberId: groupOwner.id,
+          },
+        ],
       });
 
       return group;
@@ -68,10 +84,9 @@ export class GroupService {
       });
     }
 
-    const owner = await this.groupRepository.findOwner(groupId);
+    const owner = await this.groupRepository.findOwnerBy({ groupId });
 
     await this.groupRepository.updateMember({
-      groupId,
       memberId: owner.id,
       payload: {
         role: 'member',
@@ -79,7 +94,6 @@ export class GroupService {
     });
 
     await this.groupRepository.updateMember({
-      groupId,
       memberId: toBeOwnerId,
       payload: {
         role: 'owner',
@@ -169,7 +183,7 @@ export class GroupService {
       groupId,
       requesterId
     );
-    console.log({ groupId, requesterId });
+
     if (!isMember) {
       throw Exception.new({
         code: Code.UNAUTHORIZED_ERROR,
@@ -285,17 +299,11 @@ export class GroupService {
       }
     );
 
-    // joinDateTime가 있는 경우 제외하고 반환
-    const pendingMembers = members.items.flatMap((member) => {
-      if (member.joinDateTime) {
-        return [];
-      }
-      return [
-        {
-          ...member,
-          joinDateTime: undefined,
-        },
-      ];
+    const pendingMembers = members.items.map((member) => {
+      return {
+        ...member,
+        joinDateTime: undefined,
+      };
     });
     return pendingMembers;
   }
@@ -324,8 +332,8 @@ export class GroupService {
       });
     }
 
+    // TODO: memberId로 부터 groupId를 찾아내야 함. 현재 권한 확인에 문제가 있음.
     const result = await this.groupRepository.updateMember({
-      groupId,
       memberId,
       payload: {
         status: 'approved',
@@ -335,7 +343,7 @@ export class GroupService {
     if (!result) {
       throw Exception.new({
         code: Code.BAD_REQUEST_ERROR,
-        overrideMessage: 'Failed to approve join request',
+        overrideMessage: 'Failed to update member status',
       });
     }
 
@@ -345,9 +353,21 @@ export class GroupService {
     if (!member || !member.joinDateTime) {
       throw Exception.new({
         code: Code.BAD_REQUEST_ERROR,
-        overrideMessage: 'Failed to approve join request',
+        overrideMessage: 'Failed to find member',
       });
     }
+
+    void this.systemContentCommentPort.addComment({
+      groupId,
+      category: ESystemCommentCategory.MEMBER_JOINED,
+      text: `님이 그룹에 가입했습니다.`,
+      tags: [
+        {
+          at: [0],
+          memberId: member.id,
+        },
+      ],
+    });
 
     return {
       ...member,
@@ -369,9 +389,8 @@ export class GroupService {
         overrideMessage: 'requester not owner',
       });
     }
-
+    // TODO: memberId로 부터 groupId를 찾아내야 함. 현재 권한 확인에 문제가 있음.
     await this.groupRepository.updateMember({
-      groupId,
       memberId: memberId,
       payload: {
         status: 'rejected',
@@ -394,13 +413,24 @@ export class GroupService {
         overrideMessage: 'requester not owner',
       });
     }
-
+    // TODO: memberId로 부터 groupId를 찾아내야 함. 현재 권한 확인에 문제가 있음.
     await this.groupRepository.updateMember({
-      groupId,
       memberId: memberId,
       payload: {
         status: 'droppedOut',
       },
+    });
+
+    void this.systemContentCommentPort.addComment({
+      groupId,
+      category: ESystemCommentCategory.MEMBER_DROP_OUT,
+      text: `님이 그룹에서 강퇴되었습니다.`,
+      tags: [
+        {
+          at: [0],
+          memberId: memberId,
+        },
+      ],
     });
   }
 
@@ -410,29 +440,40 @@ export class GroupService {
   }): Promise<void> {
     const { requesterId, groupId } = payload;
 
-    const [isOwner, isMember] = await Promise.all([
-      this.groupRepository.isOwner(groupId, requesterId),
-      this.groupRepository.isApprovedMember(groupId, requesterId),
-    ]);
-    if (isOwner) {
+    const requestedMember = await this.groupRepository.findMemberBy({
+      groupId,
+      userId: requesterId,
+    });
+    if (!requestedMember) {
       throw Exception.new({
-        code: Code.BAD_REQUEST_ERROR,
-        overrideMessage: 'requester is owner',
+        code: Code.ENTITY_NOT_FOUND_ERROR,
+        overrideMessage: 'Member not found',
       });
     }
-    if (!isMember) {
+    if (requestedMember.role === 'owner') {
       throw Exception.new({
-        code: Code.UNAUTHORIZED_ERROR,
-        overrideMessage: 'requester not member',
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: 'owner cannot leave group',
       });
     }
 
     await this.groupRepository.updateMember({
-      groupId,
-      memberId: requesterId,
+      memberId: requestedMember.id,
       payload: {
         status: 'left',
       },
+    });
+
+    void this.systemContentCommentPort.addComment({
+      groupId,
+      category: ESystemCommentCategory.MEMBER_LEFT,
+      text: `님이 그룹에서 나갔습니다.`,
+      tags: [
+        {
+          at: [0],
+          memberId: requesterId,
+        },
+      ],
     });
   }
 

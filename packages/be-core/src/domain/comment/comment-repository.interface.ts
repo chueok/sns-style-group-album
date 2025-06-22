@@ -21,10 +21,20 @@ export type TCommentPaginationResult<T> = {
 };
 
 export interface ICommentRepository {
-  findCommentOwner(payload: {
-    commentId: string;
-    userId: string;
-  }): Promise<Nullable<TCommentMember>>;
+  findMemberBy(
+    by:
+      | {
+          groupId: string;
+          userId: string;
+        }
+      | {
+          commentId: string; // return comment owner
+        }
+      | {
+          userId: string; // content가 속한 그룹에서의 member 정보 리턴
+          contentId: string;
+        }
+  ): Promise<Nullable<TCommentMember>>;
 
   /**
    * 해당 컨텐츠가 속한 그룹의
@@ -39,6 +49,7 @@ export interface ICommentRepository {
     ownerId: string;
     category: ECommentCategory;
     contentId: string;
+    groupId: string;
     text: string;
   }): Promise<TComment>;
 
@@ -47,8 +58,16 @@ export interface ICommentRepository {
     text: string;
   }): Promise<TComment>;
 
-  findCommentsOfContent(payload: {
-    contentId: string;
-    pagination: TCommentPaginationParams;
-  }): Promise<TCommentPaginationResult<TComment>>;
+  findCommentBy(by: { commentId: string }): Promise<Nullable<TComment>>;
+
+  findCommentListBy(
+    by:
+      | {
+          groupId: string;
+        }
+      | {
+          contentId: string;
+        },
+    pagination: TCommentPaginationParams
+  ): Promise<TCommentPaginationResult<TComment>>;
 }

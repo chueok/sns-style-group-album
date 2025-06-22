@@ -7,6 +7,8 @@ import { TYPEORM_DIRECTORY } from '../infrastructure/persistence/typeorm/typeorm
 import { APP_FILTER } from '@nestjs/core';
 import { NestHttpExceptionFilter } from '../http-rest/exception-filter/nest-http-exception-filter';
 import { MinioObjectStorage } from '../infrastructure/persistence/object-storage/minio/minio-adapter';
+import { DataSource } from 'typeorm';
+import { SystemContentCommentAdapter } from '../adapter/system-content-comment';
 
 export const typeormSqliteOptions = {
   type: 'sqlite',
@@ -26,7 +28,7 @@ const globalProviders: Provider[] = [
   },
 ];
 
-const objectStorageProviders: Provider[] = [
+const providers: Provider[] = [
   {
     provide: DiTokens.ObjectStorage,
     useFactory: async () => {
@@ -34,13 +36,20 @@ const objectStorageProviders: Provider[] = [
       return objectStorage;
     },
   },
+  {
+    provide: DiTokens.SystemContentCommentAdapter,
+    useFactory: (dataSource: DataSource) => {
+      return new SystemContentCommentAdapter(dataSource);
+    },
+    inject: [DataSource],
+  },
 ];
 
 // NOTE : dynamic module의 object에 덮어 씌워짐
 @Global()
 @Module({
   imports: [TypeOrmModule.forRoot(typeormSqliteOptions)],
-  providers: [...objectStorageProviders, ...globalProviders],
-  exports: [...objectStorageProviders],
+  providers: [...providers, ...globalProviders],
+  exports: [...providers],
 })
 export class InfrastructureModule {}

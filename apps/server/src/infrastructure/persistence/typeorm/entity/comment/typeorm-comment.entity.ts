@@ -6,11 +6,18 @@ import {
   TableInheritance,
   OneToMany,
 } from 'typeorm';
-import { CommentId, ECommentCategory, Nullable, Optional } from '@repo/be-core';
+import {
+  CommentId,
+  ECommentCategory,
+  ESystemCommentCategory,
+  Nullable,
+  Optional,
+} from '@repo/be-core';
 import { TableAlias } from '../table-alias';
 import { TypeormCommentUserTag } from '../commet-user-tag/typeorm-comment-user-tag.entity';
 import { TypeormContent } from '../content/typeorm-content.entity';
 import { TypeormMember } from '../group/typeorm-member.entity';
+import { TypeormGroup } from '../group/typeorm-group.entity';
 
 @Entity(TableAlias.COMMENT)
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
@@ -39,15 +46,14 @@ export class TypeormComment {
   __tags__: Optional<TypeormCommentUserTag[]>;
 
   @ManyToOne(() => TypeormContent, {
-    nullable: false,
+    nullable: true,
     onDelete: 'CASCADE',
   })
   content!: Promise<TypeormContent>;
   __content__: Optional<TypeormContent>;
-  @Column()
-  contentId!: TypeormContent['id'];
+  @Column({ type: 'text', nullable: true })
+  contentId!: Nullable<TypeormContent['id']>;
 
-  // TODO: userId를 연결할게 아니라, member를 직접 연결 할지 생각해보자.
   // for user comment
   @ManyToOne(() => TypeormMember, {
     nullable: true,
@@ -57,7 +63,16 @@ export class TypeormComment {
   ownerId!: Nullable<TypeormMember['id']>;
   __owner__: Optional<TypeormMember>;
 
+  @ManyToOne(() => TypeormGroup)
+  group!: Promise<TypeormGroup>;
+  @Column({ type: 'text' })
+  groupId!: TypeormGroup['id'];
+  __group__: Optional<TypeormGroup>;
+
   // for system comment
+  @Column({ type: 'text', enum: ESystemCommentCategory, nullable: true })
+  systemCommentCategory!: Nullable<ESystemCommentCategory>;
+
   @Column({ type: 'text', nullable: true })
   subText!: Nullable<string>;
 }

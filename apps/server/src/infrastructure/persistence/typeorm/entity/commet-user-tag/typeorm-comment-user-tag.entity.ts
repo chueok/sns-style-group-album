@@ -1,8 +1,8 @@
 import { Column, Entity, ManyToOne, OneToOne, PrimaryColumn } from 'typeorm';
 import { TableAlias } from '../table-alias';
 import { TypeormComment } from '../comment/typeorm-comment.entity';
-import { TypeormUser } from '../user/typeorm-user.entity';
 import { Optional } from '@repo/be-core';
+import { TypeormMember } from '../group/typeorm-member.entity';
 
 @Entity(TableAlias.COMMENT_USER_TAG)
 export class TypeormCommentUserTag {
@@ -18,9 +18,9 @@ export class TypeormCommentUserTag {
   @PrimaryColumn({ type: 'text' })
   commentId!: TypeormComment['id'];
 
-  @OneToOne(() => TypeormUser, { onDelete: 'NO ACTION' })
-  user!: Promise<TypeormUser>;
-  __user__: Optional<TypeormUser>;
+  @OneToOne(() => TypeormMember, { onDelete: 'NO ACTION' })
+  member!: Promise<TypeormMember>;
+  __member__: Optional<TypeormMember>;
   @PrimaryColumn({ type: 'text' })
-  userId!: TypeormUser['id'];
+  memberId!: TypeormMember['id'];
 }

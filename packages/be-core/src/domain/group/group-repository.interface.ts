@@ -57,12 +57,7 @@ export interface IGroupRepository {
   /**
    * Group CRUD
    */
-  createGroup(payload: {
-    groupName: string;
-    ownerId: string;
-    ownerUsername: string;
-    ownerProfileImageUrl?: string;
-  }): Promise<TGroup>;
+  createGroup(payload: { groupName: string }): Promise<TGroup>;
 
   findGroupBy(payload: {
     groupId?: string;
@@ -105,6 +100,10 @@ export interface IGroupRepository {
     pagination: TGroupsPaginationParams
   ): Promise<TGroupsPaginatedResult<TMember>>;
 
+  /**
+   * memberId: 해당 멤버 반환
+   * groupId, userId: 해당 유저의 그룹에 속한 멤버 정보 반환
+   */
   findMemberBy(
     by:
       | {
@@ -113,10 +112,13 @@ export interface IGroupRepository {
       | { groupId: string; userId: string }
   ): Promise<Nullable<TMember>>;
 
-  findOwner(groupId: string): Promise<TMember>;
+  /**
+   * groupId: 해당 그룹의 오너 반환
+   * memberId: 해당 멤버의 그룹 오너 반환
+   */
+  findOwnerBy(by: { groupId: string } | { memberId: string }): Promise<TMember>;
 
   updateMember(payload: {
-    groupId: string;
     memberId: string;
     payload: {
       username?: string;
@@ -130,6 +132,7 @@ export interface IGroupRepository {
    * 멤버 초대를 위한 함수 모음
    ****************************************************/
   // invitation code가 없을 경우 생성하고 반환
+  // TODO: CRUD만 남기고, 비즈니스 로직은 service로 옮길 것
   getInvitationCode(groupId: string): Promise<string>;
   refreshInvitationCode(groupId: string): Promise<string>;
   deleteInvitationCode(groupId: string): Promise<boolean>;

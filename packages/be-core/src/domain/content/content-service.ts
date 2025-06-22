@@ -65,7 +65,7 @@ export class ContentService {
       });
       return {
         ...m,
-        thumbnailPath: originalPath,
+        thumbnailPath: originalPath, // TODO: 썸네일 파일 생성 로직 추가 필요.
         originalPath,
         largePath: originalPath,
       };

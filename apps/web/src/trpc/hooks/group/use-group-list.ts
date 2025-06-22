@@ -9,7 +9,6 @@ export const useGroupList = () => {
   const utils = trpc.useUtils();
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
-  const updatedPages = useRef<Set<number>>(new Set());
 
   const { data, isLoading, error } = trpc.group.getMyMemberGroups.useQuery(
     {
@@ -21,12 +20,13 @@ export const useGroupList = () => {
 
   // getMyMemberGroups 데이터를 사용해서 getGroup 쿼리들의 캐시를 업데이트
   useEffect(() => {
-    if (data?.items && !updatedPages.current.has(currentPage)) {
+    if (data?.items) {
       data.items.forEach((group) => {
-        utils.group.getGroup.setData({ groupId: group.id }, group);
+        const prevData = utils.group.getGroup.getData({ groupId: group.id });
+        if (!prevData) {
+          utils.group.getGroup.setData({ groupId: group.id }, group);
+        }
       });
-      // 현재 페이지를 업데이트 완료로 표시
-      updatedPages.current.add(currentPage);
     }
   }, [data?.items, currentPage, utils.group.getGroup]);
 

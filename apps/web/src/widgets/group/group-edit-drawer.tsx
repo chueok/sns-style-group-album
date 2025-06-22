@@ -20,6 +20,7 @@ import { useState } from 'react';
 import { GroupNameEditDialog } from './group-name-edit-dialog';
 import { GroupInvitationDialog } from './group-invitation-dialog';
 import { GroupLeaveConfirmDialog } from './group-leave-confirm-dialog';
+import { useMyMemberInfo } from '@/trpc/hooks/group/use-my-member-info';
 
 const ErrorComponent = () => {
   return <div>Error</div>;
@@ -59,8 +60,9 @@ export const EditGroupDrawer = () => {
     groupId: selectedGroupId || '',
   }); // TODO: infinite scroll 구현 필요 (page 기반)
 
-  const { user } = useAuth();
-  const isOwner = user?.id === group?.ownerId;
+  const { memberInfo } = useMyMemberInfo(selectedGroupId);
+
+  const isOwner = memberInfo?.role === 'owner';
 
   const handleSelectedGroupDetail = () => {
     console.log('selected group detail');
@@ -150,7 +152,7 @@ export const EditGroupDrawer = () => {
                 <CardContent className="tw-flex tw-flex-col tw-gap-2 tw-py-0">
                   <GroupInvitationDialog groupId={group.id} />
                   {memberProfiles.map((memberProfile) => {
-                    const isOwner = memberProfile.id === group.ownerId;
+                    const isOwner = memberProfile.role === 'owner';
                     return (
                       <MemberItemComponent
                         key={memberProfile.id}

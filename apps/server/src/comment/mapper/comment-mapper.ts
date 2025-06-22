@@ -5,6 +5,7 @@ export class CommentMapper {
   public static toDomainEntity(payload: TypeormComment): TComment {
     const {
       id,
+      groupId,
       commentCategory,
       ownerId,
       text,
@@ -13,19 +14,25 @@ export class CommentMapper {
       deletedDateTime,
       contentId,
       subText,
+      __tags__,
     } = payload;
 
     return {
       id,
+      groupId,
       category: commentCategory,
       text,
-      userTags: [], // TODO: 유저 태그 추가 필요
-      contentId: contentId,
-      ownerId: ownerId || null,
-      subText: subText,
+      tags:
+        __tags__?.map((tag) => ({
+          at: tag.at.split(',').map(Number),
+          memberId: tag.memberId,
+        })) || [],
+      contentId: contentId || undefined,
+      ownerId: ownerId || undefined,
+      subText: subText || undefined,
       createdDateTime: createdDateTime,
-      updatedDateTime: updatedDateTime,
-      deletedDateTime: deletedDateTime,
+      updatedDateTime: updatedDateTime || undefined,
+      deletedDateTime: deletedDateTime || undefined,
     };
   }
 

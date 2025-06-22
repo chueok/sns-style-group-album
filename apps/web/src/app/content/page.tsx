@@ -24,7 +24,7 @@ import { Textarea } from '@repo/ui/textarea';
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAddComment } from '@/trpc/hooks/comment/use-add-comment';
-import { useComments } from '@/trpc/hooks/comment/use-comments';
+import { useCommentsOfContent } from '@/trpc/hooks/comment/use-comments';
 import { UserAvatar } from '@/widgets/comment/user-avatar';
 import { useAuth } from '@/trpc/hooks/auth/use-auth';
 import { UserName } from '@/widgets/comment/user-name';
@@ -38,7 +38,7 @@ import { useMember } from '@/trpc/hooks/group/use-member';
 
 const CommentList = (payload: { contentId: string }) => {
   const { contentId } = payload;
-  const { comments } = useComments(contentId);
+  const { comments } = useCommentsOfContent(contentId);
 
   return (
     <ScrollArea className="tw-h-full">

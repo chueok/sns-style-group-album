@@ -65,12 +65,21 @@ export const useMemberList = (payload: { groupId: string }) => {
   };
 };
 
-export const useMember = (payload: { groupId: string; memberId: string }) => {
+// TODO: groupId를 없애는 방향으로 수정 할 것
+export const useMember = (payload: { groupId?: string; memberId?: string }) => {
   const {
     data: profile,
     isLoading,
     isError,
-  } = trpc.group.getMemberById.useQuery(payload);
+  } = trpc.group.getMemberById.useQuery(
+    {
+      groupId: payload.groupId!,
+      memberId: payload.memberId!,
+    },
+    {
+      enabled: !!payload.groupId && !!payload.memberId,
+    }
+  );
 
   return {
     profile,
