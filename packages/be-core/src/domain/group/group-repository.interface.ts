@@ -1,5 +1,5 @@
 import { Nullable } from '../../common/type/common-types';
-import { TGroup, TMember, TUserProfile } from './entity/group';
+import { SGroup, SMember, TGroup, TMember, TUserProfile } from './entity/group';
 import { z } from 'zod';
 
 /**
@@ -18,21 +18,51 @@ import { z } from 'zod';
  * 3. 상태가 approved인 멤버만 유효한 멤버이다.
  */
 
-export const SGroupsPaginationParams = z.object({
+/**
+ * 1. group pagination
+ */
+export const SGroupPaginationParams = z.object({
   page: z.number().nullish(),
   pageSize: z.number(),
 });
+export type TGroupPaginationParams = z.infer<typeof SGroupPaginationParams>;
 
-export type TGroupsPaginationParams = z.infer<typeof SGroupsPaginationParams>;
+export const SGroupPaginatedResultFactory = (schema: z.ZodTypeAny) =>
+  z.object({
+    items: z.array(schema),
+    total: z.number(),
+    page: z.number(),
+    pageSize: z.number(),
+    totalPages: z.number(),
+  });
 
-export type TGroupsPaginatedResult<T> = {
-  items: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-};
+export const SGroupPaginatedResult = SGroupPaginatedResultFactory(SGroup);
+export type TGroupPaginatedResult = z.infer<typeof SGroupPaginatedResult>;
 
+/**
+ * 2. member pagination
+ */
+export const SMemberPaginationParams = z.object({
+  page: z.number().nullish(),
+  pageSize: z.number(),
+});
+export type TMemberPaginationParams = z.infer<typeof SMemberPaginationParams>;
+
+export const SMemberPaginatedResultFactory = (schema: z.ZodTypeAny) =>
+  z.object({
+    items: z.array(schema),
+    total: z.number(),
+    page: z.number(),
+    pageSize: z.number(),
+    totalPages: z.number(),
+  });
+
+export const SMemberPaginatedResult = SMemberPaginatedResultFactory(SMember);
+export type TMemberPaginatedResult = z.infer<typeof SMemberPaginatedResult>;
+
+/**
+ * 3. other types
+ */
 export type TMemberRole = 'owner' | 'member';
 export type TMemberStatus =
   | 'pending'
@@ -69,8 +99,8 @@ export interface IGroupRepository {
       userId: string;
       role?: TMemberRole;
     },
-    pagination: TGroupsPaginationParams
-  ): Promise<TGroupsPaginatedResult<TGroup>>;
+    pagination: TGroupPaginationParams
+  ): Promise<TGroupPaginatedResult>;
 
   updateGroup(
     groupId: string,
@@ -97,8 +127,8 @@ export interface IGroupRepository {
 
   findMemberListBy(
     by: { groupId: string; memberIds?: string[]; status?: TMemberStatus },
-    pagination: TGroupsPaginationParams
-  ): Promise<TGroupsPaginatedResult<TMember>>;
+    pagination: TMemberPaginationParams
+  ): Promise<TMemberPaginatedResult>;
 
   /**
    * memberId: 해당 멤버 반환

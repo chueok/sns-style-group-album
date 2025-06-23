@@ -4,14 +4,16 @@ import {
   Nullable,
   TGroup,
   UserId,
-  TGroupsPaginationParams,
-  TGroupsPaginatedResult,
+  TGroupPaginationParams,
+  TGroupPaginatedResult,
   TMember,
   Exception,
   Code,
   TMemberRole,
   TMemberStatus,
   TUserProfile,
+  TMemberPaginatedResult,
+  TMemberPaginationParams,
 } from '@repo/be-core';
 import { DataSource, IsNull, Repository } from 'typeorm';
 import { TypeormGroup } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
@@ -20,7 +22,6 @@ import { MemberMapper } from './mapper/member-mapper';
 import { TypeormUser } from '../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
 import { v4, v6 } from 'uuid';
 import { GroupMapper } from './mapper/group-mapper';
-import { Transactional } from 'typeorm-transactional';
 import { TypeormMember } from '../infrastructure/persistence/typeorm/entity/group/typeorm-member.entity';
 
 export class TypeormGroupRepository implements IGroupRepository {
@@ -135,8 +136,8 @@ export class TypeormGroupRepository implements IGroupRepository {
 
   async findGroupListBy(
     payload: { role?: TMemberRole; userId: string },
-    pagination: TGroupsPaginationParams
-  ): Promise<TGroupsPaginatedResult<TGroup>> {
+    pagination: TGroupPaginationParams
+  ): Promise<TGroupPaginatedResult> {
     if (Object.keys(payload).length === 0) {
       throw Exception.new({
         code: Code.BAD_REQUEST_ERROR,
@@ -260,8 +261,8 @@ export class TypeormGroupRepository implements IGroupRepository {
 
   async findMemberListBy(
     by: { groupId: string; memberIds?: string[]; status?: TMemberStatus },
-    pagination: TGroupsPaginationParams
-  ): Promise<TGroupsPaginatedResult<TMember>> {
+    pagination: TMemberPaginationParams
+  ): Promise<TMemberPaginatedResult> {
     const { groupId, memberIds, status } = by;
 
     const page = pagination.page ?? 1;

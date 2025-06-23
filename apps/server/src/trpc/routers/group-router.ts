@@ -4,9 +4,11 @@ import {
   Code,
   Exception,
   SGroup,
-  SPendingMember,
-  SGroupsPaginationParams,
-  SAcceptedMember,
+  SPendingMemberDTO,
+  SGroupPaginationParams,
+  SAcceptedMemberDTO,
+  SGroupPaginatedResult,
+  SMemberDtoPaginatedResult,
 } from '@repo/be-core';
 
 export const groupRouter = router({
@@ -72,7 +74,8 @@ export const groupRouter = router({
     }),
 
   getMyMemberGroups: authProcedure
-    .input(SGroupsPaginationParams)
+    .input(SGroupPaginationParams)
+    .output(SGroupPaginatedResult)
     .query(async ({ input, ctx }) => {
       const {
         user,
@@ -86,7 +89,8 @@ export const groupRouter = router({
     }),
 
   getMyOwnGroups: authProcedure
-    .input(SGroupsPaginationParams)
+    .input(SGroupPaginationParams)
+    .output(SGroupPaginatedResult)
     .query(async ({ input, ctx }) => {
       const {
         user,
@@ -117,6 +121,7 @@ export const groupRouter = router({
 
   getInvitationCode: authProcedure
     .input(z.object({ groupId: z.string() }))
+    .output(z.string())
     .query(async ({ input, ctx }) => {
       const { groupId } = input;
       const {
@@ -132,7 +137,7 @@ export const groupRouter = router({
 
   requestJoinGroup: authProcedure
     .input(z.object({ invitationCode: z.string() }))
-    .output(SPendingMember)
+    .output(SPendingMemberDTO)
     .mutation(async ({ input, ctx }) => {
       const { invitationCode } = input;
       const {
@@ -148,7 +153,7 @@ export const groupRouter = router({
 
   getJoinRequestUsers: authProcedure
     .input(z.object({ groupId: z.string() }))
-    .output(z.array(SPendingMember))
+    .output(z.array(SPendingMemberDTO))
     .query(async ({ input, ctx }) => {
       const { groupId } = input;
       const {
@@ -165,7 +170,7 @@ export const groupRouter = router({
 
   approveJoinRequest: authProcedure
     .input(z.object({ groupId: z.string(), memberId: z.string() }))
-    .output(SAcceptedMember)
+    .output(SAcceptedMemberDTO)
     .mutation(async ({ input, ctx }) => {
       const { groupId, memberId } = input;
       const {
@@ -214,10 +219,11 @@ export const groupRouter = router({
 
   getMembersByGroupId: authProcedure
     .input(
-      SGroupsPaginationParams.extend({
+      SGroupPaginationParams.extend({
         groupId: z.string(),
       })
     )
+    .output(SMemberDtoPaginatedResult)
     .query(async ({ input, ctx }) => {
       const { groupId, ...pagination } = input;
       const {
@@ -234,7 +240,7 @@ export const groupRouter = router({
 
   getMemberById: authProcedure
     .input(z.object({ groupId: z.string(), memberId: z.string() }))
-    .output(SAcceptedMember)
+    .output(SAcceptedMemberDTO)
     .query(async ({ input, ctx }) => {
       const { groupId, memberId } = input;
       const {
@@ -260,7 +266,7 @@ export const groupRouter = router({
 
   getMembersByIds: authProcedure
     .input(z.object({ groupId: z.string(), memberIds: z.array(z.string()) }))
-    .output(z.array(SAcceptedMember))
+    .output(z.array(SAcceptedMemberDTO))
     .query(async ({ input, ctx }) => {
       const { groupId, memberIds: memberIds } = input;
       const {
@@ -277,7 +283,7 @@ export const groupRouter = router({
 
   getMyMemberInfo: authProcedure
     .input(z.object({ groupId: z.string() }))
-    .output(SAcceptedMember)
+    .output(SAcceptedMemberDTO)
     .query(async ({ input, ctx }) => {
       const { groupId } = input;
       const {

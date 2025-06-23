@@ -1,11 +1,14 @@
 import { trpc } from '@/trpc/trpc';
 import { useEffect, useState, useRef } from 'react';
+import { useAuth } from '../auth/use-auth';
 
 /**
  * 초기 groupList를 로드하고, cache 업데이트를 위해 사용함.
  * 이후 useGroupDetail을 통해 각 데이터 접근 할 것
  */
 export const useGroupList = () => {
+  const { user } = useAuth();
+
   const utils = trpc.useUtils();
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
@@ -15,7 +18,10 @@ export const useGroupList = () => {
       page: currentPage,
       pageSize,
     },
-    { staleTime: Infinity }
+    {
+      staleTime: Infinity,
+      enabled: !!user,
+    }
   );
 
   // getMyMemberGroups 데이터를 사용해서 getGroup 쿼리들의 캐시를 업데이트
@@ -70,10 +76,14 @@ export const useGroupList = () => {
   };
 };
 
-export const useGroupDetail = (groupId: string) => {
+export const useGroupDetail = (groupId: string | undefined) => {
+  const { user } = useAuth();
   const { data } = trpc.group.getGroup.useQuery(
-    { groupId },
-    { staleTime: Infinity }
+    { groupId: groupId || '' },
+    {
+      staleTime: Infinity,
+      enabled: !!user && !!groupId,
+    }
   );
 
   return { group: data };

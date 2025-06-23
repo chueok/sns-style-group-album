@@ -1,15 +1,29 @@
+import z from 'zod';
 import { Code } from '../../common/exception/code';
 import { Exception } from '../../common/exception/exception';
 import {
   ESystemCommentCategory,
   ISystemContentCommentPort,
 } from '../../common/port/system-comment-port.interface';
-import { TAcceptedMember, TGroup, TPendingMember } from './entity/group';
+import { SMemberDTO, TAcceptedMemberDTO, TPendingMemberDTO } from './dto/group';
+import { TGroup } from './entity/group';
 import {
   IGroupRepository,
-  TGroupsPaginatedResult,
-  TGroupsPaginationParams,
+  SMemberPaginatedResultFactory,
+  TGroupPaginatedResult,
+  TGroupPaginationParams,
+  TMemberPaginationParams,
 } from './group-repository.interface';
+
+/**
+ * member response schema
+ * group 의 경우 필요 할 때 도입 예정
+ */
+export const SMemberDtoPaginatedResult =
+  SMemberPaginatedResultFactory(SMemberDTO);
+export type TMemberDtoPaginatedResult = z.infer<
+  typeof SMemberDtoPaginatedResult
+>;
 
 export class GroupService {
   constructor(
@@ -145,8 +159,8 @@ export class GroupService {
 
   async getMyMemberGroups(payload: {
     requesterId: string;
-    pagination: TGroupsPaginationParams;
-  }): Promise<TGroupsPaginatedResult<TGroup>> {
+    pagination: TGroupPaginationParams;
+  }): Promise<TGroupPaginatedResult> {
     const { requesterId, pagination } = payload;
 
     const groupList = await this.groupRepository.findGroupListBy(
@@ -160,8 +174,8 @@ export class GroupService {
 
   async getMyOwnGroups(payload: {
     requesterId: string;
-    pagination: TGroupsPaginationParams;
-  }): Promise<TGroupsPaginatedResult<TGroup>> {
+    pagination: TGroupPaginationParams;
+  }): Promise<TGroupPaginatedResult> {
     const { requesterId, pagination } = payload;
 
     const ownGroupList = await this.groupRepository.findGroupListBy(
@@ -230,7 +244,7 @@ export class GroupService {
   async requestJoinGroup(payload: {
     requesterId: string;
     invitationCode: string;
-  }): Promise<TPendingMember> {
+  }): Promise<TPendingMemberDTO> {
     const { requesterId, invitationCode } = payload;
 
     const group = await this.groupRepository.findGroupBy({
@@ -282,7 +296,7 @@ export class GroupService {
   async getJoinRequestUsers(payload: {
     requesterId: string;
     groupId: string;
-  }): Promise<TPendingMember[]> {
+  }): Promise<TPendingMemberDTO[]> {
     const { requesterId, groupId } = payload;
     const isOwner = await this.groupRepository.isOwner(groupId, requesterId);
     if (!isOwner) {
@@ -312,7 +326,7 @@ export class GroupService {
     requesterId: string;
     groupId: string;
     memberId: string;
-  }): Promise<TAcceptedMember> {
+  }): Promise<TAcceptedMemberDTO> {
     const { requesterId, groupId, memberId } = payload;
 
     const [isOwner, isPendingMember] = await Promise.all([
@@ -480,8 +494,8 @@ export class GroupService {
   async getMembersByGroupId(payload: {
     requesterId: string;
     groupId: string;
-    pagination: TGroupsPaginationParams;
-  }): Promise<TGroupsPaginatedResult<TAcceptedMember>> {
+    pagination: TMemberPaginationParams;
+  }): Promise<TMemberDtoPaginatedResult> {
     const { requesterId, groupId, pagination } = payload;
     const isMember = await this.groupRepository.isApprovedMember(
       groupId,
@@ -530,7 +544,7 @@ export class GroupService {
     requesterId: string;
     groupId: string;
     memberIds: string[];
-  }): Promise<TAcceptedMember[]> {
+  }): Promise<TAcceptedMemberDTO[]> {
     const { requesterId, memberIds, groupId } = payload;
 
     const isMember = await this.groupRepository.isApprovedMember(
@@ -577,7 +591,7 @@ export class GroupService {
   async getMyMemberInfo(payload: {
     requesterId: string;
     groupId: string;
-  }): Promise<TAcceptedMember> {
+  }): Promise<TAcceptedMemberDTO> {
     const { requesterId, groupId } = payload;
 
     const member = await this.groupRepository.findMemberBy({

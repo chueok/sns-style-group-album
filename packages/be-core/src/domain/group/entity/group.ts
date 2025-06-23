@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+// NOTE: internal / external 구분 없이 사용 중
 export const SGroup = z.object({
   id: z.string(),
   name: z.string(),
@@ -19,19 +20,6 @@ export const SMember = z.object({
   joinDateTime: z.date().optional(),
 });
 export type TMember = z.infer<typeof SMember>;
-
-// 가입 승인된 멤버 정보를 확인하기 위함
-export const SAcceptedMember = SMember.extend({
-  joinDateTime: z.date(),
-});
-export type TAcceptedMember = z.infer<typeof SAcceptedMember>;
-
-// 가입신청한 멤버 정보를 확인하기 위함
-export const SPendingMember = SMember.extend({
-  joinDateTime: z.undefined(),
-});
-
-export type TPendingMember = z.infer<typeof SPendingMember>;
 
 // 단순 프로필 정보만 가져오기 위해 사용
 export const SUserProfile = z.object({

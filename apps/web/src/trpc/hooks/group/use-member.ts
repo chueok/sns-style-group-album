@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { trpc } from '../../trpc';
+import { useAuth } from '../auth/use-auth';
 
-export const useMemberList = (payload: { groupId: string }) => {
+export const useMemberList = (payload: { groupId?: string }) => {
+  const { user } = useAuth();
+
   const utils = trpc.useUtils();
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
@@ -9,16 +12,22 @@ export const useMemberList = (payload: { groupId: string }) => {
 
   const { data, isLoading, error } = trpc.group.getMembersByGroupId.useQuery(
     {
-      groupId: payload.groupId,
+      groupId: payload.groupId || '',
       page: currentPage,
       pageSize,
     },
-    { staleTime: Infinity }
+    {
+      staleTime: Infinity,
+      enabled: !!user && !!payload.groupId,
+    }
   );
 
   useEffect(() => {
     if (data?.items && !updatedPages.current.has(currentPage)) {
       data.items.forEach((item) => {
+        if (!payload.groupId) {
+          return;
+        }
         utils.group.getMemberById.setData(
           { groupId: payload.groupId, memberId: item.id },
           item
@@ -67,6 +76,7 @@ export const useMemberList = (payload: { groupId: string }) => {
 
 // TODO: groupId를 없애는 방향으로 수정 할 것
 export const useMember = (payload: { groupId?: string; memberId?: string }) => {
+  const { user } = useAuth();
   const {
     data: profile,
     isLoading,
@@ -77,7 +87,7 @@ export const useMember = (payload: { groupId?: string; memberId?: string }) => {
       memberId: payload.memberId!,
     },
     {
-      enabled: !!payload.groupId && !!payload.memberId,
+      enabled: !!user && !!payload.groupId && !!payload.memberId,
     }
   );
 
