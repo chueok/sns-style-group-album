@@ -411,36 +411,43 @@ export class TypeormGroupRepository implements IGroupRepository {
     return result.affected !== undefined && result.affected > 0;
   }
 
-  async refreshInvitationCode(groupId: string): Promise<string> {
-    // UUID v4를 생성하고 하이픈을 제거한 후 앞 8자리만 사용
-    const randomCode = v4().replace(/-/g, '').slice(0, 8);
-
-    // 그룹 엔티티에 초대 코드 저장
-    await this.typeormGroupRepository.update(groupId, {
-      invitationCode: randomCode,
-    });
-
-    return randomCode;
-  }
-
-  async getInvitationCode(groupId: string): Promise<string> {
+  async findInvitationCodeBy(groupId: string): Promise<Nullable<string>> {
     const ormGroup = await this.typeormGroupRepository.findOne({
-      where: { id: groupId as GroupId },
+      where: { id: groupId as GroupId, deletedDateTime: IsNull() },
       select: ['invitationCode'],
     });
 
-    if (ormGroup?.invitationCode) {
-      return ormGroup.invitationCode;
-    } else {
-      return this.refreshInvitationCode(groupId);
+    return ormGroup?.invitationCode || null;
+  }
+
+  async saveInvitationCode(payload: {
+    groupId: string;
+    invitationCode: string;
+  }): Promise<void> {
+    const result = await this.typeormGroupRepository
+      .createQueryBuilder()
+      .update()
+      .where('id = :groupId', { groupId: payload.groupId })
+      .andWhere('deletedDateTime is null')
+      .set({ invitationCode: payload.invitationCode })
+      .execute();
+
+    if (result.affected === 0) {
+      throw Exception.new({
+        code: Code.INTERNAL_ERROR,
+        overrideMessage: 'Failed to save invitation code',
+      });
     }
   }
 
   async deleteInvitationCode(groupId: string): Promise<boolean> {
-    const result = await this.typeormGroupRepository.update(groupId, {
-      invitationCode: null,
-    });
+    const result = await this.typeormGroupRepository
+      .createQueryBuilder()
+      .update()
+      .where('id = :groupId', { groupId })
+      .set({ invitationCode: null })
+      .execute();
 
-    return result.affected === 1;
+    return result.affected !== undefined && result.affected > 0;
   }
 }

@@ -161,9 +161,15 @@ export interface IGroupRepository {
   /****************************************************
    * 멤버 초대를 위한 함수 모음
    ****************************************************/
-  // invitation code가 없을 경우 생성하고 반환
-  // TODO: CRUD만 남기고, 비즈니스 로직은 service로 옮길 것
-  getInvitationCode(groupId: string): Promise<string>;
-  refreshInvitationCode(groupId: string): Promise<string>;
+  // '존재하는' 그룹의 초대코드 반환
+  findInvitationCodeBy(groupId: string): Promise<Nullable<string>>;
+
+  // '존재하는' 그룹의 초대코드 저장
+  saveInvitationCode(payload: {
+    groupId: string;
+    invitationCode: string;
+  }): Promise<void>;
+
+  // 그룹의 초대코드 삭제
   deleteInvitationCode(groupId: string): Promise<boolean>;
 }

@@ -20,6 +20,7 @@ import {
 } from './group-repository.interface';
 import { TMember } from './entity/member';
 import { Transactional } from 'typeorm-transactional';
+import { v4 } from 'uuid';
 
 /**
  * member response schema
@@ -237,9 +238,41 @@ export class GroupService {
       userId: requesterId,
     });
 
-    const invitationCode =
-      await this.groupRepository.getInvitationCode(groupId);
-    return invitationCode;
+    const existingCode =
+      await this.groupRepository.findInvitationCodeBy(groupId);
+
+    // 1. 존재하는 초대코드 반환
+    if (existingCode) {
+      return existingCode;
+    }
+
+    // 2. 초대 코드 생성
+    let newInvitationCode: string | null = null;
+    for (let i = 0; i < 3; i++) {
+      const randomCode = v4().replace(/-/g, '').slice(0, 8);
+      const group = await this.groupRepository.findGroupBy({
+        invitationCode: randomCode,
+      });
+      if (!group) {
+        // 초대 코드 중복 방지
+        newInvitationCode = randomCode;
+        await this.groupRepository.saveInvitationCode({
+          groupId,
+          invitationCode: newInvitationCode,
+        });
+        break;
+      }
+    }
+
+    // 3번 시도 후 초대 코드 생성 실패
+    if (!newInvitationCode) {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: 'Failed to generate invitation code',
+      });
+    }
+
+    return newInvitationCode;
   }
 
   async requestJoinGroup(payload: {
