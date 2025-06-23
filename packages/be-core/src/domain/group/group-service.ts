@@ -5,7 +5,11 @@ import {
   ESystemCommentCategory,
   ISystemContentCommentPort,
 } from '../../common/port/system-comment-port.interface';
-import { SMemberDTO, TAcceptedMemberDTO, TPendingMemberDTO } from './dto/group';
+import {
+  SMemberDTO,
+  TAcceptedMemberDTO,
+  TPendingMemberDTO,
+} from './dto/member';
 import { TGroup } from './entity/group';
 import {
   IGroupRepository,
@@ -14,6 +18,8 @@ import {
   TGroupPaginationParams,
   TMemberPaginationParams,
 } from './group-repository.interface';
+import { TMember } from './entity/member';
+import { Transactional } from 'typeorm-transactional';
 
 /**
  * member response schema
@@ -34,6 +40,7 @@ export class GroupService {
   /****************************************************
    * Group CRUD 함수
    ****************************************************/
+  @Transactional()
   async createGroup(requesterId: string, name: string): Promise<TGroup> {
     const ownerDefaultProfile =
       await this.groupRepository.findUserProfile(requesterId);
@@ -73,32 +80,30 @@ export class GroupService {
     }
   }
 
+  @Transactional()
   async changeGroupOwner(payload: {
     requesterId: string;
     groupId: string;
     toBeOwnerId: string;
   }): Promise<void> {
     const { requesterId, groupId, toBeOwnerId } = payload;
-    const [isOwner, isMember] = await Promise.all([
-      this.groupRepository.isOwner(groupId, requesterId),
-      this.groupRepository.isApprovedMember(groupId, toBeOwnerId),
+
+    const [owner, toBeOwner] = await Promise.all([
+      this.verifyOwner({
+        userId: requesterId,
+        groupId,
+      }),
+      this.groupRepository.findMemberBy({
+        memberId: toBeOwnerId,
+      }),
     ]);
 
-    if (!isOwner) {
+    if (!toBeOwner || toBeOwner.status !== 'approved') {
       throw Exception.new({
-        code: Code.UNAUTHORIZED_ERROR,
-        overrideMessage: 'requester not owner',
+        code: Code.ENTITY_NOT_FOUND_ERROR,
+        overrideMessage: 'Only approved member can be owner',
       });
     }
-
-    if (!isMember) {
-      throw Exception.new({
-        code: Code.BAD_REQUEST_ERROR,
-        overrideMessage: 'Owner not in group',
-      });
-    }
-
-    const owner = await this.groupRepository.findOwnerBy({ groupId });
 
     await this.groupRepository.updateMember({
       memberId: owner.id,
@@ -123,11 +128,20 @@ export class GroupService {
     name: string;
   }): Promise<TGroup> {
     const { requesterId, groupId, name } = payload;
-    const isOwner = await this.groupRepository.isOwner(groupId, requesterId);
-    if (!isOwner) {
+
+    const [_, targetGroup] = await Promise.all([
+      this.verifyOwner({
+        userId: requesterId,
+        groupId,
+      }),
+      this.groupRepository.findGroupBy({
+        groupId,
+      }),
+    ]);
+    if (!targetGroup) {
       throw Exception.new({
-        code: Code.UNAUTHORIZED_ERROR,
-        overrideMessage: 'requester not owner',
+        code: Code.ENTITY_NOT_FOUND_ERROR,
+        overrideMessage: 'Group not found',
       });
     }
 
@@ -140,13 +154,10 @@ export class GroupService {
     groupId: string;
   }): Promise<void> {
     const { requesterId, groupId } = payload;
-    const isOwner = await this.groupRepository.isOwner(groupId, requesterId);
-    if (!isOwner) {
-      throw Exception.new({
-        code: Code.UNAUTHORIZED_ERROR,
-        overrideMessage: 'requester not owner',
-      });
-    }
+    await this.verifyOwner({
+      userId: requesterId,
+      groupId,
+    });
 
     const result = await this.groupRepository.deleteGroup(groupId);
     if (!result) {
@@ -166,6 +177,7 @@ export class GroupService {
     const groupList = await this.groupRepository.findGroupListBy(
       {
         userId: requesterId,
+        status: 'approved',
       },
       pagination
     );
@@ -182,6 +194,7 @@ export class GroupService {
       {
         userId: requesterId,
         role: 'owner',
+        status: 'approved',
       },
       pagination
     );
@@ -193,17 +206,11 @@ export class GroupService {
     groupId: string;
   }): Promise<TGroup> {
     const { requesterId, groupId } = payload;
-    const isMember = await this.groupRepository.isApprovedMember(
-      groupId,
-      requesterId
-    );
 
-    if (!isMember) {
-      throw Exception.new({
-        code: Code.UNAUTHORIZED_ERROR,
-        overrideMessage: 'requester not member',
-      });
-    }
+    await this.verifyApprovedMember({
+      groupId,
+      userId: requesterId,
+    });
 
     const group = await this.groupRepository.findGroupBy({
       groupId,
@@ -225,16 +232,10 @@ export class GroupService {
     groupId: string;
   }): Promise<string> {
     const { requesterId, groupId } = payload;
-    const isMember = await this.groupRepository.isApprovedMember(
+    await this.verifyApprovedMember({
       groupId,
-      requesterId
-    );
-    if (!isMember) {
-      throw Exception.new({
-        code: Code.UNAUTHORIZED_ERROR,
-        overrideMessage: 'requester not owner',
-      });
-    }
+      userId: requesterId,
+    });
 
     const invitationCode =
       await this.groupRepository.getInvitationCode(groupId);
@@ -250,7 +251,6 @@ export class GroupService {
     const group = await this.groupRepository.findGroupBy({
       invitationCode,
     });
-
     if (!group) {
       throw Exception.new({
         code: Code.ENTITY_NOT_FOUND_ERROR,
@@ -258,23 +258,29 @@ export class GroupService {
       });
     }
 
-    const [isMember, isPendingMember, defaultProfile] = await Promise.all([
-      this.groupRepository.isApprovedMember(group.id, requesterId),
-      this.groupRepository.isPendingMember(group.id, requesterId),
+    const [pendingMember, approvedMember, defaultProfile] = await Promise.all([
+      this.groupRepository.findMemberBy({
+        groupId: group.id,
+        userId: requesterId,
+        status: 'pending',
+      }),
+      this.groupRepository.findMemberBy({
+        groupId: group.id,
+        userId: requesterId,
+        status: 'approved',
+      }),
       this.groupRepository.findUserProfile(requesterId),
     ]);
-
-    if (isMember) {
-      throw Exception.new({
-        code: Code.BAD_REQUEST_ERROR,
-        overrideMessage: 'requester already member',
-      });
-    }
-
-    if (isPendingMember) {
+    if (pendingMember) {
       throw Exception.new({
         code: Code.BAD_REQUEST_ERROR,
         overrideMessage: 'requester already requested join group',
+      });
+    }
+    if (approvedMember) {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: 'requester already member',
       });
     }
 
@@ -298,13 +304,10 @@ export class GroupService {
     groupId: string;
   }): Promise<TPendingMemberDTO[]> {
     const { requesterId, groupId } = payload;
-    const isOwner = await this.groupRepository.isOwner(groupId, requesterId);
-    if (!isOwner) {
-      throw Exception.new({
-        code: Code.UNAUTHORIZED_ERROR,
-        overrideMessage: 'requester not owner',
-      });
-    }
+    await this.verifyOwner({
+      userId: requesterId,
+      groupId,
+    });
 
     const members = await this.groupRepository.findMemberListBy(
       { groupId, status: 'pending' },
@@ -324,29 +327,32 @@ export class GroupService {
 
   async approveJoinRequest(payload: {
     requesterId: string;
-    groupId: string;
     memberId: string;
   }): Promise<TAcceptedMemberDTO> {
-    const { requesterId, groupId, memberId } = payload;
+    const { requesterId, memberId } = payload;
 
-    const [isOwner, isPendingMember] = await Promise.all([
-      this.groupRepository.isOwner(groupId, requesterId),
-      this.groupRepository.isPendingMember(groupId, memberId),
-    ]);
-    if (!isOwner) {
+    const owner = await this.groupRepository.findOwnerBy({
+      memberId,
+    });
+
+    if (owner.userId !== requesterId) {
       throw Exception.new({
         code: Code.UNAUTHORIZED_ERROR,
         overrideMessage: 'requester not owner',
       });
     }
-    if (!isPendingMember) {
+
+    const targetMember = await this.groupRepository.findMemberBy({
+      memberId,
+    });
+
+    if (!targetMember || targetMember.status !== 'pending') {
       throw Exception.new({
         code: Code.BAD_REQUEST_ERROR,
-        overrideMessage: 'the user is not requested join group',
+        overrideMessage: 'the member is not requested join group',
       });
     }
 
-    // TODO: memberId로 부터 groupId를 찾아내야 함. 현재 권한 확인에 문제가 있음.
     const result = await this.groupRepository.updateMember({
       memberId,
       payload: {
@@ -361,10 +367,10 @@ export class GroupService {
       });
     }
 
-    const member = await this.groupRepository.findMemberBy({
+    const updatedMember = await this.groupRepository.findMemberBy({
       memberId,
     });
-    if (!member || !member.joinDateTime) {
+    if (!updatedMember || !updatedMember.joinDateTime) {
       throw Exception.new({
         code: Code.BAD_REQUEST_ERROR,
         overrideMessage: 'Failed to find member',
@@ -372,40 +378,52 @@ export class GroupService {
     }
 
     void this.systemContentCommentPort.addComment({
-      groupId,
+      groupId: owner.groupId,
       category: ESystemCommentCategory.MEMBER_JOINED,
       text: `님이 그룹에 가입했습니다.`,
       tags: [
         {
           at: [0],
-          memberId: member.id,
+          memberId,
         },
       ],
     });
 
     return {
-      ...member,
-      joinDateTime: member.joinDateTime,
+      ...updatedMember,
+      joinDateTime: updatedMember.joinDateTime,
     };
   }
 
   async rejectJoinRequest(payload: {
     requesterId: string;
-    groupId: string;
     memberId: string;
   }): Promise<void> {
-    const { requesterId, groupId, memberId } = payload;
+    const { requesterId, memberId } = payload;
 
-    const isOwner = await this.groupRepository.isOwner(groupId, requesterId);
-    if (!isOwner) {
+    const owner = await this.groupRepository.findOwnerBy({
+      memberId,
+    });
+
+    if (owner.userId !== requesterId) {
       throw Exception.new({
         code: Code.UNAUTHORIZED_ERROR,
         overrideMessage: 'requester not owner',
       });
     }
-    // TODO: memberId로 부터 groupId를 찾아내야 함. 현재 권한 확인에 문제가 있음.
+
+    const targetMember = await this.groupRepository.findMemberBy({
+      memberId,
+    });
+    if (!targetMember || targetMember.status !== 'pending') {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: 'the member is not requested join group',
+      });
+    }
+
     await this.groupRepository.updateMember({
-      memberId: memberId,
+      memberId,
       payload: {
         status: 'rejected',
       },
@@ -416,18 +434,21 @@ export class GroupService {
 
   async dropOutMember(payload: {
     requesterId: string;
-    groupId: string;
     memberId: string;
   }): Promise<void> {
-    const { requesterId, groupId, memberId } = payload;
-    const isOwner = await this.groupRepository.isOwner(groupId, requesterId);
-    if (!isOwner) {
+    const { requesterId, memberId } = payload;
+
+    const owner = await this.groupRepository.findOwnerBy({
+      memberId,
+    });
+
+    if (owner.userId !== requesterId) {
       throw Exception.new({
         code: Code.UNAUTHORIZED_ERROR,
         overrideMessage: 'requester not owner',
       });
     }
-    // TODO: memberId로 부터 groupId를 찾아내야 함. 현재 권한 확인에 문제가 있음.
+
     await this.groupRepository.updateMember({
       memberId: memberId,
       payload: {
@@ -436,7 +457,7 @@ export class GroupService {
     });
 
     void this.systemContentCommentPort.addComment({
-      groupId,
+      groupId: owner.groupId,
       category: ESystemCommentCategory.MEMBER_DROP_OUT,
       text: `님이 그룹에서 강퇴되었습니다.`,
       tags: [
@@ -454,22 +475,10 @@ export class GroupService {
   }): Promise<void> {
     const { requesterId, groupId } = payload;
 
-    const requestedMember = await this.groupRepository.findMemberBy({
-      groupId,
+    const requestedMember = await this.verifyOwner({
       userId: requesterId,
+      groupId,
     });
-    if (!requestedMember) {
-      throw Exception.new({
-        code: Code.ENTITY_NOT_FOUND_ERROR,
-        overrideMessage: 'Member not found',
-      });
-    }
-    if (requestedMember.role === 'owner') {
-      throw Exception.new({
-        code: Code.BAD_REQUEST_ERROR,
-        overrideMessage: 'owner cannot leave group',
-      });
-    }
 
     await this.groupRepository.updateMember({
       memberId: requestedMember.id,
@@ -497,16 +506,11 @@ export class GroupService {
     pagination: TMemberPaginationParams;
   }): Promise<TMemberDtoPaginatedResult> {
     const { requesterId, groupId, pagination } = payload;
-    const isMember = await this.groupRepository.isApprovedMember(
+
+    await this.verifyApprovedMember({
       groupId,
-      requesterId
-    );
-    if (!isMember) {
-      throw Exception.new({
-        code: Code.UNAUTHORIZED_ERROR,
-        overrideMessage: 'requester not member',
-      });
-    }
+      userId: requesterId,
+    });
 
     const findMembersResult = await this.groupRepository.findMemberListBy(
       { groupId, status: 'approved' },
@@ -547,16 +551,10 @@ export class GroupService {
   }): Promise<TAcceptedMemberDTO[]> {
     const { requesterId, memberIds, groupId } = payload;
 
-    const isMember = await this.groupRepository.isApprovedMember(
+    await this.verifyApprovedMember({
       groupId,
-      requesterId
-    );
-    if (!isMember) {
-      throw Exception.new({
-        code: Code.UNAUTHORIZED_ERROR,
-        overrideMessage: 'User is not in group',
-      });
-    }
+      userId: requesterId,
+    });
 
     const members = await this.groupRepository.findMemberListBy(
       {
@@ -597,6 +595,7 @@ export class GroupService {
     const member = await this.groupRepository.findMemberBy({
       groupId,
       userId: requesterId,
+      status: 'approved',
     });
     if (!member || !member.joinDateTime) {
       throw Exception.new({
@@ -609,5 +608,52 @@ export class GroupService {
       ...member,
       joinDateTime: member.joinDateTime,
     };
+  }
+
+  /**
+   * userId, groupId로 조회한 멤버가 owner인지 확인 후 member 반환
+   */
+  private async verifyOwner(payload: {
+    userId: string;
+    groupId: string;
+  }): Promise<TMember> {
+    const { userId, groupId } = payload;
+    const member = await this.groupRepository.findMemberBy({
+      groupId,
+      userId,
+      status: 'approved',
+    });
+    if (!member) {
+      throw Exception.new({
+        code: Code.ENTITY_NOT_FOUND_ERROR,
+        overrideMessage: 'Member not found',
+      });
+    }
+    if (member.role !== 'owner') {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: 'member is not owner',
+      });
+    }
+    return member;
+  }
+
+  private async verifyApprovedMember(payload: {
+    groupId: string;
+    userId: string;
+  }): Promise<TMember> {
+    const { groupId, userId } = payload;
+    const member = await this.groupRepository.findMemberBy({
+      groupId,
+      userId,
+      status: 'approved',
+    });
+    if (!member || member.status !== 'approved') {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: 'member is not approved',
+      });
+    }
+    return member;
   }
 }

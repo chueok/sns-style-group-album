@@ -1,10 +1,11 @@
 import { z } from 'zod';
+import { SMemberRole } from '../entity/member';
 
 export const SMemberDTO = z.object({
   id: z.string(),
   username: z.string(),
   profileImageUrl: z.string().optional(),
-  role: z.enum(['owner', 'member']),
+  role: SMemberRole,
   joinRequestDateTime: z.date(),
   joinDateTime: z.date().optional(),
 });

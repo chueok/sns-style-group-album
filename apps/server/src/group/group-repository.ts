@@ -57,31 +57,6 @@ export class TypeormGroupRepository implements IGroupRepository {
     };
   }
 
-  async isOwner(groupId: string, userId: string): Promise<boolean> {
-    const queryBuilder = this.typeormGroupMemberRepository
-      .createQueryBuilder('member')
-      .where('member.groupId = :groupId', { groupId })
-      .andWhere('member.userId = :userId', { userId })
-      .andWhere('member.role = :role', { role: 'owner' })
-      .andWhere('member.status = :status', { status: 'approved' });
-
-    const result = await queryBuilder.getCount();
-
-    return result > 0;
-  }
-
-  async isApprovedMember(groupId: string, userId: string): Promise<boolean> {
-    const queryBuilder = this.typeormGroupMemberRepository
-      .createQueryBuilder('member')
-      .where('member.groupId = :groupId', { groupId })
-      .andWhere('member.userId = :userId', { userId })
-      .andWhere('member.status = :status', { status: 'approved' });
-
-    const result = await queryBuilder.getCount();
-
-    return result > 0;
-  }
-
   async createGroup(payload: { groupName: string }): Promise<TGroup> {
     const newGroupId = v6() as GroupId;
     const newGroup = this.typeormGroupRepository.create({
@@ -98,28 +73,26 @@ export class TypeormGroupRepository implements IGroupRepository {
     return domainEntity;
   }
 
-  async findGroupBy(payload: {
-    groupId?: string;
-    invitationCode?: string;
-  }): Promise<Nullable<TGroup>> {
-    if (Object.keys(payload).length === 0) {
-      throw Exception.new({
-        code: Code.BAD_REQUEST_ERROR,
-        overrideMessage: 'At least one of groupId or invitationCode',
-      });
-    }
-
+  async findGroupBy(
+    payload:
+      | {
+          groupId: string;
+        }
+      | {
+          invitationCode: string;
+        }
+  ): Promise<Nullable<TGroup>> {
     const queryBuilder = this.typeormGroupRepository
       .createQueryBuilder('group')
       .where('group.deletedDateTime is null');
 
-    if (payload.groupId) {
+    if ('groupId' in payload) {
       queryBuilder.andWhere('group.id = :groupId', {
         groupId: payload.groupId,
       });
     }
 
-    if (payload.invitationCode) {
+    if ('invitationCode' in payload) {
       queryBuilder.andWhere('group.invitationCode = :invitationCode', {
         invitationCode: payload.invitationCode,
       });
@@ -135,7 +108,11 @@ export class TypeormGroupRepository implements IGroupRepository {
   }
 
   async findGroupListBy(
-    payload: { role?: TMemberRole; userId: string },
+    payload: {
+      userId: string;
+      role?: TMemberRole;
+      status?: 'approved' | 'pending';
+    },
     pagination: TGroupPaginationParams
   ): Promise<TGroupPaginatedResult> {
     if (Object.keys(payload).length === 0) {
@@ -145,7 +122,7 @@ export class TypeormGroupRepository implements IGroupRepository {
       });
     }
 
-    const { role, userId } = payload;
+    const { role, userId, status } = payload;
     const page = pagination.page ?? 1;
 
     const queryBuilder = this.typeormGroupRepository
@@ -157,6 +134,10 @@ export class TypeormGroupRepository implements IGroupRepository {
 
     if (role) {
       queryBuilder.andWhere('members.role = :role', { role });
+    }
+
+    if (status) {
+      queryBuilder.andWhere('members.status = :status', { status });
     }
 
     const total = await queryBuilder.getCount();
@@ -184,21 +165,32 @@ export class TypeormGroupRepository implements IGroupRepository {
       name?: string;
     }
   ): Promise<TGroup> {
+    if (Object.keys(payload).length === 0) {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: 'At least one of update payload',
+      });
+    }
+
     const updateObject: Partial<TypeormGroup> = {};
     if (payload.name) {
       updateObject.name = payload.name;
     }
 
-    const updateResult = await this.typeormGroupRepository.update(
-      groupId,
-      updateObject
-    );
+    const updateResult = await this.typeormGroupRepository
+      .createQueryBuilder()
+      .update()
+      .where('id = :groupId', { groupId })
+      .andWhere('deletedDateTime is null')
+      .set(updateObject)
+      .execute();
+
     if (updateResult.affected === 0) {
       throw new Error('Update group failed');
     }
 
     const ormEntity = await this.typeormGroupRepository.findOne({
-      where: { id: groupId as GroupId },
+      where: { id: groupId as GroupId, deletedDateTime: IsNull() },
     });
     if (!ormEntity) {
       throw new Error('Group not found');
@@ -213,16 +205,6 @@ export class TypeormGroupRepository implements IGroupRepository {
     });
 
     return result.affected === 1;
-  }
-
-  async isPendingMember(groupId: string, memberId: string): Promise<boolean> {
-    const queryBuilder = this.typeormGroupMemberRepository
-      .createQueryBuilder('member')
-      .where('member.groupId = :groupId', { groupId })
-      .andWhere('member.id = :memberId', { memberId })
-      .andWhere('member.status = :status', { status: 'pending' });
-    const result = await queryBuilder.getCount();
-    return result > 0;
   }
 
   async addMember({
@@ -260,22 +242,24 @@ export class TypeormGroupRepository implements IGroupRepository {
   }
 
   async findMemberListBy(
-    by: { groupId: string; memberIds?: string[]; status?: TMemberStatus },
+    by: { groupId: string; status?: TMemberStatus } | { memberIds: string[] },
     pagination: TMemberPaginationParams
   ): Promise<TMemberPaginatedResult> {
-    const { groupId, memberIds, status } = by;
-
     const page = pagination.page ?? 1;
 
-    const queryBuilder = this.typeormGroupMemberRepository
-      .createQueryBuilder('member')
-      .where('member.groupId = :groupId', { groupId });
+    const queryBuilder =
+      this.typeormGroupMemberRepository.createQueryBuilder('member');
 
-    if (status) {
-      queryBuilder.andWhere('member.status = :status', { status });
+    if ('groupId' in by) {
+      const { groupId, status } = by;
+      queryBuilder.andWhere('member.groupId = :groupId', { groupId });
+      if (status) {
+        queryBuilder.andWhere('member.status = :status', { status });
+      }
     }
 
-    if (memberIds) {
+    if ('memberIds' in by) {
+      const { memberIds } = by;
       queryBuilder.andWhere('member.id IN (:...memberIds)', {
         memberIds,
       });
@@ -303,9 +287,9 @@ export class TypeormGroupRepository implements IGroupRepository {
   async findMemberBy(
     by:
       | {
-          memberId?: string;
+          memberId: string;
         }
-      | { groupId: string; userId: string }
+      | { groupId: string; userId: string; status: 'approved' | 'pending' }
   ): Promise<Nullable<TMember>> {
     if (Object.keys(by).length === 0) {
       throw Exception.new({
@@ -321,9 +305,9 @@ export class TypeormGroupRepository implements IGroupRepository {
       const { memberId } = by;
       queryBuilder.where('member.id = :memberId', { memberId });
     } else if ('groupId' in by) {
-      const { groupId, userId } = by;
+      const { groupId, userId, status } = by;
       queryBuilder
-        .where('member.status = :status', { status: 'approved' })
+        .where('member.status = :status', { status })
         .andWhere('member.groupId = :groupId', { groupId })
         .andWhere('member.userId = :userId', { userId });
     }

@@ -3,15 +3,13 @@ import { TypeormGroup } from '../../infrastructure/persistence/typeorm/entity/gr
 
 export class GroupMapper {
   public static toDomainEntity(payload: TypeormGroup): TGroup {
-    const { id, name, createdDateTime, updatedDateTime, deletedDateTime } =
-      payload;
+    const { id, name, createdDateTime, updatedDateTime } = payload;
 
     const group: TGroup = {
       id,
       name,
       createdDateTime,
       updatedDateTime: updatedDateTime || undefined,
-      deletedDateTime: deletedDateTime || undefined,
     };
 
     return group;

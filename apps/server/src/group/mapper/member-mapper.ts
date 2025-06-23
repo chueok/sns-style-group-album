@@ -2,22 +2,15 @@ import { SMember, TMember } from '@repo/be-core';
 import { TypeormMember } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-member.entity';
 
 export class MemberMapper {
-  public static toDomainEntity(
-    payload: Pick<
-      TypeormMember,
-      | 'id'
-      | 'username'
-      | 'profileImageUrl'
-      | 'role'
-      | 'joinRequestDateTime'
-      | 'joinDateTime'
-    >
-  ): TMember {
+  public static toDomainEntity(payload: TypeormMember): TMember {
     const obj: TMember = {
       id: payload.id,
+      groupId: payload.groupId,
+      userId: payload.userId,
       username: payload.username,
       profileImageUrl: payload.profileImageUrl || undefined,
       role: payload.role,
+      status: payload.status,
       joinRequestDateTime: payload.joinRequestDateTime,
       joinDateTime: payload.joinDateTime || undefined,
     };
@@ -27,17 +20,7 @@ export class MemberMapper {
     return result;
   }
 
-  public static toDomainEntityList(
-    payload: Pick<
-      TypeormMember,
-      | 'id'
-      | 'username'
-      | 'profileImageUrl'
-      | 'role'
-      | 'joinRequestDateTime'
-      | 'joinDateTime'
-    >[]
-  ): TMember[] {
+  public static toDomainEntityList(payload: TypeormMember[]): TMember[] {
     return payload.map((member) => this.toDomainEntity(member));
   }
 }

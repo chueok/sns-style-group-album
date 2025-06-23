@@ -168,51 +168,51 @@ export const groupRouter = router({
       return joinRequestUserList;
     }),
 
+  // input의 groupId는 client side cache를 위해 사용
   approveJoinRequest: authProcedure
     .input(z.object({ groupId: z.string(), memberId: z.string() }))
     .output(SAcceptedMemberDTO)
     .mutation(async ({ input, ctx }) => {
-      const { groupId, memberId } = input;
+      const { groupId: _, memberId } = input;
       const {
         user,
         group: { groupService },
       } = ctx;
       const acceptedMember = await groupService.approveJoinRequest({
         requesterId: user.id,
-        groupId,
         memberId,
       });
       return acceptedMember;
     }),
 
+  // input의 groupId는 client side cache를 위해 사용
   rejectJoinRequest: authProcedure
     .input(z.object({ groupId: z.string(), memberId: z.string() }))
     .output(z.void())
     .mutation(async ({ input, ctx }) => {
-      const { groupId, memberId } = input;
+      const { groupId: _, memberId } = input;
       const {
         user,
         group: { groupService },
       } = ctx;
       await groupService.rejectJoinRequest({
         requesterId: user.id,
-        groupId,
         memberId,
       });
     }),
 
+  // input의 groupId는 client side cache를 위해 사용
   dropOutMember: authProcedure
     .input(z.object({ groupId: z.string(), memberId: z.string() }))
     .output(z.void())
     .mutation(async ({ input, ctx }) => {
-      const { groupId, memberId } = input;
+      const { groupId: _, memberId } = input;
       const {
         user,
         group: { groupService },
       } = ctx;
       await groupService.dropOutMember({
         requesterId: user.id,
-        groupId,
         memberId,
       });
     }),

@@ -1,6 +1,7 @@
 import { Nullable } from '../../common/type/common-types';
-import { SGroup, SMember, TGroup, TMember, TUserProfile } from './entity/group';
+import { SGroup, TGroup, TUserProfile } from './entity/group';
 import { z } from 'zod';
+import { TMemberRole, TMemberStatus, SMember, TMember } from './entity/member';
 
 /**
  * 멤버 요구사항
@@ -60,48 +61,45 @@ export const SMemberPaginatedResultFactory = (schema: z.ZodTypeAny) =>
 export const SMemberPaginatedResult = SMemberPaginatedResultFactory(SMember);
 export type TMemberPaginatedResult = z.infer<typeof SMemberPaginatedResult>;
 
-/**
- * 3. other types
- */
-export type TMemberRole = 'owner' | 'member';
-export type TMemberStatus =
-  | 'pending'
-  | 'approved'
-  | 'rejected'
-  | 'droppedOut'
-  | 'left';
-
 export interface IGroupRepository {
   /**
    * 유저 기본 프로필 조회
    */
   findUserProfile(userId: string): Promise<TUserProfile>;
 
-  /****************************************************
-   * 권한 확인을 위한 함수
-   ****************************************************/
-  isOwner(groupId: string, userId: string): Promise<boolean>;
-
-  isApprovedMember(groupId: string, userId: string): Promise<boolean>;
-
   /**
    * Group CRUD
    */
   createGroup(payload: { groupName: string }): Promise<TGroup>;
 
-  findGroupBy(payload: {
-    groupId?: string;
-    invitationCode?: string;
-  }): Promise<Nullable<TGroup>>;
+  /**
+   * 삭제되지 않은 그룹 조회
+   */
+  findGroupBy(
+    payload:
+      | {
+          groupId: string;
+        }
+      | {
+          invitationCode: string;
+        }
+  ): Promise<Nullable<TGroup>>;
 
+  /**
+   * 삭제되지 않은 그룹 목록 조회
+   */
   findGroupListBy(
     payload: {
       userId: string;
       role?: TMemberRole;
+      status?: 'approved' | 'pending';
     },
     pagination: TGroupPaginationParams
   ): Promise<TGroupPaginatedResult>;
 
+  /**
+   * 삭제되지 않은 그룹에 대한 정보 수정
+   */
   updateGroup(
     groupId: string,
     group: {
@@ -110,11 +108,6 @@ export interface IGroupRepository {
   ): Promise<TGroup>;
 
   deleteGroup(groupId: string): Promise<boolean>;
-
-  /****************************************************
-   * 멤버 관리를 위한 함수 모음
-   ****************************************************/
-  isPendingMember(groupId: string, memberId: string): Promise<boolean>;
 
   addMember(payload: {
     groupId: string;
@@ -126,20 +119,27 @@ export interface IGroupRepository {
   }): Promise<TMember>;
 
   findMemberListBy(
-    by: { groupId: string; memberIds?: string[]; status?: TMemberStatus },
+    by: { groupId: string; status?: TMemberStatus } | { memberIds: string[] },
     pagination: TMemberPaginationParams
   ): Promise<TMemberPaginatedResult>;
 
   /**
    * memberId: 해당 멤버 반환
-   * groupId, userId: 해당 유저의 그룹에 속한 멤버 정보 반환
+   * groupId, userId, status: 해당 유저의 그룹에 속한 멤버 정보 반환
+   *
+   * status가 'rejected', 'droppedOut', 'left' 인 경우 여러 엔티티를 가질 수 있어,
+   * findMemberBy로 조회 불가.
    */
   findMemberBy(
     by:
       | {
-          memberId?: string;
+          memberId: string;
         }
-      | { groupId: string; userId: string }
+      | {
+          groupId: string;
+          userId: string;
+          status: 'approved' | 'pending'; // TMemberStatus
+        }
   ): Promise<Nullable<TMember>>;
 
   /**
