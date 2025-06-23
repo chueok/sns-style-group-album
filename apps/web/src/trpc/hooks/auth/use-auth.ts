@@ -29,7 +29,7 @@ export const useAuth = () => {
   };
 
   const { mutateAsync: editProfileMutation } =
-    trpc.user.editDefaultProfile.useMutation({
+    trpc.user.editUserProfile.useMutation({
       onSuccess: () => {
         utils.user.getMe.invalidate();
       },

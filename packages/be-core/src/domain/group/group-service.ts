@@ -43,7 +43,7 @@ export class GroupService {
    ****************************************************/
   @Transactional()
   async createGroup(requesterId: string, name: string): Promise<TGroup> {
-    const ownerDefaultProfile =
+    const ownerUserProfile =
       await this.groupRepository.findUserProfile(requesterId);
 
     try {
@@ -56,8 +56,8 @@ export class GroupService {
         userId: requesterId,
         role: 'owner',
         status: 'approved',
-        profileImageUrl: ownerDefaultProfile.profileImageUrl,
-        username: ownerDefaultProfile.username,
+        profileImageUrl: ownerUserProfile.profileImageUrl,
+        username: ownerUserProfile.username,
       });
 
       void this.systemContentCommentPort.addComment({
@@ -291,7 +291,7 @@ export class GroupService {
       });
     }
 
-    const [pendingMember, approvedMember, defaultProfile] = await Promise.all([
+    const [pendingMember, approvedMember, userProfile] = await Promise.all([
       this.groupRepository.findMemberBy({
         groupId: group.id,
         userId: requesterId,
@@ -322,8 +322,8 @@ export class GroupService {
       userId: requesterId,
       role: 'member',
       status: 'pending',
-      profileImageUrl: defaultProfile.profileImageUrl ?? undefined,
-      username: defaultProfile.username,
+      profileImageUrl: userProfile.profileImageUrl ?? undefined,
+      username: userProfile.username,
     });
 
     return {

@@ -12,9 +12,12 @@ export interface IUserRepository {
    * user RUD
    * Create는 Auth 담당
    */
+
+  // '삭제되지 않은' 유저 조회
   findUserById(id: string): Promise<Nullable<TUser>>;
 
-  updateUser(userId: string, user: Partial<TEditableUser>): Promise<boolean>;
+  // '삭제되지 않은' 유저 정보 수정
+  updateUser(userId: string, updateObj: Partial<TEditableUser>): Promise<void>;
 
   deleteUser(userId: string): Promise<void>;
 }

@@ -20,7 +20,7 @@ export const userRouter = router({
     return;
   }),
 
-  editDefaultProfile: authProcedure
+  editUserProfile: authProcedure
     .input(
       z.object({
         username: z.string(),
@@ -31,7 +31,7 @@ export const userRouter = router({
       const { userService } = ctx.userDomain;
       const { username } = input;
 
-      await userService.editDefaultProfile({
+      await userService.editUserProfile({
         userId: jwtUser.id,
         username,
       });

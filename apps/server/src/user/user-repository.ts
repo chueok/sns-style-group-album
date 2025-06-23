@@ -37,17 +37,36 @@ export class TypeormUserRepository implements IUserRepository {
     return user;
   }
 
-  async updateUser(userId: string, user: TEditableUser): Promise<boolean> {
-    const result = await this.typeormUserRepository.update(userId, {
-      ...user,
-      updatedDateTime: new Date(),
-    });
-
-    if (result.affected === 0) {
-      return false;
+  async updateUser(
+    userId: string,
+    updateObj: Partial<TEditableUser>
+  ): Promise<void> {
+    if (Object.keys(updateObj).length === 0) {
+      throw Exception.new({
+        code: Code.BAD_REQUEST_ERROR,
+        overrideMessage: 'No changes to update',
+      });
     }
 
-    return true;
+    const obj = {
+      ...updateObj,
+      updatedDateTime: new Date(),
+    };
+
+    const updateResult = await this.typeormUserRepository
+      .createQueryBuilder()
+      .update()
+      .where('id = :id', { id: userId })
+      .andWhere('deletedDateTime is null')
+      .set(obj)
+      .execute();
+
+    if (updateResult.affected === 0) {
+      throw Exception.new({
+        code: Code.INTERNAL_ERROR,
+        overrideMessage: 'Failed to update user',
+      });
+    }
   }
 
   async deleteUser(userId: string): Promise<void> {

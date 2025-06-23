@@ -55,7 +55,7 @@ export class UserService {
     await this.userRepository.deleteUser(id);
   }
 
-  async editDefaultProfile(payload: {
+  async editUserProfile(payload: {
     userId: string;
     username?: string;
   }): Promise<TUser> {
@@ -75,13 +75,7 @@ export class UserService {
       });
     }
 
-    const result = await this.userRepository.updateUser(userId, changes);
-    if (!result) {
-      throw Exception.new({
-        code: Code.INTERNAL_ERROR,
-        overrideMessage: 'Failed to update user',
-      });
-    }
+    await this.userRepository.updateUser(userId, changes);
 
     const user = await this.userRepository.findUserById(userId);
     if (!user) {
@@ -101,15 +95,9 @@ export class UserService {
     const { requesterId } = payload;
 
     const objectStorageKey = generateObjectStorageKey(requesterId);
-    const result = await this.userRepository.updateUser(requesterId, {
+    await this.userRepository.updateUser(requesterId, {
       profileImageUrl: objectStorageKey,
     });
-    if (!result) {
-      throw Exception.new({
-        code: Code.INTERNAL_ERROR,
-        overrideMessage: 'Failed to update user',
-      });
-    }
 
     const url = await this.objectStorage.getPresignedUrlForUpload(
       this.bucketName,
@@ -134,15 +122,9 @@ export class UserService {
       return;
     }
 
-    const result = await this.userRepository.updateUser(requesterId, {
+    await this.userRepository.updateUser(requesterId, {
       profileImageUrl: null,
     });
-    if (!result) {
-      throw Exception.new({
-        code: Code.INTERNAL_ERROR,
-        overrideMessage: 'Failed to update user',
-      });
-    }
 
     const objectStorageKey = user.profileImageUrl;
     await this.objectStorage.deleteObject(this.bucketName, objectStorageKey);

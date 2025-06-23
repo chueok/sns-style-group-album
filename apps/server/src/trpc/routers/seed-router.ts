@@ -141,7 +141,7 @@ export const seedRouter = router({
       const {
         userDomain: { userService },
       } = ctx;
-      await userService.editDefaultProfile({
+      await userService.editUserProfile({
         userId: id,
         username: username || generateRandomString(),
       });
