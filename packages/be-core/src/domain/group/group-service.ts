@@ -8,6 +8,7 @@ import {
 import {
   SMemberDTO,
   TAcceptedMemberDTO,
+  TMemberDTO,
   TPendingMemberDTO,
 } from './dto/member';
 import { TGroup } from './entity/group';
@@ -577,46 +578,29 @@ export class GroupService {
     };
   }
 
-  async getMembersByMemberIds(payload: {
+  async getMemberById(payload: {
     requesterId: string;
-    groupId: string;
-    memberIds: string[];
-  }): Promise<TAcceptedMemberDTO[]> {
-    const { requesterId, memberIds, groupId } = payload;
+    memberId: string;
+  }): Promise<TMemberDTO> {
+    const { requesterId, memberId } = payload;
 
-    await this.verifyApprovedMember({
-      groupId,
-      userId: requesterId,
+    const member = await this.groupRepository.findMemberBy({
+      memberId,
     });
-
-    const members = await this.groupRepository.findMemberListBy(
-      {
-        groupId,
-        memberIds,
-        status: 'approved',
-      },
-      {
-        pageSize: 100,
-      }
-    );
-
-    const acceptedMembers = members.items.flatMap((member) => {
-      if (!member.joinDateTime) {
-        return [];
-      }
-      return {
-        ...member,
-        joinDateTime: member.joinDateTime,
-      };
-    });
-    if (acceptedMembers.length !== members.items.length) {
+    if (!member) {
       throw Exception.new({
-        code: Code.BAD_REQUEST_ERROR,
-        overrideMessage: 'Failed to get members by user ids',
+        code: Code.ENTITY_NOT_FOUND_ERROR,
+        overrideMessage: 'Member not found',
       });
     }
 
-    return acceptedMembers;
+    // NOTE: 권한 확인이 후행하고 있음. 수정 시 주의 필요.
+    await this.verifyApprovedMember({
+      groupId: member.groupId,
+      userId: requesterId,
+    });
+
+    return member;
   }
 
   async getMyMemberInfo(payload: {

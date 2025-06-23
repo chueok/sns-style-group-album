@@ -74,7 +74,6 @@ export const useMemberList = (payload: { groupId?: string }) => {
   };
 };
 
-// TODO: groupId를 없애는 방향으로 수정 할 것
 export const useMember = (payload: { groupId?: string; memberId?: string }) => {
   const { user } = useAuth();
   const {

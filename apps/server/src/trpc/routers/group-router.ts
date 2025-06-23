@@ -1,14 +1,13 @@
 import z from 'zod';
 import { authProcedure, router } from '../trpc';
 import {
-  Code,
-  Exception,
   SGroup,
   SPendingMemberDTO,
   SGroupPaginationParams,
   SAcceptedMemberDTO,
   SGroupPaginatedResult,
   SMemberDtoPaginatedResult,
+  SMemberDTO,
 } from '@repo/be-core';
 
 export const groupRouter = router({
@@ -238,47 +237,23 @@ export const groupRouter = router({
       return memberList;
     }),
 
+  // groupId는 client side cache를 위해 사용
   getMemberById: authProcedure
     .input(z.object({ groupId: z.string(), memberId: z.string() }))
-    .output(SAcceptedMemberDTO)
+    .output(SMemberDTO)
     .query(async ({ input, ctx }) => {
-      const { groupId, memberId } = input;
+      const { groupId: _, memberId } = input;
       const {
         user,
         group: { groupService },
       } = ctx;
-      const members = await groupService.getMembersByMemberIds({
-        requesterId: user.id,
-        groupId,
-        memberIds: [memberId],
-      });
-      const member = members.at(0);
 
-      if (!member) {
-        throw Exception.new({
-          code: Code.ENTITY_NOT_FOUND_ERROR,
-          overrideMessage: 'Member not found',
-        });
-      }
+      const member = await groupService.getMemberById({
+        requesterId: user.id,
+        memberId,
+      });
 
       return member;
-    }),
-
-  getMembersByIds: authProcedure
-    .input(z.object({ groupId: z.string(), memberIds: z.array(z.string()) }))
-    .output(z.array(SAcceptedMemberDTO))
-    .query(async ({ input, ctx }) => {
-      const { groupId, memberIds: memberIds } = input;
-      const {
-        user,
-        group: { groupService },
-      } = ctx;
-      const members = await groupService.getMembersByMemberIds({
-        requesterId: user.id,
-        groupId,
-        memberIds,
-      });
-      return members;
     }),
 
   getMyMemberInfo: authProcedure
