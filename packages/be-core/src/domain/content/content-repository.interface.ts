@@ -18,13 +18,6 @@ export type TMediaPaginationResult<T> = {
 };
 
 export interface IContentRepository {
-  findMediaById(id: string): Promise<TMedia>;
-
-  findMediaInGroupOrderByCreated(payload: {
-    groupId: string;
-    pagination: TMediaPaginationParams;
-  }): Promise<TMediaPaginationResult<TMedia>>;
-
   findMemberId(payload: {
     userId: string;
     groupId: string;
@@ -39,6 +32,21 @@ export interface IContentRepository {
     userId: string;
     contentId: string;
   }): Promise<boolean>;
+
+  /**
+   * 유효한 Media를 반환
+   */
+  findMediaById(id: string): Promise<Nullable<TMedia>>;
+
+  /**
+   * 그룹 내 유효한 미디어 목록을 반환
+   */
+  findMediaListBy(
+    payload: {
+      groupId: string;
+    },
+    pagination: TMediaPaginationParams
+  ): Promise<TMediaPaginationResult<TMedia>>;
 
   createMedia(payload: {
     groupId: string;

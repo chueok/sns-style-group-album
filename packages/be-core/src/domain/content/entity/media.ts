@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { EContentCategory } from './content-category';
+import { EContentCategory } from '../type/content-category';
 
 const SBase = z.object({
   id: z.string(),

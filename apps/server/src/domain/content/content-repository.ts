@@ -36,17 +36,15 @@ export class TypeormContentRepository implements IContentRepository {
     this.logger = logger || new Logger(TypeormContentRepository.name);
   }
 
-  async findMediaById(id: string): Promise<TMedia> {
+  async findMediaById(id: string): Promise<Nullable<TMedia>> {
     const result = await this.typeormMediaContentRepository.findOne({
       where: {
         id: id as ContentId,
       },
     });
+
     if (!result) {
-      throw Exception.new({
-        code: Code.UTIL_NOT_FOUND_ERROR,
-        overrideMessage: 'Media not found',
-      });
+      return null;
     }
 
     return MediaMapper.toDomainEntity(result);
@@ -134,11 +132,13 @@ export class TypeormContentRepository implements IContentRepository {
     return;
   }
 
-  async findMediaInGroupOrderByCreated(payload: {
-    groupId: string;
-    pagination: TMediaPaginationParams;
-  }): Promise<TMediaPaginationResult<TMedia>> {
-    const { groupId, pagination } = payload;
+  async findMediaListBy(
+    payload: {
+      groupId: string;
+    },
+    pagination: TMediaPaginationParams
+  ): Promise<TMediaPaginationResult<TMedia>> {
+    const { groupId } = payload;
 
     const queryBuilder = this.typeormMediaContentRepository
       .createQueryBuilder('content')

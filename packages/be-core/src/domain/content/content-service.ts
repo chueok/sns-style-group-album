@@ -110,10 +110,12 @@ export class ContentService {
       });
     }
 
-    const media = await this.contentRepository.findMediaInGroupOrderByCreated({
-      groupId,
-      pagination,
-    });
+    const media = await this.contentRepository.findMediaListBy(
+      {
+        groupId,
+      },
+      pagination
+    );
 
     const resolvedMedia = await this.resolveSignedUrlList(media.items);
 
@@ -141,6 +143,13 @@ export class ContentService {
     }
 
     const media = await this.contentRepository.findMediaById(contentId);
+    if (!media) {
+      throw Exception.new({
+        code: Code.UTIL_NOT_FOUND_ERROR,
+        overrideMessage: 'Media not found',
+      });
+    }
+
     const resolvedMedia = await this.resolveSignedUrl(media);
 
     return resolvedMedia;
