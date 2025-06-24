@@ -1,6 +1,6 @@
 import { TComment } from './entity/comment';
 import { z } from 'zod';
-import { ECommentCategory } from './enum/comment-category';
+import { ECommentCategory } from './type/comment-category';
 import { Nullable } from '../../common/type/common-types';
 import { TCommentMember } from './entity/comment-member';
 

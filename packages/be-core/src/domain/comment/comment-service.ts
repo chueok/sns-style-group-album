@@ -6,7 +6,7 @@ import {
   TCommentPaginationResult,
 } from './comment-repository.interface';
 import { TComment, TUserComment } from './entity/comment';
-import { ECommentCategory } from './enum/comment-category';
+import { ECommentCategory } from './type/comment-category';
 
 export class CommentService {
   constructor(private readonly commentRepository: ICommentRepository) {}

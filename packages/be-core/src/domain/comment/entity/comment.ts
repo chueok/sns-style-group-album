@@ -1,4 +1,4 @@
-import { ECommentCategory } from '../enum/comment-category';
+import { ECommentCategory } from '../type/comment-category';
 import { z } from 'zod';
 
 export const SCommentTag = z.object({
