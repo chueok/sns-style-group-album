@@ -27,11 +27,11 @@ import { DataSource } from 'typeorm';
 import { ServerConfig } from '../config/server-config';
 import { IAuthRepository } from '../auth/auth-repository.interface';
 import { DiTokens as AuthDiTokens } from '../auth/di-tokens';
-import { DiTokens as UserDiTokens } from '../user/di-tokens';
-import { DiTokens as GroupDiTokens } from '../group/di-tokens';
-import { DiTokens as ContentDiTokens } from '../content/di-tokens';
-import { DiTokens as CommentDiTokens } from '../comment/di-tokens';
-import { DiTokens } from '../di/di-tokens';
+import { DiTokens as UserDiTokens } from '../domain/user/di-tokens';
+import { DiTokens as GroupDiTokens } from '../domain/group/di-tokens';
+import { DiTokens as ContentDiTokens } from '../domain/content/di-tokens';
+import { DiTokens as CommentDiTokens } from '../domain/comment/di-tokens';
+import { DiTokens } from '../adapter/di-tokens';
 
 @Controller('trpc')
 export class TrpcController {

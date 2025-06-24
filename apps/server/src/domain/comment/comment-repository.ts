@@ -10,12 +10,12 @@ import {
   TCommentPaginationResult,
 } from '@repo/be-core';
 import { DataSource, IsNull, Repository } from 'typeorm';
-import { TypeormComment } from '../infrastructure/persistence/typeorm/entity/comment/typeorm-comment.entity';
+import { TypeormComment } from '../../typeorm/entity/comment/typeorm-comment.entity';
 import { CommentMapper } from './mapper/comment-mapper';
 import { Logger, LoggerService, Optional } from '@nestjs/common';
 import { v6 } from 'uuid';
-import { TypeormMedia } from '../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
-import { TypeormMember } from '../infrastructure/persistence/typeorm/entity/group/typeorm-member.entity';
+import { TypeormMedia } from '../../typeorm/entity/content/typeorm-content.entity';
+import { TypeormMember } from '../../typeorm/entity/group/typeorm-member.entity';
 
 export class TypeormCommentRepository implements ICommentRepository {
   private readonly commentRepository: Repository<TypeormComment>;

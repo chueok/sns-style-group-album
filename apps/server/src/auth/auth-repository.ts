@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Code, Exception, Nullable, UserId } from '@repo/be-core';
 import { DataSource, Repository } from 'typeorm';
-import { TypeormOauth } from '../infrastructure/persistence/typeorm/entity/oauth/typeorm-oauth.entity';
-import { TypeormUser } from '../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
+import { TypeormOauth } from '../typeorm/entity/oauth/typeorm-oauth.entity';
+import { TypeormUser } from '../typeorm/entity/user/typeorm-user.entity';
 import { IAuthRepository } from './auth-repository.interface';
 import { v4 } from 'uuid';
 import { Transactional } from 'typeorm-transactional';
 import { TJwtUser } from './type/jwt-user';
-import { TypeormRefreshToken } from '../infrastructure/persistence/typeorm/entity/refresh-token/typeorm-refresh-token.entity';
+import { TypeormRefreshToken } from '../typeorm/entity/refresh-token/typeorm-refresh-token.entity';
 
 @Injectable()
 export class AuthRepository implements IAuthRepository {

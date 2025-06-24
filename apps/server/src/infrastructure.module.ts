@@ -1,14 +1,14 @@
 import { Global, Module, Provider } from '@nestjs/common';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join } from 'path';
-import { ServerConfig } from '../config/server-config';
-import { DiTokens } from './di-tokens';
-import { TYPEORM_DIRECTORY } from '../infrastructure/persistence/typeorm/typeorm-directory';
+import { ServerConfig } from './config/server-config';
+import { DiTokens } from './adapter/di-tokens';
 import { APP_FILTER } from '@nestjs/core';
-import { NestHttpExceptionFilter } from '../http-rest/exception-filter/nest-http-exception-filter';
-import { MinioObjectStorage } from '../infrastructure/persistence/object-storage/minio/minio-adapter';
+import { NestHttpExceptionFilter } from './nest/nest-http-exception-filter';
+import { MinioObjectStorage } from './adapter/minio-object-storage';
 import { DataSource } from 'typeorm';
-import { SystemContentCommentAdapter } from '../adapter/system-content-comment';
+import { SystemContentCommentAdapter } from './adapter/system-content-comment';
+import { TYPEORM_DIRECTORY } from './typeorm/typeorm-directory';
 
 export const typeormSqliteOptions = {
   type: 'sqlite',
@@ -17,8 +17,8 @@ export const typeormSqliteOptions = {
   logging: ServerConfig.DB_LOG_ENABLE,
   entities: [join(TYPEORM_DIRECTORY, 'entity', '**', '*.entity.{ts,js}')],
 
-  synchronize: true,
-  dropSchema: true,
+  synchronize: false,
+  dropSchema: false,
 } satisfies TypeOrmModuleOptions;
 
 const globalProviders: Provider[] = [

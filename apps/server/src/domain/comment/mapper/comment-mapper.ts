@@ -1,5 +1,5 @@
 import { TComment } from '@repo/be-core';
-import { TypeormComment } from '../../infrastructure/persistence/typeorm/entity/comment/typeorm-comment.entity';
+import { TypeormComment } from '../../../typeorm/entity/comment/typeorm-comment.entity';
 
 export class CommentMapper {
   public static toDomainEntity(payload: TypeormComment): TComment {

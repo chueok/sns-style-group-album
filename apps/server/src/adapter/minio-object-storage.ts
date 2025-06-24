@@ -1,5 +1,5 @@
 import { Code, Exception, IObjectStoragePort } from '@repo/be-core';
-import { ServerConfig } from '../../../../config/server-config';
+import { ServerConfig } from '../config/server-config';
 import { Client } from 'minio';
 import { Injectable, Logger } from '@nestjs/common';
 

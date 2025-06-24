@@ -6,7 +6,7 @@ import {
 } from '@repo/be-core';
 import { DiTokens } from './di-tokens';
 import { TypeormGroupRepository } from './group-repository';
-import { DiTokens as AdapterDiTokens } from '../di/di-tokens';
+import { DiTokens as AdapterDiTokens } from '../../adapter/di-tokens';
 
 const providers: Provider[] = [
   {

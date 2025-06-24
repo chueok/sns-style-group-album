@@ -5,10 +5,10 @@ import {
   TSystemCommentTag,
 } from '@repo/be-core';
 import { DataSource, Repository } from 'typeorm';
-import { TypeormContent } from '../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
-import { TypeormComment } from '../infrastructure/persistence/typeorm/entity/comment/typeorm-comment.entity';
 import { v6 } from 'uuid';
-import { TypeormCommentUserTag } from '../infrastructure/persistence/typeorm/entity/commet-user-tag/typeorm-comment-user-tag.entity';
+import { TypeormContent } from '../typeorm/entity/content/typeorm-content.entity';
+import { TypeormComment } from '../typeorm/entity/comment/typeorm-comment.entity';
+import { TypeormCommentUserTag } from '../typeorm/entity/commet-user-tag/typeorm-comment-user-tag.entity';
 
 export class SystemContentCommentAdapter implements ISystemContentCommentPort {
   private readonly typeormContentRepository: Repository<TypeormContent>;

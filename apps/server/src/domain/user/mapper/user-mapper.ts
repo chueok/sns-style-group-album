@@ -1,5 +1,5 @@
 import { TUser } from '@repo/be-core';
-import { TypeormUser } from '../../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
+import { TypeormUser } from '../../../typeorm/entity/user/typeorm-user.entity';
 
 export class UserMapper {
   public static toDomainEntity(payload: TypeormUser): TUser {

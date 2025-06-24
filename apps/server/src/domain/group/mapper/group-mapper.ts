@@ -1,5 +1,5 @@
 import { TGroup } from '@repo/be-core';
-import { TypeormGroup } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
+import { TypeormGroup } from '../../../typeorm/entity/group/typeorm-group.entity';
 
 export class GroupMapper {
   public static toDomainEntity(payload: TypeormGroup): TGroup {

@@ -1,5 +1,5 @@
 import { SMember, TMember } from '@repo/be-core';
-import { TypeormMember } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-member.entity';
+import { TypeormMember } from '../../../typeorm/entity/group/typeorm-member.entity';
 
 export class MemberMapper {
   public static toDomainEntity(payload: TypeormMember): TMember {

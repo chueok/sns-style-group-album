@@ -8,9 +8,9 @@ import {
   UserId,
 } from '@repo/be-core';
 import { DataSource, Repository } from 'typeorm';
-import { TypeormUser } from '../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
 import { UserMapper } from './mapper/user-mapper';
 import { Logger, LoggerService, Optional } from '@nestjs/common';
+import { TypeormUser } from '../../typeorm/entity/user/typeorm-user.entity';
 
 export class TypeormUserRepository implements IUserRepository {
   private typeormUserRepository: Repository<TypeormUser>;

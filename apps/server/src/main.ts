@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ServerConfig } from './config/server-config';
 import { Logger } from 'nestjs-pino';
 import {
@@ -26,15 +25,6 @@ async function bootstrap() {
   });
 
   app.use(cookieParser());
-
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('SNS style group album API')
-    .setDescription('API for SNS style group album')
-    .setVersion('1.0')
-    .addTag('comments')
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api', app, document);
 
   await app.listen(3001);
 }

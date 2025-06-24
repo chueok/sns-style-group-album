@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { InfrastructureModule } from './di/infrastructure.module';
+import { InfrastructureModule } from './infrastructure.module';
 import { AuthModule } from './auth/auth.module';
 import { LoggerModule } from 'nestjs-pino';
 import { TrpcModule } from './trpc/trpc.module';

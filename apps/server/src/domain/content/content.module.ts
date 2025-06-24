@@ -6,7 +6,7 @@ import {
 import { TypeormContentRepository } from './content-repository';
 import { DiTokens } from './di-tokens';
 import { Module, Provider } from '@nestjs/common';
-import { DiTokens as CommonDiTokens } from '../di/di-tokens';
+import { DiTokens as CommonDiTokens } from '../../adapter/di-tokens';
 
 const providers: Provider[] = [
   {

@@ -16,13 +16,13 @@ import {
   TMemberPaginationParams,
 } from '@repo/be-core';
 import { DataSource, IsNull, Repository } from 'typeorm';
-import { TypeormGroup } from '../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
 import { Logger, LoggerService, Optional } from '@nestjs/common';
 import { MemberMapper } from './mapper/member-mapper';
-import { TypeormUser } from '../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
-import { v4, v6 } from 'uuid';
+import { TypeormUser } from '../../typeorm/entity/user/typeorm-user.entity';
+import { v6 } from 'uuid';
 import { GroupMapper } from './mapper/group-mapper';
-import { TypeormMember } from '../infrastructure/persistence/typeorm/entity/group/typeorm-member.entity';
+import { TypeormGroup } from '../../typeorm/entity/group/typeorm-group.entity';
+import { TypeormMember } from '../../typeorm/entity/group/typeorm-member.entity';
 
 export class TypeormGroupRepository implements IGroupRepository {
   private typeormGroupRepository: Repository<TypeormGroup>;

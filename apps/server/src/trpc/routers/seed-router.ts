@@ -3,17 +3,17 @@ import { authProcedure, publicProcedure, router } from '../trpc';
 import { setSecureCookie } from '../../auth/utils';
 import { AuthModuleConfig } from '../../auth/config';
 import { createSeedInnerContext } from '../inner-context';
-import { TypeormUser } from '../../infrastructure/persistence/typeorm/entity/user/typeorm-user.entity';
 import { In, IsNull } from 'typeorm';
-import { TypeormOauth } from '../../infrastructure/persistence/typeorm/entity/oauth/typeorm-oauth.entity';
 import { EContentCategory, GroupId, UserId } from '@repo/be-core';
-import { TypeormGroup } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-group.entity';
 import { v4, v6 } from 'uuid';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ServerConfig } from '../../config/server-config';
-import { TypeormMedia } from '../../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
-import { TypeormMember } from '../../infrastructure/persistence/typeorm/entity/group/typeorm-member.entity';
+import { TypeormMedia } from '../../typeorm/entity/content/typeorm-content.entity';
+import { TypeormGroup } from '../../typeorm/entity/group/typeorm-group.entity';
+import { TypeormMember } from '../../typeorm/entity/group/typeorm-member.entity';
+import { TypeormOauth } from '../../typeorm/entity/oauth/typeorm-oauth.entity';
+import { TypeormUser } from '../../typeorm/entity/user/typeorm-user.entity';
 
 const getSeedContext = (ctx): ReturnType<typeof createSeedInnerContext> => {
   return ctx.seed;

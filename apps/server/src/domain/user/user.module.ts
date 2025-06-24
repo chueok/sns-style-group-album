@@ -6,7 +6,7 @@ import {
   IUserRepository,
   UserService,
 } from '@repo/be-core';
-import { DiTokens as CommonDiTokens } from '../di/di-tokens';
+import { DiTokens as CommonDiTokens } from '../../adapter/di-tokens';
 
 const providers: Provider[] = [
   {

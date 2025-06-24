@@ -14,11 +14,9 @@ import { DataSource, Repository } from 'typeorm';
 import { MediaMapper } from './mapper/media-mapper';
 import { Logger, LoggerService, Optional } from '@nestjs/common';
 import { v6 } from 'uuid';
-import {
-  TypeormContent,
-  TypeormMedia,
-} from '../infrastructure/persistence/typeorm/entity/content/typeorm-content.entity';
-import { TypeormMember } from '../infrastructure/persistence/typeorm/entity/group/typeorm-member.entity';
+import { TypeormContent } from '../../typeorm/entity/content/typeorm-content.entity';
+import { TypeormMedia } from '../../typeorm/entity/content/typeorm-content.entity';
+import { TypeormMember } from '../../typeorm/entity/group/typeorm-member.entity';
 
 export class TypeormContentRepository implements IContentRepository {
   public static commentLimit = 5;
