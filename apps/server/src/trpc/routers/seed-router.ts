@@ -4,7 +4,7 @@ import { setSecureCookie } from '../../auth/utils';
 import { AuthModuleConfig } from '../../auth/config';
 import { createSeedInnerContext } from '../inner-context';
 import { In, IsNull } from 'typeorm';
-import { EContentCategory, GroupId, UserId } from '@repo/be-core';
+import { ContentId, EContentCategory, GroupId, UserId } from '@repo/be-core';
 import { v4, v6 } from 'uuid';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -423,11 +423,11 @@ export const seedRouter = router({
       const { dataSource, objectStorage } = getSeedContext(ctx);
       const mediaRepository = dataSource.getRepository(TypeormMedia);
 
-      const memberId = await contentRepository.findMemberId({
+      const member = await contentRepository.findApprovedMember({
         groupId,
         userId,
       });
-      if (!memberId) {
+      if (!member) {
         throw new Error('Member not found');
       }
 
@@ -459,14 +459,14 @@ export const seedRouter = router({
         const originalRelativePath = `seed/${fileName}`;
 
         const newMedia = mediaRepository.create({
-          id: v6(),
+          id: v6() as ContentId,
           category,
           originalRelativePath,
           size: stats.size,
           ext,
           mimeType,
-          ownerId: memberId,
-          groupId,
+          ownerId: member.id,
+          groupId: groupId as GroupId,
           createdDateTime: dateList[i],
         });
 

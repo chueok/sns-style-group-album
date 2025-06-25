@@ -1,4 +1,4 @@
-import { Nullable, TMedia } from '../..';
+import { Nullable, TContentMember, TMedia } from '../..';
 import { z } from 'zod';
 
 export const SMediaSortOrder = z.enum(['asc', 'desc']);
@@ -18,20 +18,17 @@ export type TMediaPaginationResult<T> = {
 };
 
 export interface IContentRepository {
-  findMemberId(payload: {
+  // approved 상태의 멤버를 반환
+  findApprovedMember(payload: {
     userId: string;
     groupId: string;
-  }): Promise<Nullable<string>>;
+  }): Promise<Nullable<TContentMember>>;
 
-  isContentOwner(payload: {
-    userId: string;
+  // '유효한' 컨텐츠의 오너를 반환
+  // 오너는 'approved'가 아니어도 무관.
+  findContentOwner(payload: {
     contentId: string;
-  }): Promise<boolean>;
-
-  hasAccessToContent(payload: {
-    userId: string;
-    contentId: string;
-  }): Promise<boolean>;
+  }): Promise<Nullable<TContentMember>>;
 
   /**
    * 유효한 Media를 반환

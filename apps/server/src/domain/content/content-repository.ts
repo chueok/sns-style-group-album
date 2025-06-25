@@ -5,10 +5,10 @@ import {
   Exception,
   IContentRepository,
   Nullable,
+  TContentMember,
   TMedia,
   TMediaPaginationParams,
   TMediaPaginationResult,
-  UserId,
 } from '@repo/be-core';
 import { DataSource, Repository } from 'typeorm';
 import { MediaMapper } from './mapper/media-mapper';
@@ -17,6 +17,7 @@ import { v6 } from 'uuid';
 import { TypeormContent } from '../../typeorm/entity/content/typeorm-content.entity';
 import { TypeormMedia } from '../../typeorm/entity/content/typeorm-content.entity';
 import { TypeormMember } from '../../typeorm/entity/group/typeorm-member.entity';
+import { ContentMemberMapper } from './mapper/content-member-mapper';
 
 export class TypeormContentRepository implements IContentRepository {
   public static commentLimit = 5;
@@ -36,6 +37,50 @@ export class TypeormContentRepository implements IContentRepository {
     this.logger = logger || new Logger(TypeormContentRepository.name);
   }
 
+  async findApprovedMember(payload: {
+    userId: string;
+    groupId: string;
+  }): Promise<Nullable<TContentMember>> {
+    const queryBuilder = this.typeormGroupMemberRepository
+      .createQueryBuilder('member')
+      .where('member.groupId = :groupId', { groupId: payload.groupId })
+      .andWhere('member.userId = :userId', { userId: payload.userId })
+      .andWhere('member.status = :status', { status: 'approved' })
+      .select(['member.id', 'member.groupId']);
+
+    const result = await queryBuilder.getOne();
+    if (!result) {
+      return null;
+    }
+
+    return ContentMemberMapper.toDomainEntity(result);
+  }
+
+  async findContentOwner(payload: {
+    contentId: string;
+  }): Promise<Nullable<TContentMember>> {
+    const queryBuilder = this.typeormContentRepository
+      .createQueryBuilder('content')
+      .leftJoin('content.owner', 'owner')
+      .andWhere('content.id = :contentId', { contentId: payload.contentId })
+      .andWhere('content.deletedDateTime is null')
+      .select(['owner.id', 'owner.groupId']);
+
+    const result = await queryBuilder.getOne();
+    if (!result) {
+      return null;
+    }
+
+    if (!result.__owner__) {
+      throw Exception.new({
+        code: Code.INTERNAL_ERROR,
+        overrideMessage: 'sql query is invalid. Content owner not found',
+      });
+    }
+
+    return ContentMemberMapper.toDomainEntity(result.__owner__);
+  }
+
   async findMediaById(id: string): Promise<Nullable<TMedia>> {
     const result = await this.typeormMediaContentRepository.findOne({
       where: {
@@ -50,35 +95,42 @@ export class TypeormContentRepository implements IContentRepository {
     return MediaMapper.toDomainEntity(result);
   }
 
-  async isContentOwner(payload: {
-    userId: string;
-    contentId: string;
-  }): Promise<boolean> {
-    const result = await this.typeormContentRepository
+  async findMediaListBy(
+    payload: {
+      groupId: string;
+    },
+    pagination: TMediaPaginationParams
+  ): Promise<TMediaPaginationResult<TMedia>> {
+    const { groupId } = payload;
+
+    const queryBuilder = this.typeormMediaContentRepository
       .createQueryBuilder('content')
-      .leftJoin('content.owner', 'owner')
-      .where('owner.userId = :userId', { userId: payload.userId })
-      .andWhere('owner.status = :status', { status: 'approved' })
-      .andWhere('content.id = :contentId', { contentId: payload.contentId })
+      .leftJoin('content.group', 'group')
+      .where('group.id = :groupId', { groupId })
       .andWhere('content.deletedDateTime is null')
-      .getCount();
+      .orderBy(`content.id`, pagination.sortOrder === 'asc' ? 'ASC' : 'DESC') // id를 uuidv1을 사용하여 시간순 정렬이 가능하도록 함
+      .take(pagination.limit);
 
-    return result > 0;
-  }
+    if (pagination.cursor) {
+      if (pagination.sortOrder === 'desc') {
+        queryBuilder.andWhere(`content.id < :cursor`, {
+          cursor: pagination.cursor,
+        });
+      } else {
+        queryBuilder.andWhere(`content.id > :cursor`, {
+          cursor: pagination.cursor,
+        });
+      }
+    }
 
-  async hasAccessToContent(payload: {
-    userId: string;
-    contentId: string;
-  }): Promise<boolean> {
-    const result = await this.typeormContentRepository.count({
-      where: {
-        id: payload.contentId as ContentId,
-        group: {
-          members: { userId: payload.userId as UserId, status: 'approved' },
-        },
-      },
-    });
-    return result > 0;
+    const ormContentList = await queryBuilder.getMany();
+    const nextCursor = ormContentList.at(-1)?.id || undefined;
+    const items = MediaMapper.toDomainEntityList(ormContentList);
+    return {
+      items,
+      sortOrder: pagination.sortOrder,
+      nextCursor,
+    };
   }
 
   async createMedia(payload: {
@@ -130,59 +182,5 @@ export class TypeormContentRepository implements IContentRepository {
     await this.typeormMediaContentRepository.save(newMediaList);
 
     return;
-  }
-
-  async findMediaListBy(
-    payload: {
-      groupId: string;
-    },
-    pagination: TMediaPaginationParams
-  ): Promise<TMediaPaginationResult<TMedia>> {
-    const { groupId } = payload;
-
-    const queryBuilder = this.typeormMediaContentRepository
-      .createQueryBuilder('content')
-      .leftJoin('content.group', 'group')
-      .where('group.id = :groupId', { groupId })
-      .andWhere('content.deletedDateTime is null')
-      .orderBy(`content.id`, pagination.sortOrder === 'asc' ? 'ASC' : 'DESC') // id를 uuidv1을 사용하여 시간순 정렬이 가능하도록 함
-      .take(pagination.limit);
-
-    if (pagination.cursor) {
-      if (pagination.sortOrder === 'desc') {
-        queryBuilder.andWhere(`content.id < :cursor`, {
-          cursor: pagination.cursor,
-        });
-      } else {
-        queryBuilder.andWhere(`content.id > :cursor`, {
-          cursor: pagination.cursor,
-        });
-      }
-    }
-
-    const ormContentList = await queryBuilder.getMany();
-    const nextCursor = ormContentList.at(-1)?.id || undefined;
-    const items = MediaMapper.toDomainEntityList(ormContentList);
-    return {
-      items,
-      sortOrder: pagination.sortOrder,
-      nextCursor,
-    };
-  }
-
-  async findMemberId(payload: {
-    userId: string;
-    groupId: string;
-  }): Promise<Nullable<string>> {
-    const queryBuilder = this.typeormGroupMemberRepository
-      .createQueryBuilder('member')
-      .where('member.groupId = :groupId', { groupId: payload.groupId })
-      .andWhere('member.userId = :userId', { userId: payload.userId })
-      .andWhere('member.status = :status', { status: 'approved' })
-      .select(['member.id']);
-
-    const result = await queryBuilder.getOne();
-
-    return result?.id || null;
   }
 }

@@ -142,14 +142,19 @@ export class UserService {
   }
 
   private async resolveSignedUrlList(users: TUser[]): Promise<TUser[]> {
-    const resolvedUserList: TUser[] = [];
-
-    await Promise.all(
+    const results = await Promise.allSettled(
       users.map(async (user) => {
         const resolvedUser = await this.resolveSignedUrl(user);
-        resolvedUserList.push(resolvedUser);
+        return resolvedUser;
       })
     );
+
+    const resolvedUserList: TUser[] = [];
+    results.forEach((result) => {
+      if (result.status === 'fulfilled') {
+        resolvedUserList.push(result.value);
+      }
+    });
 
     if (resolvedUserList.length !== users.length) {
       throw Exception.new({

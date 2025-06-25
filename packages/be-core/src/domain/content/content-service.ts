@@ -46,21 +46,22 @@ export class ContentService {
   }): Promise<string[]> {
     const { requesterId, groupId, media } = payload;
 
-    const memberId = await this.contentRepository.findMemberId({
+    const member = await this.contentRepository.findApprovedMember({
       userId: requesterId,
       groupId,
     });
-    if (!memberId) {
+    if (!member) {
       throw Exception.new({
         code: Code.UNAUTHORIZED_ERROR,
         overrideMessage: 'User is not a member of the group',
       });
     }
 
+    // storage object key 생성
     const newMedia = media.map((m) => {
       const originalPath = generateObjectStorageKey({
         groupId,
-        ownerId: memberId,
+        ownerId: member.id,
         fileName: v4(),
       });
       return {
@@ -71,6 +72,14 @@ export class ContentService {
       };
     });
 
+    // 미디어 entity 생성
+    await this.contentRepository.createMedia({
+      groupId,
+      ownerId: member.id,
+      media: newMedia,
+    });
+
+    // 업로드를 위한 presigned url 생성
     const uploadUrls: string[] = [];
     const promises = newMedia.map(async (m) => {
       const url = await this.mediaObjectStorage.getPresignedUrlForUpload(
@@ -99,11 +108,11 @@ export class ContentService {
   }): Promise<TMediaPaginationResult<TMedia>> {
     const { groupId, requesterId, pagination } = payload;
 
-    const memberId = await this.contentRepository.findMemberId({
+    const member = await this.contentRepository.findApprovedMember({
       userId: requesterId,
       groupId,
     });
-    if (!memberId) {
+    if (!member) {
       throw Exception.new({
         code: Code.UNAUTHORIZED_ERROR,
         overrideMessage: 'User is not a member of the group',
@@ -131,26 +140,27 @@ export class ContentService {
   }): Promise<TMedia> {
     const { requesterId, contentId } = payload;
 
-    const hasAccess = await this.contentRepository.hasAccessToContent({
-      userId: requesterId,
-      contentId: contentId,
-    });
-    if (!hasAccess) {
-      throw Exception.new({
-        code: Code.UNAUTHORIZED_ERROR,
-        overrideMessage: 'User does not have access to the media',
-      });
-    }
-
-    const media = await this.contentRepository.findMediaById(contentId);
-    if (!media) {
+    const content = await this.contentRepository.findMediaById(contentId);
+    if (!content) {
       throw Exception.new({
         code: Code.UTIL_NOT_FOUND_ERROR,
         overrideMessage: 'Media not found',
       });
     }
 
-    const resolvedMedia = await this.resolveSignedUrl(media);
+    // NOTE: 접근 권한 확인이 content 조회 이후 이루어지고 있음. 수정 시 주의 필요.
+    const member = await this.contentRepository.findApprovedMember({
+      userId: requesterId,
+      groupId: content.groupId,
+    });
+    if (!member) {
+      throw Exception.new({
+        code: Code.UNAUTHORIZED_ERROR,
+        overrideMessage: 'User is not a member of the group',
+      });
+    }
+
+    const resolvedMedia = await this.resolveSignedUrl(content);
 
     return resolvedMedia;
   }
@@ -183,14 +193,19 @@ export class ContentService {
   }
 
   private async resolveSignedUrlList(mediaList: TMedia[]): Promise<TMedia[]> {
-    const resolvedMediaList: TMedia[] = [];
-
-    await Promise.all(
+    const results = await Promise.allSettled(
       mediaList.map(async (media) => {
         const resolvedMedia = await this.resolveSignedUrl(media);
-        resolvedMediaList.push(resolvedMedia);
+        return resolvedMedia;
       })
     );
+
+    const resolvedMediaList: TMedia[] = [];
+    results.forEach((result) => {
+      if (result.status === 'fulfilled') {
+        resolvedMediaList.push(result.value);
+      }
+    });
 
     if (resolvedMediaList.length !== mediaList.length) {
       throw Exception.new({

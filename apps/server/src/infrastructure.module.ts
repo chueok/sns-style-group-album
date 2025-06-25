@@ -17,8 +17,8 @@ export const typeormSqliteOptions = {
   logging: ServerConfig.DB_LOG_ENABLE,
   entities: [join(TYPEORM_DIRECTORY, 'entity', '**', '*.entity.{ts,js}')],
 
-  synchronize: false,
-  dropSchema: false,
+  synchronize: true,
+  dropSchema: true,
 } satisfies TypeOrmModuleOptions;
 
 const globalProviders: Provider[] = [
