@@ -25,16 +25,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAddComment } from '@/trpc/hooks/comment/use-add-comment';
 import { useCommentsOfContent } from '@/trpc/hooks/comment/use-comments';
-import { UserAvatar } from '@/widgets/comment/user-avatar';
-import { useAuth } from '@/trpc/hooks/auth/use-auth';
-import { UserName } from '@/widgets/comment/user-name';
+import { MemberAvatar } from '@/widgets/comment/member-avatar';
 import { useGroupStore } from '@/store/group-store';
-import { CreatedDate } from '@/widgets/comment/created-date';
 import { ScrollArea } from '@repo/ui/scroll-area';
 import { useSwipeGesture } from '@/widgets/common/use-swipe-gesture';
 import { useMyMemberInfo } from '@/trpc/hooks/group/use-my-member-info';
 import { formatDateToSlash } from '@/widgets/utils/format-date';
 import { useMember } from '@/trpc/hooks/group/use-member';
+import { UserCommentCardForContent } from '@/widgets/comment/comment-card-for-content';
 
 const CommentList = (payload: { contentId: string }) => {
   const { contentId } = payload;
@@ -43,27 +41,9 @@ const CommentList = (payload: { contentId: string }) => {
   return (
     <ScrollArea className="tw-h-full">
       {comments.map((comment) => {
-        if (comment.ownerId) {
-          return (
-            <div
-              key={comment.id}
-              className="tw-flex tw-gap-4 tw-border tw-border-border tw-p-4 tw-align-top"
-            >
-              <UserAvatar memberId={comment.ownerId} />
-              <div className="tw-flex-1">
-                <div className="tw-bg-background tw-rounded-lg">
-                  <div className="tw-flex tw-items-center tw-justify-between tw-gap-2 tw-mb-1">
-                    <UserName memberId={comment.ownerId} />
-                    <CreatedDate createdDateTime={comment.createdDateTime} />
-                  </div>
-                  <p className="tw-text-sm tw-text-foreground">
-                    {comment.text}
-                  </p>
-                </div>
-              </div>
-            </div>
-          );
-        }
+        return (
+          <UserCommentCardForContent key={comment.id} commentId={comment.id} />
+        );
       })}
     </ScrollArea>
   );
@@ -73,7 +53,7 @@ const AddComment = (payload: { contentId: string }) => {
   const { contentId } = payload;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const groupId = useGroupStore((state) => state.selectedGroupId);
-  const myMemberInfo = useMyMemberInfo(groupId);
+  const { memberInfo } = useMyMemberInfo(groupId);
   const [newComment, setNewComment] = useState('');
 
   const { addComment, isPending } = useAddComment();
@@ -99,13 +79,13 @@ const AddComment = (payload: { contentId: string }) => {
     }
   };
 
-  if (!myMemberInfo) {
+  if (!memberInfo) {
     return null;
   }
 
   return (
     <div className="tw-flex tw-gap-3">
-      <UserAvatar memberId={myMemberInfo.id} />
+      <MemberAvatar memberId={memberInfo.id} />
       <div className="tw-flex-1 tw-flex tw-gap-2">
         <Textarea
           ref={textareaRef}
