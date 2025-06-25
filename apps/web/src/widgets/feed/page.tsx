@@ -13,12 +13,8 @@ import { useGroupStore } from '@/store/group-store';
 import { useApproveJoinRequest } from '@/trpc/hooks/group/use-approve-join-request';
 import { Loader2 } from 'lucide-react';
 import { useRejectJoinRequest } from '@/trpc/hooks/group/use-reject-join-request';
-import {
-  TCommentTag,
-  useComment,
-  useCommentsOfGroup,
-} from '@/trpc/hooks/comment/use-comments';
-import { useMember } from '@/trpc/hooks/group/use-member';
+import { useCommentsOfGroup } from '@/trpc/hooks/comment/use-comments';
+import { CommentCard } from '../comment/comment-card';
 
 const InvitationCard = ({
   username,
@@ -81,77 +77,6 @@ const InvitationCard = ({
   );
 };
 
-const UserTag = ({ memberId }: { memberId: string }) => {
-  const groupId = useGroupStore((state) => state.selectedGroupId);
-  const { profile } = useMember({ groupId, memberId });
-
-  return (
-    <span className="tw-font-bold">{profile?.username || '알수없음'}</span>
-  );
-};
-
-const TextWithTags = ({
-  text,
-  tags,
-}: {
-  text: string;
-  tags: TCommentTag[];
-}) => {
-  const taggedText = tags
-    .flatMap((tag) => {
-      return tag.at.map((index) => {
-        return {
-          at: index,
-          memberId: tag.memberId,
-        };
-      });
-    })
-    .sort((a, b) => a.at - b.at); // 내림차순
-
-  let lastIndex = 0;
-  const result: JSX.Element[] = [];
-  while (taggedText.length > 0) {
-    const tag = taggedText.pop();
-    if (!tag) {
-      break;
-    }
-    result.push(<span key={tag.at}>{text.slice(lastIndex, tag.at)}</span>);
-    result.push(<UserTag key={tag.memberId} memberId={tag.memberId} />);
-    lastIndex = tag.at;
-  }
-  result.push(<span key={-1}>{text.slice(lastIndex)}</span>);
-
-  return <div>{result}</div>;
-};
-
-const FeedCommentCard = (props: { commentId: string }) => {
-  const { comment, isLoading } = useComment(props.commentId);
-
-  if (!comment) {
-    return null;
-  }
-
-  return (
-    <Card className="tw-rounded-none">
-      <VisuallyHidden>
-        <CardHeader>
-          <CardTitle>{comment.text}</CardTitle>
-        </CardHeader>
-      </VisuallyHidden>
-      <CardContent className="tw-flex tw-flex-row tw-justify-between tw-gap-4 !tw-p-4">
-        <>
-          <div className="tw-shrink">
-            <TextWithTags text={comment.text} tags={comment.tags} />
-          </div>
-          <div className="tw-shrink-0 tw-text-foreground">
-            {formatRelativeTime(comment.createdDateTime)}
-          </div>
-        </>
-      </CardContent>
-    </Card>
-  );
-};
-
 const InnerFeedPage = ({ groupId }: { groupId: string }) => {
   const { joinRequestUsers, isLoading } = useJoinRequestUsers(groupId);
   const { comments } = useCommentsOfGroup(groupId);
@@ -167,9 +92,9 @@ const InnerFeedPage = ({ groupId }: { groupId: string }) => {
           memberId={requestingUser.id}
         />
       ))}
-      {comments.map((comment) => (
-        <FeedCommentCard key={comment.id} commentId={comment.id} />
-      ))}
+      {comments.map((comment) => {
+        return <CommentCard key={comment.id} commentId={comment.id} />;
+      })}
     </div>
   );
 };

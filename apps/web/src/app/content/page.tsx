@@ -32,7 +32,7 @@ import { useSwipeGesture } from '@/widgets/common/use-swipe-gesture';
 import { useMyMemberInfo } from '@/trpc/hooks/group/use-my-member-info';
 import { formatDateToSlash } from '@/widgets/utils/format-date';
 import { useMember } from '@/trpc/hooks/group/use-member';
-import { UserCommentCardForContent } from '@/widgets/comment/comment-card-for-content';
+import { MemberCommentCard } from '@/widgets/comment/comment-card';
 
 const CommentList = (payload: { contentId: string }) => {
   const { contentId } = payload;
@@ -41,9 +41,7 @@ const CommentList = (payload: { contentId: string }) => {
   return (
     <ScrollArea className="tw-h-full">
       {comments.map((comment) => {
-        return (
-          <UserCommentCardForContent key={comment.id} commentId={comment.id} />
-        );
+        return <MemberCommentCard key={comment.id} commentId={comment.id} />;
       })}
     </ScrollArea>
   );
