@@ -15,8 +15,15 @@ import { Loader2 } from 'lucide-react';
 import { useRejectJoinRequest } from '@/trpc/hooks/group/use-reject-join-request';
 import { useCommentsOfGroup } from '@/trpc/hooks/comment/use-comments';
 import { CommentCard, MediaCommentCard } from '../comment/comment-card';
-import { useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { ScrollArea } from '@repo/ui/scroll-area';
+import { Separator } from '@repo/ui/separator';
 
 const InvitationCard = ({
   username,
@@ -80,60 +87,123 @@ const InvitationCard = ({
 };
 
 const InnerFeedPage = ({ groupId }: { groupId: string }) => {
-  const { joinRequestUsers, isLoading } = useJoinRequestUsers(groupId);
-  const { comments } = useCommentsOfGroup(groupId);
+  const { joinRequestUsers, isLoading: isJoinRequestUsersLoading } =
+    useJoinRequestUsers(groupId);
+  const { comments, isLoading: isCommentsLoading } =
+    useCommentsOfGroup(groupId);
 
   const lastContentId = useRef<string | undefined>(undefined);
   const visibleContentsSet = new Set();
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const scrollTop = e.currentTarget.scrollTop;
-    const scrollHeight = e.currentTarget.scrollHeight;
-    const clientHeight = e.currentTarget.clientHeight;
-  };
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [doneInitialScroll, setDoneInitialScroll] = useState(false);
+
+  const scrollToBottom = useCallback(() => {
+    if (viewportRef.current) {
+      const scrollElement = viewportRef.current;
+
+      if (scrollElement) {
+        // 스크롤 가능한지 확인
+        const isScrollable =
+          scrollElement.scrollHeight > scrollElement.clientHeight;
+
+        if (isScrollable) {
+          scrollElement.scrollTo({
+            top: scrollElement.scrollHeight,
+            behavior: 'instant',
+          });
+          setDoneInitialScroll(true);
+        } else {
+          // 스크롤이 불가능한 경우, 잠시 후 다시 시도
+          setTimeout(() => {
+            if (scrollElement.scrollHeight > scrollElement.clientHeight) {
+              scrollElement.scrollTo({
+                top: scrollElement.scrollHeight,
+                behavior: 'instant',
+              });
+
+              setDoneInitialScroll(true);
+            }
+          }, 200);
+        }
+      }
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!isCommentsLoading && !isJoinRequestUsersLoading) {
+      // 약간의 지연을 두어 DOM이 완전히 렌더링된 후 스크롤 실행
+      const timer = setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [scrollToBottom, isCommentsLoading, isJoinRequestUsersLoading, groupId]);
+
+  useEffect(() => {
+    // Failsafe
+    const timer = setTimeout(() => {
+      scrollToBottom();
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="tw-w-full tw-h-full">
-      <ScrollArea className="tw-w-full tw-h-full">
-        {joinRequestUsers?.map((requestingUser) => (
-          <InvitationCard
-            key={requestingUser.id}
-            username={requestingUser.username}
-            profileImageUrl={requestingUser.profileImageUrl ?? undefined}
-            requestedDateTime={requestingUser.joinRequestDateTime}
-            groupId={groupId}
-            memberId={requestingUser.id}
-          />
-        ))}
-        {comments.flatMap((comment) => {
-          const cards: JSX.Element[] = [];
+      <ScrollArea className="tw-w-full tw-h-full" viewportRef={viewportRef}>
+        <div
+          className={`tw-flex tw-flex-col-reverse tw-outline-none ${
+            doneInitialScroll ? 'tw-opacity-100' : 'tw-opacity-0'
+          }`}
+        >
+          {joinRequestUsers?.map((requestingUser) => (
+            <InvitationCard
+              key={requestingUser.id}
+              username={requestingUser.username}
+              profileImageUrl={requestingUser.profileImageUrl ?? undefined}
+              requestedDateTime={requestingUser.joinRequestDateTime}
+              groupId={groupId}
+              memberId={requestingUser.id}
+            />
+          ))}
+          {comments.flatMap((comment) => {
+            const cards: JSX.Element[] = [];
 
-          const isNewContent = comment.contentId !== lastContentId.current;
-          const visibleContentId = lastContentId.current;
-          lastContentId.current = comment.contentId;
-          // 이전 컨텐츠 컨텍스트가 끝날 때 해당 컨텐츠 card를 보여줌
-          if (isNewContent && visibleContentId) {
-            if (!visibleContentsSet.has(visibleContentId)) {
+            const isNewContent = comment.contentId !== lastContentId.current;
+            const visibleContentId = lastContentId.current;
+            lastContentId.current = comment.contentId;
+            // 이전 컨텐츠 컨텍스트가 끝날 때 해당 컨텐츠 card를 보여줌
+            if (isNewContent && visibleContentId) {
+              if (!visibleContentsSet.has(visibleContentId)) {
+                cards.push(
+                  <MediaCommentCard
+                    key={comment.id + visibleContentId}
+                    mediaId={visibleContentId}
+                  />
+                );
+                visibleContentsSet.add(visibleContentId);
+              } else {
+                cards.push(
+                  <MediaCommentCard
+                    key={comment.id + visibleContentId}
+                    mediaId={visibleContentId}
+                    summary
+                  />
+                );
+              }
               cards.push(
-                <MediaCommentCard
-                  key={visibleContentId}
-                  mediaId={visibleContentId}
-                />
-              );
-              visibleContentsSet.add(visibleContentId);
-            } else {
-              cards.push(
-                <MediaCommentCard
-                  key={visibleContentId}
-                  mediaId={visibleContentId}
-                  summary
-                />
+                <div key={comment.id + 'divider'}>
+                  <Separator className="!tw-h-2" />
+                </div>
               );
             }
-          }
 
-          cards.push(<CommentCard key={comment.id} commentId={comment.id} />);
-          return cards;
-        })}
+            cards.push(<CommentCard key={comment.id} commentId={comment.id} />);
+            return cards;
+          })}
+        </div>
       </ScrollArea>
     </div>
   );

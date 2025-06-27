@@ -4,7 +4,7 @@ import { useAuth } from '../auth/use-auth';
 export const useJoinRequestUsers = (groupId?: string) => {
   const { user } = useAuth();
 
-  const { data: joinRequestUsers, isLoading } =
+  const { data: joinRequestUsers = [], isLoading } =
     trpc.group.getJoinRequestUsers.useQuery(
       { groupId: groupId || '' },
       {

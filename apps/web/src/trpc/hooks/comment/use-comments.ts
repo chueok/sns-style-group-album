@@ -49,7 +49,7 @@ export const useCommentsOfGroup = (groupId?: string) => {
   const { user } = useAuth();
   const utils = trpc.useUtils();
 
-  const { data, hasNextPage, fetchNextPage } =
+  const { data, hasNextPage, fetchNextPage, isLoading } =
     trpc.comment.getCommentsOfGroup.useInfiniteQuery(
       {
         groupId: groupId || '',
@@ -84,7 +84,12 @@ export const useCommentsOfGroup = (groupId?: string) => {
 
   const comments = data?.pages.flatMap((page) => page.items) || [];
 
-  return { comments, hasNextPage, fetchNextPage: () => fetchNextPage() };
+  return {
+    comments,
+    hasNextPage,
+    fetchNextPage: () => fetchNextPage(),
+    isLoading,
+  };
 };
 
 /**
