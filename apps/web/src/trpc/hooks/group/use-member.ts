@@ -55,13 +55,13 @@ export const useMemberList = (payload: { groupId?: string }) => {
     }
   };
 
-  const memberProfiles = data?.items ?? [];
+  const memberList = data?.items ?? [];
   const totalPages = data?.totalPages ?? 0;
   const hasNextPage = data ? currentPage < data.totalPages : false;
   const hasPreviousPage = currentPage > 1;
 
   return {
-    memberProfiles,
+    memberList,
     currentPage,
     totalPages,
     hasNextPage,

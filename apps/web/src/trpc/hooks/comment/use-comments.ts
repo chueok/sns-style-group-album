@@ -93,9 +93,9 @@ export const useCommentsOfGroup = (groupId?: string) => {
  * 그렇지 않을 경우 useCommentsOfXXX의 useEffect가 실행되기 전에 서버 호출이 발생하여 비효율적인 호출이 발생 함.
  */
 export const useComment = (commentId: string) => {
-  const [isEnabled, setIsEnabled] = useState(false);
-
   const utils = trpc.useUtils();
+
+  const [isEnabled, setIsEnabled] = useState(false);
 
   const { data, isLoading } = trpc.comment.getComment.useQuery(
     { commentId },

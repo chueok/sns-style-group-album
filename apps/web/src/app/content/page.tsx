@@ -33,6 +33,8 @@ import { useMyMemberInfo } from '@/trpc/hooks/group/use-my-member-info';
 import { formatDateToSlash } from '@/widgets/utils/format-date';
 import { useMember } from '@/trpc/hooks/group/use-member';
 import { MemberCommentCard } from '@/widgets/comment/comment-card';
+import { ImageContainer } from '@/widgets/content/image-container';
+import { ImageFooter } from '@/widgets/content/image-footer';
 
 const CommentList = (payload: { contentId: string }) => {
   const { contentId } = payload;
@@ -102,41 +104,6 @@ const AddComment = (payload: { contentId: string }) => {
           <Send className="tw-h-4 tw-w-4" />
         </Button>
       </div>
-    </div>
-  );
-};
-
-const ImageContainer = (props: { imageUrl: string; isFullImage: boolean }) => {
-  const { imageUrl, isFullImage } = props;
-  const imageContainerRef = useRef<HTMLDivElement>(null);
-  const width = imageContainerRef.current?.clientWidth || 0;
-  const height = imageContainerRef.current?.clientHeight || 1;
-  const imageContainerRatio = width / height;
-
-  const [naturalSize, setNaturalSize] = useState({ width: 0, height: 1 });
-  const imageRatio = naturalSize.width / naturalSize.height;
-
-  const isLandscape = imageRatio > imageContainerRatio;
-
-  return (
-    <div
-      ref={imageContainerRef}
-      data-full={isFullImage}
-      className="tw-flex tw-flex-col tw-h-full tw-w-full tw-justify-center"
-    >
-      <img
-        src={imageUrl}
-        data-full={isFullImage}
-        data-landscape={isLandscape}
-        className="data-[landscape=true]:tw-w-full data-[landscape=false]:tw-h-full tw-aspect-auto data-[full=false]:tw-object-cover data-[full=true]:tw-object-contain"
-        onLoad={(e) => {
-          const img = e.target as HTMLImageElement;
-          setNaturalSize({
-            width: img.naturalWidth,
-            height: img.naturalHeight,
-          });
-        }}
-      />
     </div>
   );
 };
@@ -235,6 +202,10 @@ export default function ContentPage() {
     },
   });
 
+  if (!media) {
+    return 'media not found'; // TODO: 추후 redirect 처리 필요
+  }
+
   // TODO: 이미지 크기 변경 시 애니메이션 구현 필요
   return (
     <div className="tw-h-screen tw-mx-auto tw-overflow-hidden">
@@ -280,38 +251,13 @@ export default function ContentPage() {
         className="tw-h-[calc(100%-40px)] tw-w-full tw-overflow-hidden data-[full=false]:tw-aspect-square data-[full=false]:tw-h-auto"
       >
         {media?.originalUrl && (
-          <ImageContainer
-            imageUrl={media.originalUrl}
-            isFullImage={isFullImage}
-          />
+          <ImageContainer imageUrl={media.originalUrl} full={isFullImage} />
         )}
       </div>
 
       {/* Like and Comment Stats */}
-      <div
-        ref={imageFooterContainerRef}
-        className="tw-flex tw-items-center tw-justify-between tw-px-4"
-      >
-        <div className="tw-flex tw-items-center tw-gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            // onClick={handleLike}
-            className={`tw-flex tw-items-center tw-gap-2 ${isLiked ? 'tw-text-red-500' : 'tw-text-gray-600'}`}
-          >
-            <Heart
-              className={`tw-h-5 tw-w-5 ${isLiked ? 'tw-fill-current' : ''}`}
-            />
-            <span className="tw-font-medium">{media?.numLikes}</span>
-          </Button>
-          <div className="tw-flex tw-items-center tw-gap-2 tw-text-gray-600">
-            <MessageCircle className="tw-h-5 tw-w-5" />
-            <span className="tw-font-medium">{media?.numComments}</span>
-          </div>
-        </div>
-        <div className="tw-text-sm tw-text-gray-500">
-          {`@${profile?.username} • ${formatDateToSlash(media?.createdDateTime)}`}
-        </div>
+      <div ref={imageFooterContainerRef}>
+        <ImageFooter mediaId={media?.id} />
       </div>
 
       {/* Comments List */}

@@ -14,7 +14,9 @@ import { useApproveJoinRequest } from '@/trpc/hooks/group/use-approve-join-reque
 import { Loader2 } from 'lucide-react';
 import { useRejectJoinRequest } from '@/trpc/hooks/group/use-reject-join-request';
 import { useCommentsOfGroup } from '@/trpc/hooks/comment/use-comments';
-import { CommentCard } from '../comment/comment-card';
+import { CommentCard, MediaCommentCard } from '../comment/comment-card';
+import { useRef, useState } from 'react';
+import { ScrollArea } from '@repo/ui/scroll-area';
 
 const InvitationCard = ({
   username,
@@ -80,21 +82,59 @@ const InvitationCard = ({
 const InnerFeedPage = ({ groupId }: { groupId: string }) => {
   const { joinRequestUsers, isLoading } = useJoinRequestUsers(groupId);
   const { comments } = useCommentsOfGroup(groupId);
+
+  const lastContentId = useRef<string | undefined>(undefined);
+  const visibleContentsSet = new Set();
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const scrollTop = e.currentTarget.scrollTop;
+    const scrollHeight = e.currentTarget.scrollHeight;
+    const clientHeight = e.currentTarget.clientHeight;
+  };
   return (
-    <div>
-      {joinRequestUsers?.map((requestingUser) => (
-        <InvitationCard
-          key={requestingUser.id}
-          username={requestingUser.username}
-          profileImageUrl={requestingUser.profileImageUrl ?? undefined}
-          requestedDateTime={requestingUser.joinRequestDateTime}
-          groupId={groupId}
-          memberId={requestingUser.id}
-        />
-      ))}
-      {comments.map((comment) => {
-        return <CommentCard key={comment.id} commentId={comment.id} />;
-      })}
+    <div className="tw-w-full tw-h-full">
+      <ScrollArea className="tw-w-full tw-h-full">
+        {joinRequestUsers?.map((requestingUser) => (
+          <InvitationCard
+            key={requestingUser.id}
+            username={requestingUser.username}
+            profileImageUrl={requestingUser.profileImageUrl ?? undefined}
+            requestedDateTime={requestingUser.joinRequestDateTime}
+            groupId={groupId}
+            memberId={requestingUser.id}
+          />
+        ))}
+        {comments.flatMap((comment) => {
+          const cards: JSX.Element[] = [];
+
+          const isNewContent = comment.contentId !== lastContentId.current;
+          const visibleContentId = lastContentId.current;
+          lastContentId.current = comment.contentId;
+          // 이전 컨텐츠 컨텍스트가 끝날 때 해당 컨텐츠 card를 보여줌
+          if (isNewContent && visibleContentId) {
+            if (!visibleContentsSet.has(visibleContentId)) {
+              cards.push(
+                <MediaCommentCard
+                  key={visibleContentId}
+                  mediaId={visibleContentId}
+                />
+              );
+              visibleContentsSet.add(visibleContentId);
+            } else {
+              cards.push(
+                <MediaCommentCard
+                  key={visibleContentId}
+                  mediaId={visibleContentId}
+                  summary
+                />
+              );
+            }
+          }
+
+          cards.push(<CommentCard key={comment.id} commentId={comment.id} />);
+          return cards;
+        })}
+      </ScrollArea>
     </div>
   );
 };

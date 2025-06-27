@@ -6,11 +6,12 @@ import { useRef, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import useWidth from './use-width';
 import { useUploadMedia } from '@/trpc/hooks/media/use-upload-media';
-import { useMedia } from '@/trpc/hooks/media/use-media';
+import { useMediaList } from '@/trpc/hooks/media/use-media';
 import { SearchBar } from './search-bar';
 import { ScrollArea } from '@repo/ui/scroll-area';
 import { useContentStore } from '@/store/content-store';
 import { useRouter } from 'next/navigation';
+import { useGroupStore } from '@/store/group-store';
 
 const calcGapPx = (width: number) => {
   const remainder = width % 3;
@@ -180,6 +181,7 @@ const AlbumPage = () => {
   const { setNode, setIsVisible, setPosition } = useFloatingFunction();
   const { headerContainerRef, scrollAreaRef } = useStickyHeader();
   const { setSelectedContentId } = useContentStore();
+  const groupId = useGroupStore((state) => state.selectedGroupId);
   const router = useRouter();
 
   useEffect(() => {
@@ -189,7 +191,9 @@ const AlbumPage = () => {
   }, []);
 
   const gap = calcGapPx(width);
-  const { media, hasNextPage, fetchNextPage } = useMedia();
+  const { mediaList, hasNextPage, fetchNextPage } = useMediaList({
+    groupId,
+  });
 
   const loadMoreRef = useInfiniteScroll(() => {
     if (hasNextPage) {
@@ -217,7 +221,7 @@ const AlbumPage = () => {
               width: '100%',
             }}
           >
-            {media.map((item) => (
+            {mediaList.map((item) => (
               <div
                 key={item.id}
                 className="tw-aspect-square tw-overflow-hidden tw-rounded-none tw-cursor-pointer"

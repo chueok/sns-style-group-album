@@ -3,6 +3,13 @@ import { MemberAvatar } from './member-avatar';
 import { formatRelativeTime } from '../utils/format-date';
 import { useMember } from '@/trpc/hooks/group/use-member';
 import { useGroupStore } from '@/store/group-store';
+import { useMedia } from '@/trpc/hooks/media/use-media';
+import { Camera, File } from 'lucide-react';
+import {
+  ImageContainer,
+  SquareImageContainer,
+} from '../content/image-container';
+import { ImageFooter } from '../content/image-footer';
 
 const UserTag = ({ memberId }: { memberId: string }) => {
   const groupId = useGroupStore((state) => state.selectedGroupId);
@@ -89,22 +96,53 @@ export const SystemCommentCard = (props: { commentId: string }) => {
   }
 
   return (
-    <>
-      <div className="tw-flex tw-gap-4 tw-border tw-border-border tw-p-4 tw-align-top">
-        <div className="tw-flex-1">
-          <div className="tw-bg-background tw-rounded-lg">
-            <div className="tw-flex tw-items-center tw-justify-between tw-gap-2">
-              <span className="tw-font-medium tw-text-sm">
-                <TextWithTags text={comment.text} tags={comment.tags} />
-              </span>
-              <span className="tw-text-xs tw-text-foreground">
-                {formatRelativeTime(comment.createdDateTime)}
-              </span>
-            </div>
+    <div className="tw-flex tw-gap-4 tw-border tw-border-border tw-p-4 tw-align-top">
+      <div className="tw-flex-1">
+        <div className="tw-bg-background tw-rounded-lg">
+          <div className="tw-flex tw-items-center tw-justify-between tw-gap-2">
+            <span className="tw-font-medium tw-text-sm">
+              <TextWithTags text={comment.text} tags={comment.tags} />
+            </span>
+            <span className="tw-text-xs tw-text-foreground">
+              {formatRelativeTime(comment.createdDateTime)}
+            </span>
           </div>
         </div>
       </div>
-    </>
+    </div>
+  );
+};
+
+export const MediaCommentCard = (props: {
+  mediaId: string;
+  summary?: boolean;
+}) => {
+  const { mediaId, summary = false } = props;
+  const { media } = useMedia({ mediaId });
+
+  if (!media) {
+    return null;
+  }
+
+  return (
+    <div className="tw-border tw-border-border">
+      {summary ? (
+        <div className="tw-flex tw-flex-row tw-p-4 tw-gap-2 tw-items-center tw-justify-between">
+          <div className="tw-flex tw-flex-row tw-items-center tw-justify-center tw-gap-2">
+            <Camera className="tw-w-4 tw-h-4" />
+            <span className="tw-text-foreground">사진</span>
+          </div>
+          <div className="tw-w-16 tw-h-16">
+            <SquareImageContainer imageUrl={media.originalUrl} />
+          </div>
+        </div>
+      ) : (
+        <>
+          <ImageContainer imageUrl={media.originalUrl} />
+          <ImageFooter mediaId={mediaId} relativeTime />
+        </>
+      )}
+    </div>
   );
 };
 
@@ -116,9 +154,12 @@ export const CommentCard = (props: { commentId: string }) => {
     return null;
   }
 
-  if (comment.category === 'user-comment') {
-    return <MemberCommentCard commentId={commentId} />;
-  } else {
-    return <SystemCommentCard commentId={commentId} />;
+  switch (comment.category) {
+    case 'user-comment':
+      return <MemberCommentCard commentId={commentId} />;
+    case 'system-comment':
+      return <SystemCommentCard commentId={commentId} />;
+    default:
+      return null;
   }
 };

@@ -56,7 +56,7 @@ export const EditGroupDrawer = () => {
   // groupId 가 undefined인 경우는 버튼이 비활성화 되어 이 페이지가 열리지 않음
   const selectedGroupId = useGroupStore((state) => state.selectedGroupId);
   const { group } = useGroupDetail(selectedGroupId || '');
-  const { memberProfiles } = useMemberList({
+  const { memberList } = useMemberList({
     groupId: selectedGroupId || '',
   }); // TODO: infinite scroll 구현 필요 (page 기반)
 
@@ -151,7 +151,7 @@ export const EditGroupDrawer = () => {
               <Card className="tw-mx-4 tw-py-2">
                 <CardContent className="tw-flex tw-flex-col tw-gap-2 tw-py-0">
                   <GroupInvitationDialog groupId={group.id} />
-                  {memberProfiles.map((memberProfile) => {
+                  {memberList.map((memberProfile) => {
                     const isOwner = memberProfile.role === 'owner';
                     return (
                       <MemberItemComponent
