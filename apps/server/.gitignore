@@ -61,3 +61,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # docker
 docker/minio-docker-compose.yaml
 docker/data
+
+# seed data
+seed-data

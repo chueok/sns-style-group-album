@@ -1,9 +1,9 @@
-import type { Preview } from "@storybook/react";
-import "@/styles/global.css";
+import type { Preview } from '@storybook/react';
+import '@/styles/global.css';
 
 const preview: Preview = {
   parameters: {
-    layout: "centered",
+    layout: 'centered',
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -11,7 +11,7 @@ const preview: Preview = {
       },
     },
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default preview;

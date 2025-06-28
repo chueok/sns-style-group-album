@@ -12,6 +12,7 @@
     "skipLibCheck": true,
     "strict": true,
     "removeComments": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "allowJs": true
   }
 }

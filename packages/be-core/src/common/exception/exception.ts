@@ -1,5 +1,5 @@
-import { Optional } from "../type/common-types";
-import { CodeDescription } from "./code";
+import { Optional } from '../type/common-types';
+import { CodeDescription } from './code';
 
 export type CreateExceptionPayload<TData> = {
   code: CodeDescription;
@@ -15,7 +15,7 @@ export class Exception<TData> extends Error {
   private constructor(
     codeDescription: CodeDescription,
     overrideMessage?: string,
-    data?: TData,
+    data?: TData
   ) {
     super();
 
@@ -28,7 +28,7 @@ export class Exception<TData> extends Error {
   }
 
   public static new<TData>(
-    payload: CreateExceptionPayload<TData>,
+    payload: CreateExceptionPayload<TData>
   ): Exception<TData> {
     return new Exception(payload.code, payload.overrideMessage, payload.data);
   }

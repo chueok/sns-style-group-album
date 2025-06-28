@@ -1,16 +1,17 @@
-import { join } from "path";
-import { makeDummyDB } from "./make-dummy-db";
-import { access } from "fs/promises";
+import { join } from 'path';
+import { makeDummyDB } from './make-dummy-db';
+import { access } from 'fs/promises';
 
-const rootPath = join(__dirname, "..", "..", "..");
-const entitiesPath = join(rootPath, "src", "**", "*.entity.{ts,js}");
-const dbPath = join(rootPath, "db", "dummy.sqlite");
+const rootPath = join(__dirname, '..', '..', '..');
+const entitiesPath = join(rootPath, 'src', '**', '*.entity.{ts,js}');
+const dbPath = join(rootPath, 'db', 'dummy.sqlite');
 const nums = {
   numUser: 10,
-  numGroup: 4,
-  numContent: 100,
-  numComment: 300,
-  numLike: 500,
+  numDeletedUser: 2,
+  numGroup: 3,
+  numContent: 200,
+  numComment: 1000,
+  numLike: 1000,
 };
 
 void (async () => {

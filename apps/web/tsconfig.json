@@ -5,13 +5,18 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@repo/server/app-router-type": ["../server/src/trpc/app-router-type"],
+      "@/lib/*": ["../../packages/ui/lib/*"]
+    }
   },
   "include": [
     "next-env.d.ts",
-    "next.config.mjs",
-    "**/*.ts",
-    "**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
     ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]

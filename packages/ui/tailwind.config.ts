@@ -1,3 +1,3 @@
-import config from "@repo/tailwind-config";
+import config from '@repo/tailwind-config';
 
 export default config;

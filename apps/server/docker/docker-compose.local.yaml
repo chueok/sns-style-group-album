@@ -1,0 +1,43 @@
+version: '3.2'
+
+services:
+  minio_local:
+    image: minio/minio:RELEASE.2024-05-10T01-41-38Z
+    entrypoint: sh
+    command: -c "
+      minio server /export --console-address ':9001' --compat &
+      sleep 5 &&
+
+      mc alias set myminio ${MINIO_ENDPOINT} ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} &&
+
+      mkdir -p /export/${PUBLIC_BUCKET} &&
+      mc anonymous set download myminio/${PUBLIC_BUCKET} &&
+
+      mkdir -p /export/${MEDIA_BUCKET} &&
+      mc admin config set myminio notify_webhook:1 endpoint='${MEDIA_ORIGINAL_WEB_HOOK_SERVER}' auth_token='Bearer ${MEDIA_WEB_HOOK_AUTH}' &&
+      mc admin config set myminio notify_webhook:2 endpoint='${MEDIA_THUMBNAIL_WEB_HOOK_SERVER}' auth_token='Bearer ${MEDIA_WEB_HOOK_AUTH}' &&
+      mc admin config set myminio notify_webhook:3 endpoint='${MEDIA_LARGE_WEB_HOOK_SERVER}' auth_token='Bearer ${MEDIA_WEB_HOOK_AUTH}' &&
+      mc admin service restart myminio &&
+      mc event add myminio/${MEDIA_BUCKET} arn:minio:sqs::1:webhook --event put --prefix ${MEDIA_ORIGINAL_WEB_HOOK_PREFIX} &&
+      mc event add myminio/${MEDIA_BUCKET} arn:minio:sqs::2:webhook --event put --prefix ${MEDIA_THUMBNAIL_WEB_HOOK_PREFIX} &&
+      mc event add myminio/${MEDIA_BUCKET} arn:minio:sqs::3:webhook --event put --prefix ${MEDIA_LARGE_WEB_HOOK_PREFIX} &&
+
+      tail -f /dev/null"
+    env_file:
+      - local.minio.env
+    environment:
+      - MINIO_OPTS=--compat
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    networks:
+      - iposter_network_local
+    volumes:
+      - minio_data_local:/var/lib/minio/data
+
+volumes:
+  minio_data_local:
+
+networks:
+  iposter_network_local:
+    driver: bridge

@@ -2,12 +2,13 @@
 module.exports = {
   root: true,
   extends: [
-    "@repo/eslint-config/react-internal.js",
-    "plugin:storybook/recommended",
+    '@repo/eslint-config/react-internal.js',
+    'plugin:storybook/recommended',
   ],
-  parser: "@typescript-eslint/parser",
+  ignorePatterns: ['postcss.config.mjs'],
+  parser: '@typescript-eslint/parser',
   parserOptions: {
-    project: "./tsconfig.lint.json",
+    project: './tsconfig.lint.json',
     tsconfigRootDir: __dirname,
   },
 };
